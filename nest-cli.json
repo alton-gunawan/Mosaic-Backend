@@ -27,6 +27,51 @@
       "compilerOptions": {
         "tsConfigPath": "apps/first-app/tsconfig.app.json"
       }
+    },
+    "gateway": {
+      "type": "application",
+      "root": "apps/gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/gateway/tsconfig.app.json"
+      }
+    },
+    "risks": {
+      "type": "application",
+      "root": "apps/risks",
+      "entryFile": "main",
+      "sourceRoot": "apps/risks/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/risks/tsconfig.app.json"
+      }
+    },
+    "tasks": {
+      "type": "application",
+      "root": "apps/tasks",
+      "entryFile": "main",
+      "sourceRoot": "apps/tasks/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tasks/tsconfig.app.json"
+      }
+    },
+    "resources": {
+      "type": "application",
+      "root": "apps/resources",
+      "entryFile": "main",
+      "sourceRoot": "apps/resources/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/resources/tsconfig.app.json"
+      }
+    },
+    "projects": {
+      "type": "application",
+      "root": "apps/projects",
+      "entryFile": "main",
+      "sourceRoot": "apps/projects/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/projects/tsconfig.app.json"
+      }
     }
   }
 }

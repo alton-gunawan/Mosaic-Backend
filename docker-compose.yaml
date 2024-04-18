@@ -1,20 +1,47 @@
 version: "3"
 services:
-  first-app:
-    container_name: first-app
+  gateway:
+    container_name: gateway-service
     build:
       context: .
       args:
-        - APP=first-app
-    restart: always
-    ports:
-      - 3000:3000
-  second-app:
-    container_name: second-app
-    build:
-      context: .
-      args:
-        - APP=second-app
+        - APP=gateway
     restart: always
     ports:
       - 3001:3000
+  project:
+    container_name: projects-service
+    build:
+      context: .
+      args:
+        - APP=projects
+    restart: always
+    ports:
+      - 3002:3000
+  tasks:
+    container_name: tasks-service
+    build:
+      context: .
+      args:
+        - APP=tasks
+    restart: always
+    ports:
+      - 3003:3000
+  risks:
+    container_name: risks-service
+    build:
+      context: .
+      args:
+        - APP=risks
+    restart: always
+    ports:
+      - 3004:3000
+  resources:
+    container_name: resources-service
+    build:
+      context: .
+      args:
+        - APP=resources
+    restart: always
+    ports:
+      - 3005:3000
