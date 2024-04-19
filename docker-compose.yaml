@@ -1,5 +1,28 @@
 version: "3"
+
+networks:
+  app-tier:
+    driver: bridge
+
 services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    hostname: mysql
+    expose:
+      - 3306
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE=mosaic_db
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=1234
+      - MYSQL_TCP_PORT=3306
+    networks:
+      - app-tier
   gateway:
     container_name: gateway-service
     build:
@@ -9,6 +32,8 @@ services:
     restart: always
     ports:
       - 3001:3000
+    networks:
+      - app-tier
   projects:
     container_name: projects-service
     build:
@@ -18,30 +43,7 @@ services:
     restart: always
     ports:
       - 3002:3000
-  tasks:
-    container_name: tasks-service
-    build:
-      context: .
-      args:
-        - APP=tasks
-    restart: always
-    ports:
-      - 3003:3000
-  risks:
-    container_name: risks-service
-    build:
-      context: .
-      args:
-        - APP=risks
-    restart: always
-    ports:
-      - 3004:3000
-  resources:
-    container_name: resources-service
-    build:
-      context: .
-      args:
-        - APP=resources
-    restart: always
-    ports:
-      - 3005:3000
+    networks:
+      - app-tier
+    depends_on:
+      - mysql
