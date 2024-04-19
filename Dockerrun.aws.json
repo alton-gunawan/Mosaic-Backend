@@ -1,0 +1,58 @@
+{
+    "AWSEBDockerrunVersion": "2",
+    "containerDefinitions": [
+      {
+        "name": "gateway",
+        "image": "public.ecr.aws/k5q5d1v1/mosaic-backend-gateway",
+        "cpu": 256,
+        "memory": 256,
+        "portMappings": [
+          {
+            "name": "gateway-tcp-3001",
+            "containerPort": 3000,
+            "hostPort": 3001,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "environment": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      },
+      {
+        "name": "tasks",
+        "image": "public.ecr.aws/k5q5d1v1/mosaic-backend-tasks",
+        "cpu": 256,
+        "memory": 256,
+        "portMappings": [
+          {
+            "name": "tasks-tcp-3003",
+            "containerPort": 3000,
+            "hostPort": 3003,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "environment": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      }
+    ],
+    "family": "awseb-Mosaic-env-mpqprg24m8",
+    "revision": 28,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+      {
+        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+      }
+    ],
+    "placementConstraints": [],
+    "compatibilities": ["EXTERNAL", "EC2"],
+    "requiresCompatibilities": ["EC2"],
+    "cpu": "1024",
+    "memory": "1024"
+  }
+  
