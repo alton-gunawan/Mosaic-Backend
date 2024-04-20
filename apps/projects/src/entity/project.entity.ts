@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Project {
@@ -10,4 +17,13 @@ export class Project {
 
   @Column('text')
   description: string;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt!: string;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updatedAt!: string;
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt?: string;
 }

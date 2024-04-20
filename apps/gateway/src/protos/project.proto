@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package project;
+
+service ProjectsService {
+  rpc CreateProject(CreateProjectDto) returns (ProjectResponse);
+  rpc FindAllProjects(Empty) returns (ProjectsResponse);
+  rpc FindOneProject(FindOneProjectDto) returns (ProjectResponse) {}
+  rpc UpdateProject(UpdateProjectDto) returns (ProjectResponse) {}
+  rpc RemoveProject(RemoveProjectDto) returns (Response) {}
+  rpc QueryProject(stream PaginationDto) returns (stream Project) {}
+}
+
+message PaginationDto {
+  int32 page = 1;
+  int32 skip = 2;
+}
+
+message Empty {}
+
+message Project {
+  optional int32 id = 1;
+  string name = 2;
+  string description = 3;
+  int64 startDate = 4;
+  int64 endDate = 5;
+  string createdBy = 6;
+  string createdAt = 7;
+  string updatedAt = 8;
+  string deletedAt = 9;
+}
+
+message Projects { repeated Project projects = 1; }
+
+message FindOneProjectDto { int32 id = 1; }
+
+message CreateProjectDto {
+  oneof Project {
+    string name = 1;
+    string description = 2;
+    int64 startDate = 3;
+    int64 endDate = 4;
+    string createdBy = 5;
+  }
+}
+
+message UpdateProjectDto {
+  oneof Project {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int64 startDate = 4;
+    int64 endDate = 5;
+    string createdBy = 6;
+  }
+}
+
+message RemoveProjectDto { int32 id = 1; }
+
+message Response {
+  int32 statusCode = 1;
+  string message = 2;
+}
+
+message ProjectResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  Project data = 3;
+}
+
+message ProjectsResponse {
+  oneof ProjectResponse {
+    int32 statusCode = 1;
+    string message = 2;
+  }
+  repeated Project data = 3;
+}

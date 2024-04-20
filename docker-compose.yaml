@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 networks:
   app-tier:
@@ -34,6 +34,8 @@ services:
       - 3001:3000
     networks:
       - app-tier
+    depends_on:
+      - projects
   projects:
     container_name: projects-service
     build:
@@ -42,7 +44,7 @@ services:
         - APP=projects
     restart: always
     ports:
-      - 3002:3000
+      - 3002:3002
     networks:
       - app-tier
     depends_on:

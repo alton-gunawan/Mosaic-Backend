@@ -21,7 +21,7 @@ export class ProjectsService {
   }
 
   async create(createProjectDto: any) {
-    return await this.projectRepository.save(createProjectDto);
+    return await this.projectRepository.save({ ...createProjectDto });
   }
 
   async update(id: number, updateProjectDto: any) {
@@ -29,6 +29,6 @@ export class ProjectsService {
   }
 
   async remove(id: number) {
-    return await this.projectRepository.softDelete(id);
+    return await this.projectRepository.delete(id);
   }
 }
