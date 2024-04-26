@@ -2,7 +2,6 @@
 import * as _m0 from "protobufjs/minimal";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import Long = require("long");
 
 export const protobufPackage = "project";
 
@@ -24,6 +23,18 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   deletedAt: string;
+}
+
+export interface FindAllProjectsDto {
+  id?: number | undefined;
+  name?: string | undefined;
+  description?: string | undefined;
+  startDate?: number | undefined;
+  endDate?: number | undefined;
+  createdBy?: string | undefined;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+  deletedAt?: string | undefined;
 }
 
 export interface Projects {
@@ -215,10 +226,10 @@ export const Project = {
       writer.uint32(26).string(message.description);
     }
     if (message.startDate !== 0) {
-      writer.uint32(32).int64(message.startDate);
+      writer.uint32(32).int32(message.startDate);
     }
     if (message.endDate !== 0) {
-      writer.uint32(40).int64(message.endDate);
+      writer.uint32(40).int32(message.endDate);
     }
     if (message.createdBy !== "") {
       writer.uint32(50).string(message.createdBy);
@@ -268,14 +279,14 @@ export const Project = {
             break;
           }
 
-          message.startDate = longToNumber(reader.int64() as Long);
+          message.startDate = reader.int32();
           continue;
         case 5:
           if (tag !== 40) {
             break;
           }
 
-          message.endDate = longToNumber(reader.int64() as Long);
+          message.endDate = reader.int32();
           continue;
         case 6:
           if (tag !== 50) {
@@ -374,6 +385,195 @@ export const Project = {
     message.createdAt = object.createdAt ?? "";
     message.updatedAt = object.updatedAt ?? "";
     message.deletedAt = object.deletedAt ?? "";
+    return message;
+  },
+};
+
+function createBaseFindAllProjectsDto(): FindAllProjectsDto {
+  return {
+    id: undefined,
+    name: undefined,
+    description: undefined,
+    startDate: undefined,
+    endDate: undefined,
+    createdBy: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    deletedAt: undefined,
+  };
+}
+
+export const FindAllProjectsDto = {
+  encode(message: FindAllProjectsDto, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== undefined) {
+      writer.uint32(8).int32(message.id);
+    }
+    if (message.name !== undefined) {
+      writer.uint32(18).string(message.name);
+    }
+    if (message.description !== undefined) {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.startDate !== undefined) {
+      writer.uint32(32).int32(message.startDate);
+    }
+    if (message.endDate !== undefined) {
+      writer.uint32(40).int32(message.endDate);
+    }
+    if (message.createdBy !== undefined) {
+      writer.uint32(50).string(message.createdBy);
+    }
+    if (message.createdAt !== undefined) {
+      writer.uint32(58).string(message.createdAt);
+    }
+    if (message.updatedAt !== undefined) {
+      writer.uint32(66).string(message.updatedAt);
+    }
+    if (message.deletedAt !== undefined) {
+      writer.uint32(74).string(message.deletedAt);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): FindAllProjectsDto {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFindAllProjectsDto();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.int32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.startDate = reader.int32();
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.endDate = reader.int32();
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.createdBy = reader.string();
+          continue;
+        case 7:
+          if (tag !== 58) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        case 8:
+          if (tag !== 66) {
+            break;
+          }
+
+          message.updatedAt = reader.string();
+          continue;
+        case 9:
+          if (tag !== 74) {
+            break;
+          }
+
+          message.deletedAt = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FindAllProjectsDto {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      name: isSet(object.name) ? globalThis.String(object.name) : undefined,
+      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
+      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : undefined,
+      endDate: isSet(object.endDate) ? globalThis.Number(object.endDate) : undefined,
+      createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
+      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : undefined,
+      updatedAt: isSet(object.updatedAt) ? globalThis.String(object.updatedAt) : undefined,
+      deletedAt: isSet(object.deletedAt) ? globalThis.String(object.deletedAt) : undefined,
+    };
+  },
+
+  toJSON(message: FindAllProjectsDto): unknown {
+    const obj: any = {};
+    if (message.id !== undefined) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.name !== undefined) {
+      obj.name = message.name;
+    }
+    if (message.description !== undefined) {
+      obj.description = message.description;
+    }
+    if (message.startDate !== undefined) {
+      obj.startDate = Math.round(message.startDate);
+    }
+    if (message.endDate !== undefined) {
+      obj.endDate = Math.round(message.endDate);
+    }
+    if (message.createdBy !== undefined) {
+      obj.createdBy = message.createdBy;
+    }
+    if (message.createdAt !== undefined) {
+      obj.createdAt = message.createdAt;
+    }
+    if (message.updatedAt !== undefined) {
+      obj.updatedAt = message.updatedAt;
+    }
+    if (message.deletedAt !== undefined) {
+      obj.deletedAt = message.deletedAt;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FindAllProjectsDto>, I>>(base?: I): FindAllProjectsDto {
+    return FindAllProjectsDto.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FindAllProjectsDto>, I>>(object: I): FindAllProjectsDto {
+    const message = createBaseFindAllProjectsDto();
+    message.id = object.id ?? undefined;
+    message.name = object.name ?? undefined;
+    message.description = object.description ?? undefined;
+    message.startDate = object.startDate ?? undefined;
+    message.endDate = object.endDate ?? undefined;
+    message.createdBy = object.createdBy ?? undefined;
+    message.createdAt = object.createdAt ?? undefined;
+    message.updatedAt = object.updatedAt ?? undefined;
+    message.deletedAt = object.deletedAt ?? undefined;
     return message;
   },
 };
@@ -507,10 +707,10 @@ export const CreateProjectDto = {
       writer.uint32(18).string(message.description);
     }
     if (message.startDate !== undefined) {
-      writer.uint32(24).int64(message.startDate);
+      writer.uint32(24).int32(message.startDate);
     }
     if (message.endDate !== undefined) {
-      writer.uint32(32).int64(message.endDate);
+      writer.uint32(32).int32(message.endDate);
     }
     if (message.createdBy !== undefined) {
       writer.uint32(42).string(message.createdBy);
@@ -544,14 +744,14 @@ export const CreateProjectDto = {
             break;
           }
 
-          message.startDate = longToNumber(reader.int64() as Long);
+          message.startDate = reader.int32();
           continue;
         case 4:
           if (tag !== 32) {
             break;
           }
 
-          message.endDate = longToNumber(reader.int64() as Long);
+          message.endDate = reader.int32();
           continue;
         case 5:
           if (tag !== 42) {
@@ -636,10 +836,10 @@ export const UpdateProjectDto = {
       writer.uint32(26).string(message.description);
     }
     if (message.startDate !== undefined) {
-      writer.uint32(32).int64(message.startDate);
+      writer.uint32(32).int32(message.startDate);
     }
     if (message.endDate !== undefined) {
-      writer.uint32(40).int64(message.endDate);
+      writer.uint32(40).int32(message.endDate);
     }
     if (message.createdBy !== undefined) {
       writer.uint32(50).string(message.createdBy);
@@ -680,14 +880,14 @@ export const UpdateProjectDto = {
             break;
           }
 
-          message.startDate = longToNumber(reader.int64() as Long);
+          message.startDate = reader.int32();
           continue;
         case 5:
           if (tag !== 40) {
             break;
           }
 
-          message.endDate = longToNumber(reader.int64() as Long);
+          message.endDate = reader.int32();
           continue;
         case 6:
           if (tag !== 50) {
@@ -1065,7 +1265,7 @@ export const ProjectsResponse = {
 
 export interface ProjectsService {
   CreateProject(request: CreateProjectDto): Promise<ProjectResponse>;
-  FindAllProjects(request: Empty): Promise<ProjectsResponse>;
+  FindAllProjects(request: FindAllProjectsDto): Promise<ProjectsResponse>;
   FindOneProject(request: FindOneProjectDto): Promise<ProjectResponse>;
   UpdateProject(request: UpdateProjectDto): Promise<ProjectResponse>;
   RemoveProject(request: RemoveProjectDto): Promise<Response>;
@@ -1092,8 +1292,8 @@ export class ProjectsServiceClientImpl implements ProjectsService {
     return promise.then((data) => ProjectResponse.decode(_m0.Reader.create(data)));
   }
 
-  FindAllProjects(request: Empty): Promise<ProjectsResponse> {
-    const data = Empty.encode(request).finish();
+  FindAllProjects(request: FindAllProjectsDto): Promise<ProjectsResponse> {
+    const data = FindAllProjectsDto.encode(request).finish();
     const promise = this.rpc.request(this.service, "FindAllProjects", data);
     return promise.then((data) => ProjectsResponse.decode(_m0.Reader.create(data)));
   }
@@ -1141,18 +1341,6 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function longToNumber(long: Long): number {
-  if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  return long.toNumber();
-}
-
-if (_m0.util.Long !== Long) {
-  _m0.util.Long = Long as any;
-  _m0.configure();
-}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

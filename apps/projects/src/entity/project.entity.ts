@@ -18,6 +18,15 @@ export class Project {
   @Column('text')
   description: string;
 
+  @Column()
+  startDate: number;
+
+  @Column()
+  endDate: number;
+
+  @Column()
+  createdBy: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt!: string;
 

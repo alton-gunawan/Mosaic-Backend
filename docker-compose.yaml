@@ -36,6 +36,7 @@ services:
       - app-tier
     depends_on:
       - projects
+      - tasks
   projects:
     container_name: projects-service
     build:
@@ -49,3 +50,17 @@ services:
       - app-tier
     depends_on:
       - mysql
+  tasks:
+    container_name: tasks-service
+    build:
+      context: .
+      args:
+        - APP=tasks
+    restart: always
+    ports:
+      - 3003:3003
+    networks:
+      - app-tier
+    environment:
+      - AWS_ACCESS_KEY_ID=
+      - AWS_SECRET_ACCESS_KEY=

@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { GatewayController } from './gateway.controller';
 import { GatewayService } from './gateway.service';
-import { LoggerModule } from 'nestjs-pino';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { ProjectsController } from './controllers/project.controller';
+import { TasksController } from './controllers/task.controller';
 
 @Module({
   imports: [
-    LoggerModule.forRoot(),
     ClientsModule.register([
       {
         name: 'PROJECT_PACKAGE',
@@ -19,9 +18,18 @@ import { ProjectsController } from './controllers/project.controller';
           protoPath: join(__dirname, '/protos/project.proto'),
         },
       },
+      {
+        name: 'TASK_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          url: 'tasks-service:3003',
+          package: 'task',
+          protoPath: join(__dirname, '/protos/task.proto'),
+        },
+      },
     ]),
   ],
-  controllers: [GatewayController, ProjectsController],
+  controllers: [GatewayController, ProjectsController, TasksController],
   providers: [GatewayService],
 })
 export class GatewayModule {}

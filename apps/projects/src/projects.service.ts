@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entity/project.entity';
+import { FindAllProjectsDto } from 'apps/gateway/src/protos/project';
 
 @Injectable()
 export class ProjectsService {
@@ -10,8 +11,10 @@ export class ProjectsService {
     private projectRepository: Repository<Project>,
   ) {}
 
-  async findAll() {
-    return await this.projectRepository.find();
+  async findAll(conditionalFilter?: FindAllProjectsDto) {
+    return await this.projectRepository.find({
+      where: { ...conditionalFilter },
+    });
   }
 
   async findOne(id: number) {
@@ -20,9 +23,15 @@ export class ProjectsService {
     });
   }
 
+  async findByUser(userId: string) {
+    return await this.projectRepository.find({
+      where: { createdBy: userId },
+    });
+  }
+
   async create(createProjectDto: any) {
     return await this.projectRepository.save({ ...createProjectDto });
-  }
+  }      
 
   async update(id: number, updateProjectDto: any) {
     return await this.projectRepository.update(id, updateProjectDto);

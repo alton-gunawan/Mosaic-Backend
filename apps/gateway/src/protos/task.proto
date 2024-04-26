@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package task;
+
+service TasksService {
+    rpc FindAllTasks(FindAllTasksRequest) returns (TasksResponse);
+    rpc FindOneTask(FindOneTaskRequest) returns (TasksResponse);
+    rpc CreateTask(CreateTaskRequest) returns (TaskResponse);
+    rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse);
+    rpc DeleteTask(DeleteTaskRequest) returns (TaskResponse);
+    rpc FindAllTaskColumn(FindAllTaskColumnRequest) returns (TaskColumnsResponse);
+    rpc CreateTaskColumn(CreateTaskColumnRequest) returns (TaskColumnResponse);
+    rpc UpdateTaskColumn(UpdateTaskColumnRequest) returns (TaskColumnResponse);
+    rpc RemoveTaskColumn(RemoveTaskColumnRequest) returns (TaskColumnResponse);
+}
+
+message Empty {}
+
+message FindAllTasksRequest {
+    oneof Task {
+        string id = 1;
+        string name = 2;
+        string featuredImage = 3;
+        string description = 4;
+        string status = 5;
+        string priority = 6;
+        int32 startDate = 7;
+        int32 endDate = 8;
+        string createdBy = 9;
+        string projectId = 10;
+        string taskColumnId = 11;
+    }
+}
+
+message FindAllTasksResponse {
+    repeated Task tasks = 1;
+}
+
+message FindOneTaskRequest {
+    string id = 1;
+}
+
+message FindOneTaskResponse {
+    repeated Task tasks = 1;
+}
+
+message CreateTaskRequest {
+    oneof Task {
+        string name = 1;
+        string featuredImage = 2;
+        string description = 3;
+        string status = 4;
+        string priority = 5;
+        int32 startDate = 6;
+        int32 endDate = 7;
+        string createdBy = 8;
+        string projectId = 9;
+        string taskColumnId = 10;
+    }
+    repeated Subtasks subtasks = 11;
+}
+
+message UpdateTaskRequest {
+    string id = 1;
+    oneof Task {
+        string name = 2;
+        string featuredImage = 3;
+        string description = 4;
+        string status = 5;
+        string priority = 6;
+        int32 startDate = 7;
+        int32 endDate = 8;
+        string taskColumnId = 9;
+    }
+    repeated Subtasks subtasks = 10;
+}
+
+message DeleteTaskRequest {
+    string id = 1;
+}
+
+message Subtasks {
+    oneof Subtasks {
+        string id = 1;
+    }
+    string label = 2;
+    bool status = 3;
+}
+
+message Task {
+    string id = 1;
+    string name = 2;
+    string featuredImage = 3;
+    string description = 4;
+    string status = 5;
+    string priority = 6;
+    int32 startDate = 7;
+    int32 endDate = 8;
+    string createdBy = 9;
+    string taskColumnId = 10;
+    repeated Subtasks subtasks = 11;
+}
+
+message TaskResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  Task data = 3;
+}
+
+message TasksResponse {
+  oneof ProjectResponse {
+    int32 statusCode = 1;
+    string message = 2;
+  }
+  repeated Task data = 3;
+}
+
+message TaskColumn {
+    string id = 1;
+    string name = 2;
+    int32 limit = 3;
+    int32 order = 4;
+    string projectId = 5;
+}
+
+message TaskColumnResponse {
+    int32 statusCode = 1;
+    string message = 2;
+    TaskColumn data = 3;
+}
+
+message TaskColumnsResponse {
+    int32 statusCode = 1;
+    string message = 2;
+    repeated TaskColumn data = 3;
+}
+
+message FindAllTaskColumnRequest {
+    int32 projectId = 1;
+}
+
+message CreateTaskColumnRequest {
+    string name = 1;
+    oneof TaskColumn {
+        int32 limit = 2;
+    }
+    int32 order = 3;
+    string projectId = 4;
+}
+
+message UpdateTaskColumnRequest {
+    string id = 1;
+    oneof TaskColumn {
+        string name = 2;
+        int32 order = 3;
+        int32 limit = 4;
+    }
+}
+
+message RemoveTaskColumnRequest { string id = 1; }

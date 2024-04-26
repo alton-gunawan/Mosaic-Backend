@@ -9,8 +9,13 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { ProjectsService, UpdateProjectDto } from '../protos/project';
+import {
+  FindAllProjectsDto,
+  ProjectsService,
+  UpdateProjectDto,
+} from '../protos/project';
 import { ClientGrpc } from '@nestjs/microservices';
 import { CreateProjectDto } from '../interfaces/create-project.dto';
 
@@ -33,23 +38,30 @@ export class ProjectsController implements OnModuleInit {
   }
 
   @Get()
-  public async listProject(): Promise<any> {
-    return await this.projectsService.FindAllProjects({});
+  public async listProject(
+    @Query() findAllProjectDto?: FindAllProjectsDto,
+  ): Promise<any> {
+    return await this.projectsService.FindAllProjects({
+      ...findAllProjectDto,
+    });
+  }
+
+  @Get(':id')
+  public async findProject(@Param('id') id?: string): Promise<any> {
+    return await this.projectsService.FindOneProject({
+      id: +id,
+    });
   }
 
   @Post()
   public async create(
-    @Body() createProjectDTO: CreateProjectDto,
+    @Body() createProjectDto: CreateProjectDto,
   ): Promise<any> {
-    this.logger.debug(createProjectDTO);
-
-    return await this.projectsService.CreateProject({
-      name: createProjectDTO.name,
-      description: createProjectDTO.description,
-      startDate: createProjectDTO.startDate,
-      endDate: createProjectDTO.endDate,
-      createdBy: createProjectDTO.createdBy,
+    const response = await this.projectsService.CreateProject({
+      ...createProjectDto,
     });
+
+    return response;
   }
 
   @Put(':id')
