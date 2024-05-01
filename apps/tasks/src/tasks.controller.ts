@@ -99,6 +99,7 @@ export class TasksController {
         updateTaskDto?.endDate,
         updateTaskDto?.taskColumnId,
         updateTaskDto?.subtasks,
+        updateTaskDto?.assignees,
       ),
     );
 

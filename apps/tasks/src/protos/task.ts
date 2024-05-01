@@ -18,6 +18,8 @@ export interface FindAllTasksRequest {
   createdBy?: string | undefined;
   projectId?: string | undefined;
   taskColumnId?: string | undefined;
+  subtasks: Subtasks[];
+  assignees: string[];
 }
 
 export interface FindAllTasksResponse {
@@ -44,6 +46,7 @@ export interface CreateTaskRequest {
   projectId?: string | undefined;
   taskColumnId?: string | undefined;
   subtasks: Subtasks[];
+  assignees: string[];
 }
 
 export interface UpdateTaskRequest {
@@ -57,6 +60,7 @@ export interface UpdateTaskRequest {
   endDate?: number | undefined;
   taskColumnId?: string | undefined;
   subtasks: Subtasks[];
+  assignees: string[];
 }
 
 export interface DeleteTaskRequest {
@@ -64,7 +68,7 @@ export interface DeleteTaskRequest {
 }
 
 export interface Subtasks {
-  id: string;
+  id?: string | undefined;
   label: string;
   status: boolean;
 }
@@ -81,6 +85,7 @@ export interface Task {
   createdBy: string;
   taskColumnId: string;
   subtasks: Subtasks[];
+  assignees: string[];
 }
 
 export interface TaskResponse {
@@ -193,6 +198,8 @@ function createBaseFindAllTasksRequest(): FindAllTasksRequest {
     createdBy: undefined,
     projectId: undefined,
     taskColumnId: undefined,
+    subtasks: [],
+    assignees: [],
   };
 }
 
@@ -230,6 +237,12 @@ export const FindAllTasksRequest = {
     }
     if (message.taskColumnId !== undefined) {
       writer.uint32(90).string(message.taskColumnId);
+    }
+    for (const v of message.subtasks) {
+      Subtasks.encode(v!, writer.uint32(98).fork()).ldelim();
+    }
+    for (const v of message.assignees) {
+      writer.uint32(106).string(v!);
     }
     return writer;
   },
@@ -318,6 +331,20 @@ export const FindAllTasksRequest = {
 
           message.taskColumnId = reader.string();
           continue;
+        case 12:
+          if (tag !== 98) {
+            break;
+          }
+
+          message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
+          continue;
+        case 13:
+          if (tag !== 106) {
+            break;
+          }
+
+          message.assignees.push(reader.string());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -340,6 +367,10 @@ export const FindAllTasksRequest = {
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
+      assignees: globalThis.Array.isArray(object?.assignees)
+        ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -378,6 +409,12 @@ export const FindAllTasksRequest = {
     if (message.taskColumnId !== undefined) {
       obj.taskColumnId = message.taskColumnId;
     }
+    if (message.subtasks?.length) {
+      obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
+    }
+    if (message.assignees?.length) {
+      obj.assignees = message.assignees;
+    }
     return obj;
   },
 
@@ -397,6 +434,8 @@ export const FindAllTasksRequest = {
     message.createdBy = object.createdBy ?? undefined;
     message.projectId = object.projectId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
+    message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
+    message.assignees = object.assignees?.map((e) => e) || [];
     return message;
   },
 };
@@ -585,6 +624,7 @@ function createBaseCreateTaskRequest(): CreateTaskRequest {
     projectId: undefined,
     taskColumnId: undefined,
     subtasks: [],
+    assignees: [],
   };
 }
 
@@ -622,6 +662,9 @@ export const CreateTaskRequest = {
     }
     for (const v of message.subtasks) {
       Subtasks.encode(v!, writer.uint32(90).fork()).ldelim();
+    }
+    for (const v of message.assignees) {
+      writer.uint32(98).string(v!);
     }
     return writer;
   },
@@ -710,6 +753,13 @@ export const CreateTaskRequest = {
 
           message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
           continue;
+        case 12:
+          if (tag !== 98) {
+            break;
+          }
+
+          message.assignees.push(reader.string());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -732,6 +782,9 @@ export const CreateTaskRequest = {
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
+      assignees: globalThis.Array.isArray(object?.assignees)
+        ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -770,6 +823,9 @@ export const CreateTaskRequest = {
     if (message.subtasks?.length) {
       obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
     }
+    if (message.assignees?.length) {
+      obj.assignees = message.assignees;
+    }
     return obj;
   },
 
@@ -789,6 +845,7 @@ export const CreateTaskRequest = {
     message.projectId = object.projectId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
+    message.assignees = object.assignees?.map((e) => e) || [];
     return message;
   },
 };
@@ -805,6 +862,7 @@ function createBaseUpdateTaskRequest(): UpdateTaskRequest {
     endDate: undefined,
     taskColumnId: undefined,
     subtasks: [],
+    assignees: [],
   };
 }
 
@@ -839,6 +897,9 @@ export const UpdateTaskRequest = {
     }
     for (const v of message.subtasks) {
       Subtasks.encode(v!, writer.uint32(82).fork()).ldelim();
+    }
+    for (const v of message.assignees) {
+      writer.uint32(98).string(v!);
     }
     return writer;
   },
@@ -920,6 +981,13 @@ export const UpdateTaskRequest = {
 
           message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
           continue;
+        case 12:
+          if (tag !== 98) {
+            break;
+          }
+
+          message.assignees.push(reader.string());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -941,6 +1009,9 @@ export const UpdateTaskRequest = {
       endDate: isSet(object.endDate) ? globalThis.Number(object.endDate) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
+      assignees: globalThis.Array.isArray(object?.assignees)
+        ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -976,6 +1047,9 @@ export const UpdateTaskRequest = {
     if (message.subtasks?.length) {
       obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
     }
+    if (message.assignees?.length) {
+      obj.assignees = message.assignees;
+    }
     return obj;
   },
 
@@ -994,6 +1068,7 @@ export const UpdateTaskRequest = {
     message.endDate = object.endDate ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
+    message.assignees = object.assignees?.map((e) => e) || [];
     return message;
   },
 };
@@ -1056,12 +1131,12 @@ export const DeleteTaskRequest = {
 };
 
 function createBaseSubtasks(): Subtasks {
-  return { id: "", label: "", status: false };
+  return { id: undefined, label: "", status: false };
 }
 
 export const Subtasks = {
   encode(message: Subtasks, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
+    if (message.id !== undefined) {
       writer.uint32(10).string(message.id);
     }
     if (message.label !== "") {
@@ -1112,7 +1187,7 @@ export const Subtasks = {
 
   fromJSON(object: any): Subtasks {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
       label: isSet(object.label) ? globalThis.String(object.label) : "",
       status: isSet(object.status) ? globalThis.Boolean(object.status) : false,
     };
@@ -1120,7 +1195,7 @@ export const Subtasks = {
 
   toJSON(message: Subtasks): unknown {
     const obj: any = {};
-    if (message.id !== "") {
+    if (message.id !== undefined) {
       obj.id = message.id;
     }
     if (message.label !== "") {
@@ -1137,7 +1212,7 @@ export const Subtasks = {
   },
   fromPartial<I extends Exact<DeepPartial<Subtasks>, I>>(object: I): Subtasks {
     const message = createBaseSubtasks();
-    message.id = object.id ?? "";
+    message.id = object.id ?? undefined;
     message.label = object.label ?? "";
     message.status = object.status ?? false;
     return message;
@@ -1157,6 +1232,7 @@ function createBaseTask(): Task {
     createdBy: "",
     taskColumnId: "",
     subtasks: [],
+    assignees: [],
   };
 }
 
@@ -1194,6 +1270,9 @@ export const Task = {
     }
     for (const v of message.subtasks) {
       Subtasks.encode(v!, writer.uint32(90).fork()).ldelim();
+    }
+    for (const v of message.assignees) {
+      writer.uint32(98).string(v!);
     }
     return writer;
   },
@@ -1282,6 +1361,13 @@ export const Task = {
 
           message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
           continue;
+        case 12:
+          if (tag !== 98) {
+            break;
+          }
+
+          message.assignees.push(reader.string());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1304,6 +1390,9 @@ export const Task = {
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : "",
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
+      assignees: globalThis.Array.isArray(object?.assignees)
+        ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -1342,6 +1431,9 @@ export const Task = {
     if (message.subtasks?.length) {
       obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
     }
+    if (message.assignees?.length) {
+      obj.assignees = message.assignees;
+    }
     return obj;
   },
 
@@ -1361,6 +1453,7 @@ export const Task = {
     message.createdBy = object.createdBy ?? "";
     message.taskColumnId = object.taskColumnId ?? "";
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
+    message.assignees = object.assignees?.map((e) => e) || [];
     return message;
   },
 };

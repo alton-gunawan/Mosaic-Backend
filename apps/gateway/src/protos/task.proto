@@ -30,6 +30,8 @@ message FindAllTasksRequest {
         string projectId = 10;
         string taskColumnId = 11;
     }
+    repeated Subtasks subtasks = 12;
+    repeated string assignees = 13;
 }
 
 message FindAllTasksResponse {
@@ -58,6 +60,7 @@ message CreateTaskRequest {
         string taskColumnId = 10;
     }
     repeated Subtasks subtasks = 11;
+    repeated string assignees = 12;
 }
 
 message UpdateTaskRequest {
@@ -73,6 +76,7 @@ message UpdateTaskRequest {
         string taskColumnId = 9;
     }
     repeated Subtasks subtasks = 10;
+    repeated string assignees = 12;
 }
 
 message DeleteTaskRequest {
@@ -99,6 +103,7 @@ message Task {
     string createdBy = 9;
     string taskColumnId = 10;
     repeated Subtasks subtasks = 11;
+    repeated string assignees = 12;
 }
 
 message TaskResponse {
