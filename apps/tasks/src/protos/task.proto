@@ -61,6 +61,7 @@ message CreateTaskRequest {
     }
     repeated Subtasks subtasks = 11;
     repeated string assignees = 12;
+    repeated Dependencies dependencies = 13;
 }
 
 message UpdateTaskRequest {
@@ -77,6 +78,7 @@ message UpdateTaskRequest {
     }
     repeated Subtasks subtasks = 10;
     repeated string assignees = 12;
+    repeated Dependencies dependencies = 13;
 }
 
 message DeleteTaskRequest {
@@ -89,6 +91,16 @@ message Subtasks {
     }
     string label = 2;
     bool status = 3;
+}
+
+message Dependencies {
+    oneof Dependencies {
+        string id = 1;
+    }
+    string from = 2;
+    string to = 3;
+    string type = 4;
+    int32 lagTime = 5;
 }
 
 message Task {
@@ -104,6 +116,7 @@ message Task {
     string taskColumnId = 10;
     repeated Subtasks subtasks = 11;
     repeated string assignees = 12;
+    repeated Dependencies dependencies = 13;
 }
 
 message TaskResponse {

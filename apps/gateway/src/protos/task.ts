@@ -47,6 +47,7 @@ export interface CreateTaskRequest {
   taskColumnId?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
+  dependencies: Dependencies[];
 }
 
 export interface UpdateTaskRequest {
@@ -61,6 +62,7 @@ export interface UpdateTaskRequest {
   taskColumnId?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
+  dependencies: Dependencies[];
 }
 
 export interface DeleteTaskRequest {
@@ -71,6 +73,14 @@ export interface Subtasks {
   id?: string | undefined;
   label: string;
   status: boolean;
+}
+
+export interface Dependencies {
+  id?: string | undefined;
+  from: string;
+  to: string;
+  type: string;
+  lagTime: number;
 }
 
 export interface Task {
@@ -86,6 +96,7 @@ export interface Task {
   taskColumnId: string;
   subtasks: Subtasks[];
   assignees: string[];
+  dependencies: Dependencies[];
 }
 
 export interface TaskResponse {
@@ -625,6 +636,7 @@ function createBaseCreateTaskRequest(): CreateTaskRequest {
     taskColumnId: undefined,
     subtasks: [],
     assignees: [],
+    dependencies: [],
   };
 }
 
@@ -665,6 +677,9 @@ export const CreateTaskRequest = {
     }
     for (const v of message.assignees) {
       writer.uint32(98).string(v!);
+    }
+    for (const v of message.dependencies) {
+      Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
     }
     return writer;
   },
@@ -760,6 +775,13 @@ export const CreateTaskRequest = {
 
           message.assignees.push(reader.string());
           continue;
+        case 13:
+          if (tag !== 106) {
+            break;
+          }
+
+          message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -784,6 +806,9 @@ export const CreateTaskRequest = {
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
         ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
+      dependencies: globalThis.Array.isArray(object?.dependencies)
+        ? object.dependencies.map((e: any) => Dependencies.fromJSON(e))
         : [],
     };
   },
@@ -826,6 +851,9 @@ export const CreateTaskRequest = {
     if (message.assignees?.length) {
       obj.assignees = message.assignees;
     }
+    if (message.dependencies?.length) {
+      obj.dependencies = message.dependencies.map((e) => Dependencies.toJSON(e));
+    }
     return obj;
   },
 
@@ -846,6 +874,7 @@ export const CreateTaskRequest = {
     message.taskColumnId = object.taskColumnId ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
+    message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
     return message;
   },
 };
@@ -863,6 +892,7 @@ function createBaseUpdateTaskRequest(): UpdateTaskRequest {
     taskColumnId: undefined,
     subtasks: [],
     assignees: [],
+    dependencies: [],
   };
 }
 
@@ -900,6 +930,9 @@ export const UpdateTaskRequest = {
     }
     for (const v of message.assignees) {
       writer.uint32(98).string(v!);
+    }
+    for (const v of message.dependencies) {
+      Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
     }
     return writer;
   },
@@ -988,6 +1021,13 @@ export const UpdateTaskRequest = {
 
           message.assignees.push(reader.string());
           continue;
+        case 13:
+          if (tag !== 106) {
+            break;
+          }
+
+          message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1011,6 +1051,9 @@ export const UpdateTaskRequest = {
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
         ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
+      dependencies: globalThis.Array.isArray(object?.dependencies)
+        ? object.dependencies.map((e: any) => Dependencies.fromJSON(e))
         : [],
     };
   },
@@ -1050,6 +1093,9 @@ export const UpdateTaskRequest = {
     if (message.assignees?.length) {
       obj.assignees = message.assignees;
     }
+    if (message.dependencies?.length) {
+      obj.dependencies = message.dependencies.map((e) => Dependencies.toJSON(e));
+    }
     return obj;
   },
 
@@ -1069,6 +1115,7 @@ export const UpdateTaskRequest = {
     message.taskColumnId = object.taskColumnId ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
+    message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1219,6 +1266,125 @@ export const Subtasks = {
   },
 };
 
+function createBaseDependencies(): Dependencies {
+  return { id: undefined, from: "", to: "", type: "", lagTime: 0 };
+}
+
+export const Dependencies = {
+  encode(message: Dependencies, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== undefined) {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.from !== "") {
+      writer.uint32(18).string(message.from);
+    }
+    if (message.to !== "") {
+      writer.uint32(26).string(message.to);
+    }
+    if (message.type !== "") {
+      writer.uint32(34).string(message.type);
+    }
+    if (message.lagTime !== 0) {
+      writer.uint32(40).int32(message.lagTime);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Dependencies {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDependencies();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.from = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.to = reader.string();
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.type = reader.string();
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.lagTime = reader.int32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Dependencies {
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
+      from: isSet(object.from) ? globalThis.String(object.from) : "",
+      to: isSet(object.to) ? globalThis.String(object.to) : "",
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      lagTime: isSet(object.lagTime) ? globalThis.Number(object.lagTime) : 0,
+    };
+  },
+
+  toJSON(message: Dependencies): unknown {
+    const obj: any = {};
+    if (message.id !== undefined) {
+      obj.id = message.id;
+    }
+    if (message.from !== "") {
+      obj.from = message.from;
+    }
+    if (message.to !== "") {
+      obj.to = message.to;
+    }
+    if (message.type !== "") {
+      obj.type = message.type;
+    }
+    if (message.lagTime !== 0) {
+      obj.lagTime = Math.round(message.lagTime);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Dependencies>, I>>(base?: I): Dependencies {
+    return Dependencies.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Dependencies>, I>>(object: I): Dependencies {
+    const message = createBaseDependencies();
+    message.id = object.id ?? undefined;
+    message.from = object.from ?? "";
+    message.to = object.to ?? "";
+    message.type = object.type ?? "";
+    message.lagTime = object.lagTime ?? 0;
+    return message;
+  },
+};
+
 function createBaseTask(): Task {
   return {
     id: "",
@@ -1233,6 +1399,7 @@ function createBaseTask(): Task {
     taskColumnId: "",
     subtasks: [],
     assignees: [],
+    dependencies: [],
   };
 }
 
@@ -1273,6 +1440,9 @@ export const Task = {
     }
     for (const v of message.assignees) {
       writer.uint32(98).string(v!);
+    }
+    for (const v of message.dependencies) {
+      Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
     }
     return writer;
   },
@@ -1368,6 +1538,13 @@ export const Task = {
 
           message.assignees.push(reader.string());
           continue;
+        case 13:
+          if (tag !== 106) {
+            break;
+          }
+
+          message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1392,6 +1569,9 @@ export const Task = {
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
         ? object.assignees.map((e: any) => globalThis.String(e))
+        : [],
+      dependencies: globalThis.Array.isArray(object?.dependencies)
+        ? object.dependencies.map((e: any) => Dependencies.fromJSON(e))
         : [],
     };
   },
@@ -1434,6 +1614,9 @@ export const Task = {
     if (message.assignees?.length) {
       obj.assignees = message.assignees;
     }
+    if (message.dependencies?.length) {
+      obj.dependencies = message.dependencies.map((e) => Dependencies.toJSON(e));
+    }
     return obj;
   },
 
@@ -1454,6 +1637,7 @@ export const Task = {
     message.taskColumnId = object.taskColumnId ?? "";
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
+    message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
     return message;
   },
 };

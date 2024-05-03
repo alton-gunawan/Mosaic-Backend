@@ -87,6 +87,9 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'UpdateTask')
   async update(updateTaskDto: UpdateTaskRequest) {
+    this.logger.log('updateTaskDto');
+    this.logger.log(JSON.stringify(updateTaskDto));
+
     const response = await this.commandBus.execute(
       new UpdateTaskCommand(
         updateTaskDto.id,
@@ -100,6 +103,7 @@ export class TasksController {
         updateTaskDto?.taskColumnId,
         updateTaskDto?.subtasks,
         updateTaskDto?.assignees,
+        updateTaskDto?.dependencies,
       ),
     );
 

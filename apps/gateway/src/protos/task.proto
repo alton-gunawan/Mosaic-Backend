@@ -116,6 +116,7 @@ message Task {
     string taskColumnId = 10;
     repeated Subtasks subtasks = 11;
     repeated string assignees = 12;
+    repeated Dependencies dependencies = 13;
 }
 
 message TaskResponse {

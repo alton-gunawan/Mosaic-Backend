@@ -61,6 +61,9 @@ export class TasksController implements OnModuleInit {
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskRequest,
   ) {
+    this.logger.log('updateTaskDto:func()');
+    this.logger.log(JSON.stringify(updateTaskDto));
+
     return await this.taskService.UpdateTask({
       ...updateTaskDto,
       id: id,
