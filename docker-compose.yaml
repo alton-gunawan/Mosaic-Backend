@@ -64,3 +64,20 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=
       - AWS_SECRET_ACCESS_KEY=
+  resources:
+    container_name: resources-service
+    build:
+      context: .
+      args:
+        - APP=resources
+    restart: always
+    ports:
+      - 3004:3004
+    networks:
+      - app-tier
+    environment:
+      - MYSQL_DATABASE=resource_db
+      - MYSQL_HOST=mosaic.c9guk4sq42cw.us-east-1.rds.amazonaws.com
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=xGLdfj9LP0xttgUxjb7t
+      - MYSQL_TCP_PORT=3306

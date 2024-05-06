@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package resource;
+
+service ResourcesService {
+  rpc FindAllResources(FindAllResourcesRequest) returns (ResourcesResponse);
+  rpc FindOneResource(FindOneResourceRequest) returns (ResourceResponse);
+  rpc CreateResource(CreateResourceRequest) returns (ResourceResponse);
+  rpc UpdateResource(UpdateResourceRequest) returns (ResourceResponse);
+  rpc DeleteResource(DeleteResourceRequest) returns (ResourceResponse);
+  rpc AssignResource(AssignResourceRequest) returns (ResourceResponse);
+  rpc UnassignResource(UnassignResourceRequest) returns (ResourceResponse);
+  rpc FindAllResourceGroupsByCriteria(FindAllResourceGroupsByCriteriaRequest)
+      returns (ResourceGroupsResponse);
+  rpc CreateResourceGroup(CreateResourceGroupRequest)
+      returns (ResourceGroupResponse);
+  rpc UpdateResourceGroup(UpdateResourceGroupRequest)
+      returns (ResourceGroupResponse);
+  rpc DeleteResourceGroup(DeleteResourceGroupRequest)
+      returns (ResourceGroupResponse);
+}
+
+message Resource {
+  oneof Resource { int32 id = 1; }
+  string name = 2;
+  int32 unit = 3;
+  string projectId = 4;
+}
+
+message ResourcesResponse {
+  oneof ResourceResponse {
+    int32 statusCode = 1;
+    string message = 2;
+  }
+  repeated Resource data = 3;
+}
+
+message ResourceResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  Resource data = 3;
+}
+
+message FindAllResourcesRequest {
+  oneof Resource {
+    int32 id = 1;
+    string name = 2;
+    int32 unit = 3;
+    string projectId = 4;
+  }
+}
+
+message FindOneResourceRequest { int32 id = 1; }
+
+message CreateResourceRequest {
+  oneof Resource {
+    string name = 1;
+    int32 unit = 2;
+    string projectId = 3;
+  }
+}
+
+message UpdateResourceRequest {
+  int32 id = 1;
+  oneof Resource {
+    string name = 2;
+    int32 unit = 3;
+  }
+}
+
+message DeleteResourceRequest { int32 id = 1; }
+
+message ResourceGroup {
+  oneof ResourceGroup { int32 id = 1; }
+  string name = 2;
+  string description = 3;
+  string projectId = 4;
+  repeated Resource resource = 5;
+}
+
+message AssignResourceRequest {
+  oneof AssignResourceRequest {
+    int32 resourceId = 1;
+    string targetId = 2;
+    int32 unit = 3;
+    string projectId = 4;
+  }
+}
+message UnassignResourceRequest {
+  int32 id = 1;
+}
+
+message FindAllResourceGroupsByCriteriaRequest {
+  int32 id = 1;
+  string projectId = 2;
+}
+
+message CreateResourceGroupRequest {
+  string name = 1;
+  string description = 2;
+  string projectId = 3;
+}
+
+message UpdateResourceGroupRequest {
+  int32 id = 1;
+  oneof UpdateResourceGroupRequest {
+    string name = 2;
+    string description = 3;
+  }
+}
+
+message DeleteResourceGroupRequest { int32 id = 1; }
+
+message ResourceGroupsResponse {
+  oneof ResourceResponse {
+    int32 statusCode = 1;
+    string message = 2;
+  }
+  repeated ResourceGroup data = 3;
+}
+
+message ResourceGroupResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  oneof ResourceGroupResponse { ResourceGroup data = 3; }
+}
