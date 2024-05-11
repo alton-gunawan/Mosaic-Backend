@@ -8,18 +8,16 @@ export interface Empty {
 
 export interface FindAllTasksRequest {
   id?: string | undefined;
-  name?: string | undefined;
-  featuredImage?: string | undefined;
-  description?: string | undefined;
-  status?: string | undefined;
-  priority?: string | undefined;
-  startDate?: number | undefined;
-  endDate?: number | undefined;
   createdBy?: string | undefined;
   projectId?: string | undefined;
   taskColumnId?: string | undefined;
-  subtasks: Subtasks[];
-  assignees: string[];
+}
+
+export interface Resources {
+  id?: number | undefined;
+  name?: string | undefined;
+  unit?: number | undefined;
+  resourceGroupId?: number | undefined;
 }
 
 export interface FindAllTasksResponse {
@@ -40,8 +38,8 @@ export interface CreateTaskRequest {
   description?: string | undefined;
   status?: string | undefined;
   priority?: string | undefined;
-  startDate?: number | undefined;
-  endDate?: number | undefined;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
   createdBy?: string | undefined;
   projectId?: string | undefined;
   taskColumnId?: string | undefined;
@@ -57,12 +55,13 @@ export interface UpdateTaskRequest {
   description?: string | undefined;
   status?: string | undefined;
   priority?: string | undefined;
-  startDate?: number | undefined;
-  endDate?: number | undefined;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
   taskColumnId?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
   dependencies: Dependencies[];
+  resources: Resources[];
 }
 
 export interface DeleteTaskRequest {
@@ -90,8 +89,8 @@ export interface Task {
   description: string;
   status: string;
   priority: string;
-  startDate: number;
-  endDate: number;
+  startDate: string;
+  endDate: string;
   createdBy: string;
   taskColumnId: string;
   subtasks: Subtasks[];
@@ -117,6 +116,7 @@ export interface TaskColumn {
   limit: number;
   order: number;
   projectId: string;
+  task: Task[];
 }
 
 export interface TaskColumnResponse {
@@ -197,21 +197,7 @@ export const Empty = {
 };
 
 function createBaseFindAllTasksRequest(): FindAllTasksRequest {
-  return {
-    id: undefined,
-    name: undefined,
-    featuredImage: undefined,
-    description: undefined,
-    status: undefined,
-    priority: undefined,
-    startDate: undefined,
-    endDate: undefined,
-    createdBy: undefined,
-    projectId: undefined,
-    taskColumnId: undefined,
-    subtasks: [],
-    assignees: [],
-  };
+  return { id: undefined, createdBy: undefined, projectId: undefined, taskColumnId: undefined };
 }
 
 export const FindAllTasksRequest = {
@@ -219,41 +205,14 @@ export const FindAllTasksRequest = {
     if (message.id !== undefined) {
       writer.uint32(10).string(message.id);
     }
-    if (message.name !== undefined) {
-      writer.uint32(18).string(message.name);
-    }
-    if (message.featuredImage !== undefined) {
-      writer.uint32(26).string(message.featuredImage);
-    }
-    if (message.description !== undefined) {
-      writer.uint32(34).string(message.description);
-    }
-    if (message.status !== undefined) {
-      writer.uint32(42).string(message.status);
-    }
-    if (message.priority !== undefined) {
-      writer.uint32(50).string(message.priority);
-    }
-    if (message.startDate !== undefined) {
-      writer.uint32(56).int32(message.startDate);
-    }
-    if (message.endDate !== undefined) {
-      writer.uint32(64).int32(message.endDate);
-    }
     if (message.createdBy !== undefined) {
-      writer.uint32(74).string(message.createdBy);
+      writer.uint32(18).string(message.createdBy);
     }
     if (message.projectId !== undefined) {
-      writer.uint32(82).string(message.projectId);
+      writer.uint32(26).string(message.projectId);
     }
     if (message.taskColumnId !== undefined) {
-      writer.uint32(90).string(message.taskColumnId);
-    }
-    for (const v of message.subtasks) {
-      Subtasks.encode(v!, writer.uint32(98).fork()).ldelim();
-    }
-    for (const v of message.assignees) {
-      writer.uint32(106).string(v!);
+      writer.uint32(34).string(message.taskColumnId);
     }
     return writer;
   },
@@ -277,84 +236,21 @@ export const FindAllTasksRequest = {
             break;
           }
 
-          message.name = reader.string();
+          message.createdBy = reader.string();
           continue;
         case 3:
           if (tag !== 26) {
             break;
           }
 
-          message.featuredImage = reader.string();
+          message.projectId = reader.string();
           continue;
         case 4:
           if (tag !== 34) {
             break;
           }
 
-          message.description = reader.string();
-          continue;
-        case 5:
-          if (tag !== 42) {
-            break;
-          }
-
-          message.status = reader.string();
-          continue;
-        case 6:
-          if (tag !== 50) {
-            break;
-          }
-
-          message.priority = reader.string();
-          continue;
-        case 7:
-          if (tag !== 56) {
-            break;
-          }
-
-          message.startDate = reader.int32();
-          continue;
-        case 8:
-          if (tag !== 64) {
-            break;
-          }
-
-          message.endDate = reader.int32();
-          continue;
-        case 9:
-          if (tag !== 74) {
-            break;
-          }
-
-          message.createdBy = reader.string();
-          continue;
-        case 10:
-          if (tag !== 82) {
-            break;
-          }
-
-          message.projectId = reader.string();
-          continue;
-        case 11:
-          if (tag !== 90) {
-            break;
-          }
-
           message.taskColumnId = reader.string();
-          continue;
-        case 12:
-          if (tag !== 98) {
-            break;
-          }
-
-          message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
-          continue;
-        case 13:
-          if (tag !== 106) {
-            break;
-          }
-
-          message.assignees.push(reader.string());
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -368,20 +264,9 @@ export const FindAllTasksRequest = {
   fromJSON(object: any): FindAllTasksRequest {
     return {
       id: isSet(object.id) ? globalThis.String(object.id) : undefined,
-      name: isSet(object.name) ? globalThis.String(object.name) : undefined,
-      featuredImage: isSet(object.featuredImage) ? globalThis.String(object.featuredImage) : undefined,
-      description: isSet(object.description) ? globalThis.String(object.description) : undefined,
-      status: isSet(object.status) ? globalThis.String(object.status) : undefined,
-      priority: isSet(object.priority) ? globalThis.String(object.priority) : undefined,
-      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : undefined,
-      endDate: isSet(object.endDate) ? globalThis.Number(object.endDate) : undefined,
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
-      subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
-      assignees: globalThis.Array.isArray(object?.assignees)
-        ? object.assignees.map((e: any) => globalThis.String(e))
-        : [],
     };
   },
 
@@ -389,27 +274,6 @@ export const FindAllTasksRequest = {
     const obj: any = {};
     if (message.id !== undefined) {
       obj.id = message.id;
-    }
-    if (message.name !== undefined) {
-      obj.name = message.name;
-    }
-    if (message.featuredImage !== undefined) {
-      obj.featuredImage = message.featuredImage;
-    }
-    if (message.description !== undefined) {
-      obj.description = message.description;
-    }
-    if (message.status !== undefined) {
-      obj.status = message.status;
-    }
-    if (message.priority !== undefined) {
-      obj.priority = message.priority;
-    }
-    if (message.startDate !== undefined) {
-      obj.startDate = Math.round(message.startDate);
-    }
-    if (message.endDate !== undefined) {
-      obj.endDate = Math.round(message.endDate);
     }
     if (message.createdBy !== undefined) {
       obj.createdBy = message.createdBy;
@@ -420,12 +284,6 @@ export const FindAllTasksRequest = {
     if (message.taskColumnId !== undefined) {
       obj.taskColumnId = message.taskColumnId;
     }
-    if (message.subtasks?.length) {
-      obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
-    }
-    if (message.assignees?.length) {
-      obj.assignees = message.assignees;
-    }
     return obj;
   },
 
@@ -435,18 +293,113 @@ export const FindAllTasksRequest = {
   fromPartial<I extends Exact<DeepPartial<FindAllTasksRequest>, I>>(object: I): FindAllTasksRequest {
     const message = createBaseFindAllTasksRequest();
     message.id = object.id ?? undefined;
-    message.name = object.name ?? undefined;
-    message.featuredImage = object.featuredImage ?? undefined;
-    message.description = object.description ?? undefined;
-    message.status = object.status ?? undefined;
-    message.priority = object.priority ?? undefined;
-    message.startDate = object.startDate ?? undefined;
-    message.endDate = object.endDate ?? undefined;
     message.createdBy = object.createdBy ?? undefined;
     message.projectId = object.projectId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
-    message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
-    message.assignees = object.assignees?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseResources(): Resources {
+  return { id: undefined, name: undefined, unit: undefined, resourceGroupId: undefined };
+}
+
+export const Resources = {
+  encode(message: Resources, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== undefined) {
+      writer.uint32(8).int32(message.id);
+    }
+    if (message.name !== undefined) {
+      writer.uint32(18).string(message.name);
+    }
+    if (message.unit !== undefined) {
+      writer.uint32(24).int32(message.unit);
+    }
+    if (message.resourceGroupId !== undefined) {
+      writer.uint32(32).int32(message.resourceGroupId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Resources {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResources();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.int32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.unit = reader.int32();
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.resourceGroupId = reader.int32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Resources {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      name: isSet(object.name) ? globalThis.String(object.name) : undefined,
+      unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.Number(object.resourceGroupId) : undefined,
+    };
+  },
+
+  toJSON(message: Resources): unknown {
+    const obj: any = {};
+    if (message.id !== undefined) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.name !== undefined) {
+      obj.name = message.name;
+    }
+    if (message.unit !== undefined) {
+      obj.unit = Math.round(message.unit);
+    }
+    if (message.resourceGroupId !== undefined) {
+      obj.resourceGroupId = Math.round(message.resourceGroupId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Resources>, I>>(base?: I): Resources {
+    return Resources.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Resources>, I>>(object: I): Resources {
+    const message = createBaseResources();
+    message.id = object.id ?? undefined;
+    message.name = object.name ?? undefined;
+    message.unit = object.unit ?? undefined;
+    message.resourceGroupId = object.resourceGroupId ?? undefined;
     return message;
   },
 };
@@ -658,10 +611,10 @@ export const CreateTaskRequest = {
       writer.uint32(42).string(message.priority);
     }
     if (message.startDate !== undefined) {
-      writer.uint32(48).int32(message.startDate);
+      writer.uint32(50).string(message.startDate);
     }
     if (message.endDate !== undefined) {
-      writer.uint32(56).int32(message.endDate);
+      writer.uint32(58).string(message.endDate);
     }
     if (message.createdBy !== undefined) {
       writer.uint32(66).string(message.createdBy);
@@ -727,18 +680,18 @@ export const CreateTaskRequest = {
           message.priority = reader.string();
           continue;
         case 6:
-          if (tag !== 48) {
+          if (tag !== 50) {
             break;
           }
 
-          message.startDate = reader.int32();
+          message.startDate = reader.string();
           continue;
         case 7:
-          if (tag !== 56) {
+          if (tag !== 58) {
             break;
           }
 
-          message.endDate = reader.int32();
+          message.endDate = reader.string();
           continue;
         case 8:
           if (tag !== 66) {
@@ -798,8 +751,8 @@ export const CreateTaskRequest = {
       description: isSet(object.description) ? globalThis.String(object.description) : undefined,
       status: isSet(object.status) ? globalThis.String(object.status) : undefined,
       priority: isSet(object.priority) ? globalThis.String(object.priority) : undefined,
-      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : undefined,
-      endDate: isSet(object.endDate) ? globalThis.Number(object.endDate) : undefined,
+      startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : undefined,
+      endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : undefined,
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
@@ -831,10 +784,10 @@ export const CreateTaskRequest = {
       obj.priority = message.priority;
     }
     if (message.startDate !== undefined) {
-      obj.startDate = Math.round(message.startDate);
+      obj.startDate = message.startDate;
     }
     if (message.endDate !== undefined) {
-      obj.endDate = Math.round(message.endDate);
+      obj.endDate = message.endDate;
     }
     if (message.createdBy !== undefined) {
       obj.createdBy = message.createdBy;
@@ -893,6 +846,7 @@ function createBaseUpdateTaskRequest(): UpdateTaskRequest {
     subtasks: [],
     assignees: [],
     dependencies: [],
+    resources: [],
   };
 }
 
@@ -917,10 +871,10 @@ export const UpdateTaskRequest = {
       writer.uint32(50).string(message.priority);
     }
     if (message.startDate !== undefined) {
-      writer.uint32(56).int32(message.startDate);
+      writer.uint32(58).string(message.startDate);
     }
     if (message.endDate !== undefined) {
-      writer.uint32(64).int32(message.endDate);
+      writer.uint32(66).string(message.endDate);
     }
     if (message.taskColumnId !== undefined) {
       writer.uint32(74).string(message.taskColumnId);
@@ -933,6 +887,9 @@ export const UpdateTaskRequest = {
     }
     for (const v of message.dependencies) {
       Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
+    }
+    for (const v of message.resources) {
+      Resources.encode(v!, writer.uint32(114).fork()).ldelim();
     }
     return writer;
   },
@@ -987,18 +944,18 @@ export const UpdateTaskRequest = {
           message.priority = reader.string();
           continue;
         case 7:
-          if (tag !== 56) {
+          if (tag !== 58) {
             break;
           }
 
-          message.startDate = reader.int32();
+          message.startDate = reader.string();
           continue;
         case 8:
-          if (tag !== 64) {
+          if (tag !== 66) {
             break;
           }
 
-          message.endDate = reader.int32();
+          message.endDate = reader.string();
           continue;
         case 9:
           if (tag !== 74) {
@@ -1028,6 +985,13 @@ export const UpdateTaskRequest = {
 
           message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
           continue;
+        case 14:
+          if (tag !== 114) {
+            break;
+          }
+
+          message.resources.push(Resources.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1045,8 +1009,8 @@ export const UpdateTaskRequest = {
       description: isSet(object.description) ? globalThis.String(object.description) : undefined,
       status: isSet(object.status) ? globalThis.String(object.status) : undefined,
       priority: isSet(object.priority) ? globalThis.String(object.priority) : undefined,
-      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : undefined,
-      endDate: isSet(object.endDate) ? globalThis.Number(object.endDate) : undefined,
+      startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : undefined,
+      endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
@@ -1054,6 +1018,9 @@ export const UpdateTaskRequest = {
         : [],
       dependencies: globalThis.Array.isArray(object?.dependencies)
         ? object.dependencies.map((e: any) => Dependencies.fromJSON(e))
+        : [],
+      resources: globalThis.Array.isArray(object?.resources)
+        ? object.resources.map((e: any) => Resources.fromJSON(e))
         : [],
     };
   },
@@ -1079,10 +1046,10 @@ export const UpdateTaskRequest = {
       obj.priority = message.priority;
     }
     if (message.startDate !== undefined) {
-      obj.startDate = Math.round(message.startDate);
+      obj.startDate = message.startDate;
     }
     if (message.endDate !== undefined) {
-      obj.endDate = Math.round(message.endDate);
+      obj.endDate = message.endDate;
     }
     if (message.taskColumnId !== undefined) {
       obj.taskColumnId = message.taskColumnId;
@@ -1095,6 +1062,9 @@ export const UpdateTaskRequest = {
     }
     if (message.dependencies?.length) {
       obj.dependencies = message.dependencies.map((e) => Dependencies.toJSON(e));
+    }
+    if (message.resources?.length) {
+      obj.resources = message.resources.map((e) => Resources.toJSON(e));
     }
     return obj;
   },
@@ -1116,6 +1086,7 @@ export const UpdateTaskRequest = {
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
     message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
+    message.resources = object.resources?.map((e) => Resources.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1393,8 +1364,8 @@ function createBaseTask(): Task {
     description: "",
     status: "",
     priority: "",
-    startDate: 0,
-    endDate: 0,
+    startDate: "",
+    endDate: "",
     createdBy: "",
     taskColumnId: "",
     subtasks: [],
@@ -1423,11 +1394,11 @@ export const Task = {
     if (message.priority !== "") {
       writer.uint32(50).string(message.priority);
     }
-    if (message.startDate !== 0) {
-      writer.uint32(56).int32(message.startDate);
+    if (message.startDate !== "") {
+      writer.uint32(58).string(message.startDate);
     }
-    if (message.endDate !== 0) {
-      writer.uint32(64).int32(message.endDate);
+    if (message.endDate !== "") {
+      writer.uint32(66).string(message.endDate);
     }
     if (message.createdBy !== "") {
       writer.uint32(74).string(message.createdBy);
@@ -1497,18 +1468,18 @@ export const Task = {
           message.priority = reader.string();
           continue;
         case 7:
-          if (tag !== 56) {
+          if (tag !== 58) {
             break;
           }
 
-          message.startDate = reader.int32();
+          message.startDate = reader.string();
           continue;
         case 8:
-          if (tag !== 64) {
+          if (tag !== 66) {
             break;
           }
 
-          message.endDate = reader.int32();
+          message.endDate = reader.string();
           continue;
         case 9:
           if (tag !== 74) {
@@ -1562,8 +1533,8 @@ export const Task = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       status: isSet(object.status) ? globalThis.String(object.status) : "",
       priority: isSet(object.priority) ? globalThis.String(object.priority) : "",
-      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : 0,
-      endDate: isSet(object.endDate) ? globalThis.Number(object.endDate) : 0,
+      startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : "",
+      endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : "",
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : "",
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
@@ -1596,11 +1567,11 @@ export const Task = {
     if (message.priority !== "") {
       obj.priority = message.priority;
     }
-    if (message.startDate !== 0) {
-      obj.startDate = Math.round(message.startDate);
+    if (message.startDate !== "") {
+      obj.startDate = message.startDate;
     }
-    if (message.endDate !== 0) {
-      obj.endDate = Math.round(message.endDate);
+    if (message.endDate !== "") {
+      obj.endDate = message.endDate;
     }
     if (message.createdBy !== "") {
       obj.createdBy = message.createdBy;
@@ -1631,8 +1602,8 @@ export const Task = {
     message.description = object.description ?? "";
     message.status = object.status ?? "";
     message.priority = object.priority ?? "";
-    message.startDate = object.startDate ?? 0;
-    message.endDate = object.endDate ?? 0;
+    message.startDate = object.startDate ?? "";
+    message.endDate = object.endDate ?? "";
     message.createdBy = object.createdBy ?? "";
     message.taskColumnId = object.taskColumnId ?? "";
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
@@ -1821,7 +1792,7 @@ export const TasksResponse = {
 };
 
 function createBaseTaskColumn(): TaskColumn {
-  return { id: "", name: "", limit: 0, order: 0, projectId: "" };
+  return { id: "", name: "", limit: 0, order: 0, projectId: "", task: [] };
 }
 
 export const TaskColumn = {
@@ -1840,6 +1811,9 @@ export const TaskColumn = {
     }
     if (message.projectId !== "") {
       writer.uint32(42).string(message.projectId);
+    }
+    for (const v of message.task) {
+      Task.encode(v!, writer.uint32(50).fork()).ldelim();
     }
     return writer;
   },
@@ -1886,6 +1860,13 @@ export const TaskColumn = {
 
           message.projectId = reader.string();
           continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.task.push(Task.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1902,6 +1883,7 @@ export const TaskColumn = {
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       order: isSet(object.order) ? globalThis.Number(object.order) : 0,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      task: globalThis.Array.isArray(object?.task) ? object.task.map((e: any) => Task.fromJSON(e)) : [],
     };
   },
 
@@ -1922,6 +1904,9 @@ export const TaskColumn = {
     if (message.projectId !== "") {
       obj.projectId = message.projectId;
     }
+    if (message.task?.length) {
+      obj.task = message.task.map((e) => Task.toJSON(e));
+    }
     return obj;
   },
 
@@ -1935,6 +1920,7 @@ export const TaskColumn = {
     message.limit = object.limit ?? 0;
     message.order = object.order ?? 0;
     message.projectId = object.projectId ?? "";
+    message.task = object.task?.map((e) => Task.fromPartial(e)) || [];
     return message;
   },
 };

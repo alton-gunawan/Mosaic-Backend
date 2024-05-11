@@ -37,12 +37,14 @@ export interface CreateResourceRequest {
   name?: string | undefined;
   unit?: number | undefined;
   projectId?: string | undefined;
+  resourceGroupId?: string | undefined;
 }
 
 export interface UpdateResourceRequest {
   id: number;
   name?: string | undefined;
   unit?: number | undefined;
+  resourceGroupId?: string | undefined;
 }
 
 export interface DeleteResourceRequest {
@@ -59,9 +61,8 @@ export interface ResourceGroup {
 
 export interface AssignResourceRequest {
   resourceId?: number | undefined;
-  targetId?: string | undefined;
+  taskId?: number | undefined;
   unit?: number | undefined;
-  projectId?: string | undefined;
 }
 
 export interface UnassignResourceRequest {
@@ -545,7 +546,7 @@ export const FindOneResourceRequest = {
 };
 
 function createBaseCreateResourceRequest(): CreateResourceRequest {
-  return { name: undefined, unit: undefined, projectId: undefined };
+  return { name: undefined, unit: undefined, projectId: undefined, resourceGroupId: undefined };
 }
 
 export const CreateResourceRequest = {
@@ -558,6 +559,9 @@ export const CreateResourceRequest = {
     }
     if (message.projectId !== undefined) {
       writer.uint32(26).string(message.projectId);
+    }
+    if (message.resourceGroupId !== undefined) {
+      writer.uint32(34).string(message.resourceGroupId);
     }
     return writer;
   },
@@ -590,6 +594,13 @@ export const CreateResourceRequest = {
 
           message.projectId = reader.string();
           continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.resourceGroupId = reader.string();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -604,6 +615,7 @@ export const CreateResourceRequest = {
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
       unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.String(object.resourceGroupId) : undefined,
     };
   },
 
@@ -618,6 +630,9 @@ export const CreateResourceRequest = {
     if (message.projectId !== undefined) {
       obj.projectId = message.projectId;
     }
+    if (message.resourceGroupId !== undefined) {
+      obj.resourceGroupId = message.resourceGroupId;
+    }
     return obj;
   },
 
@@ -629,12 +644,13 @@ export const CreateResourceRequest = {
     message.name = object.name ?? undefined;
     message.unit = object.unit ?? undefined;
     message.projectId = object.projectId ?? undefined;
+    message.resourceGroupId = object.resourceGroupId ?? undefined;
     return message;
   },
 };
 
 function createBaseUpdateResourceRequest(): UpdateResourceRequest {
-  return { id: 0, name: undefined, unit: undefined };
+  return { id: 0, name: undefined, unit: undefined, resourceGroupId: undefined };
 }
 
 export const UpdateResourceRequest = {
@@ -647,6 +663,9 @@ export const UpdateResourceRequest = {
     }
     if (message.unit !== undefined) {
       writer.uint32(24).int32(message.unit);
+    }
+    if (message.resourceGroupId !== undefined) {
+      writer.uint32(34).string(message.resourceGroupId);
     }
     return writer;
   },
@@ -679,6 +698,13 @@ export const UpdateResourceRequest = {
 
           message.unit = reader.int32();
           continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.resourceGroupId = reader.string();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -693,6 +719,7 @@ export const UpdateResourceRequest = {
       id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
       unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.String(object.resourceGroupId) : undefined,
     };
   },
 
@@ -707,6 +734,9 @@ export const UpdateResourceRequest = {
     if (message.unit !== undefined) {
       obj.unit = Math.round(message.unit);
     }
+    if (message.resourceGroupId !== undefined) {
+      obj.resourceGroupId = message.resourceGroupId;
+    }
     return obj;
   },
 
@@ -718,6 +748,7 @@ export const UpdateResourceRequest = {
     message.id = object.id ?? 0;
     message.name = object.name ?? undefined;
     message.unit = object.unit ?? undefined;
+    message.resourceGroupId = object.resourceGroupId ?? undefined;
     return message;
   },
 };
@@ -899,7 +930,7 @@ export const ResourceGroup = {
 };
 
 function createBaseAssignResourceRequest(): AssignResourceRequest {
-  return { resourceId: undefined, targetId: undefined, unit: undefined, projectId: undefined };
+  return { resourceId: undefined, taskId: undefined, unit: undefined };
 }
 
 export const AssignResourceRequest = {
@@ -907,14 +938,11 @@ export const AssignResourceRequest = {
     if (message.resourceId !== undefined) {
       writer.uint32(8).int32(message.resourceId);
     }
-    if (message.targetId !== undefined) {
-      writer.uint32(18).string(message.targetId);
+    if (message.taskId !== undefined) {
+      writer.uint32(16).int32(message.taskId);
     }
     if (message.unit !== undefined) {
       writer.uint32(24).int32(message.unit);
-    }
-    if (message.projectId !== undefined) {
-      writer.uint32(34).string(message.projectId);
     }
     return writer;
   },
@@ -934,11 +962,11 @@ export const AssignResourceRequest = {
           message.resourceId = reader.int32();
           continue;
         case 2:
-          if (tag !== 18) {
+          if (tag !== 16) {
             break;
           }
 
-          message.targetId = reader.string();
+          message.taskId = reader.int32();
           continue;
         case 3:
           if (tag !== 24) {
@@ -946,13 +974,6 @@ export const AssignResourceRequest = {
           }
 
           message.unit = reader.int32();
-          continue;
-        case 4:
-          if (tag !== 34) {
-            break;
-          }
-
-          message.projectId = reader.string();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -966,9 +987,8 @@ export const AssignResourceRequest = {
   fromJSON(object: any): AssignResourceRequest {
     return {
       resourceId: isSet(object.resourceId) ? globalThis.Number(object.resourceId) : undefined,
-      targetId: isSet(object.targetId) ? globalThis.String(object.targetId) : undefined,
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : undefined,
       unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
     };
   },
 
@@ -977,14 +997,11 @@ export const AssignResourceRequest = {
     if (message.resourceId !== undefined) {
       obj.resourceId = Math.round(message.resourceId);
     }
-    if (message.targetId !== undefined) {
-      obj.targetId = message.targetId;
+    if (message.taskId !== undefined) {
+      obj.taskId = Math.round(message.taskId);
     }
     if (message.unit !== undefined) {
       obj.unit = Math.round(message.unit);
-    }
-    if (message.projectId !== undefined) {
-      obj.projectId = message.projectId;
     }
     return obj;
   },
@@ -995,9 +1012,8 @@ export const AssignResourceRequest = {
   fromPartial<I extends Exact<DeepPartial<AssignResourceRequest>, I>>(object: I): AssignResourceRequest {
     const message = createBaseAssignResourceRequest();
     message.resourceId = object.resourceId ?? undefined;
-    message.targetId = object.targetId ?? undefined;
+    message.taskId = object.taskId ?? undefined;
     message.unit = object.unit ?? undefined;
-    message.projectId = object.projectId ?? undefined;
     return message;
   },
 };

@@ -16,9 +16,8 @@ export class CreateResourceHandler
   async execute(command: CreateResourceCommand): Promise<Resource> {
     return await this.resourceRepository.save({
       ...command,
-      resourceGroup: {
-        id: command.resourceGroup,
-      },
+      project_id: command.projectId,
+      resource_group: { id: +command.resourceGroupId },
     });
   }
 }

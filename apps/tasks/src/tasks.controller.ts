@@ -20,6 +20,7 @@ import { DeleteTaskCommand } from './application/command/impl/delete-task.comman
 import { CreateTaskColumnCommand } from './application/command/impl/create-task-column.command';
 import { FindAllTaskColumnQuery } from './application/queries/impl/find-all-task-column.query';
 import { DeleteTaskColumnCommand } from './application/command/impl/delete-task-column.command';
+import { Task } from './entity/task.entity';
 
 @Controller()
 export class TasksController {
@@ -34,24 +35,26 @@ export class TasksController {
   async findAll(findAllTaskDto?: FindAllTasksRequest) {
     const response = await this.queryBus.execute(
       new FindAllTasksQuery(
-        findAllTaskDto?.id,
-        findAllTaskDto?.name,
-        findAllTaskDto?.featuredImage,
-        findAllTaskDto?.description,
-        findAllTaskDto?.status,
-        findAllTaskDto?.priority,
-        findAllTaskDto?.startDate,
-        findAllTaskDto?.endDate,
+        +findAllTaskDto?.id,
         findAllTaskDto?.createdBy,
         findAllTaskDto?.projectId,
         findAllTaskDto?.taskColumnId,
       ),
     );
 
+    this.logger.log('FindAllTasks');
+    this.logger.log(response);
+
     return TasksResponse.create({
       message: 'func:FindAllTasks()',
       statusCode: 200,
-      data: response,
+      data: {
+        ...response.map((value: Task) => ({
+          ...value,
+          // startDate: new Date(value.startDate).getTime(),
+          // endDate: new Date(value.endDate).getTime(),
+        })),
+      },
     });
   }
 
@@ -73,8 +76,6 @@ export class TasksController {
         ),
       );
 
-      this.logger.log('CreateTask():', response);
-
       return TaskResponse.create({
         message: 'func:CreateTask()',
         statusCode: 201,
@@ -87,30 +88,24 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'UpdateTask')
   async update(updateTaskDto: UpdateTaskRequest) {
-    this.logger.log('updateTaskDto');
-    this.logger.log(JSON.stringify(updateTaskDto));
-
     const response = await this.commandBus.execute(
       new UpdateTaskCommand(
-        updateTaskDto.id,
+        +updateTaskDto.id,
         updateTaskDto?.name,
         updateTaskDto?.featuredImage,
         updateTaskDto?.description,
-        updateTaskDto?.status,
         updateTaskDto?.priority,
-        updateTaskDto?.startDate,
-        updateTaskDto?.endDate,
+        new Date(updateTaskDto?.startDate),
+        new Date(updateTaskDto?.endDate),
         updateTaskDto?.taskColumnId,
-        updateTaskDto?.subtasks,
-        updateTaskDto?.assignees,
-        updateTaskDto?.dependencies,
+        updateTaskDto?.resources,
       ),
     );
 
-    return TasksResponse.create({
+    return TaskResponse.create({
       message: 'func:UpdateTask()',
       statusCode: 200,
-      data: [],
+      data: response,
     });
   }
 
@@ -120,21 +115,27 @@ export class TasksController {
       new DeleteTaskCommand(deleteTaskDto.id),
     );
 
-    return TasksResponse.create({
+    return TaskResponse.create({
       message: 'func:DeleteTask()',
       statusCode: 200,
-      data: [],
+      data: response,
     });
   }
 
   @GrpcMethod('TasksService', 'FindAllTaskColumn')
   async findAllTaskColumn(findAllTaskColumnDto: FindAllTaskColumnRequest) {
+    const response = await this.queryBus.execute(
+      new FindAllTaskColumnQuery(findAllTaskColumnDto.projectId),
+    );
+
+    this.logger.log('func:FindAllTaskColumn()');
+    this.logger.log(JSON.stringify(response));
+    this.logger.log('-------------------');
+
     return TaskColumnsResponse.create({
       message: 'func:FindAllTaskColumn()',
       statusCode: 200,
-      data: await this.queryBus.execute(
-        new FindAllTaskColumnQuery(findAllTaskColumnDto.projectId),
-      ),
+      data: response,
     });
   }
 

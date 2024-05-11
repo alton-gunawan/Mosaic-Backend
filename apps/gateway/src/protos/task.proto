@@ -19,19 +19,19 @@ message Empty {}
 message FindAllTasksRequest {
     oneof Task {
         string id = 1;
-        string name = 2;
-        string featuredImage = 3;
-        string description = 4;
-        string status = 5;
-        string priority = 6;
-        int32 startDate = 7;
-        int32 endDate = 8;
-        string createdBy = 9;
-        string projectId = 10;
-        string taskColumnId = 11;
+        string createdBy = 2;
+        string projectId = 3;
+        string taskColumnId = 4;
     }
-    repeated Subtasks subtasks = 12;
-    repeated string assignees = 13;
+}
+
+message Resources {
+    oneof Resources {
+        int32 id = 1;
+        string name = 2;
+        int32 unit = 3;
+        int32 resourceGroupId = 4;
+    }
 }
 
 message FindAllTasksResponse {
@@ -53,8 +53,8 @@ message CreateTaskRequest {
         string description = 3;
         string status = 4;
         string priority = 5;
-        int32 startDate = 6;
-        int32 endDate = 7;
+        string startDate = 6;
+        string endDate = 7;
         string createdBy = 8;
         string projectId = 9;
         string taskColumnId = 10;
@@ -72,13 +72,14 @@ message UpdateTaskRequest {
         string description = 4;
         string status = 5;
         string priority = 6;
-        int32 startDate = 7;
-        int32 endDate = 8;
+        string startDate = 7;
+        string endDate = 8;
         string taskColumnId = 9;
     }
     repeated Subtasks subtasks = 10;
     repeated string assignees = 12;
     repeated Dependencies dependencies = 13;
+    repeated Resources resources = 14;
 }
 
 message DeleteTaskRequest {
@@ -110,8 +111,8 @@ message Task {
     string description = 4;
     string status = 5;
     string priority = 6;
-    int32 startDate = 7;
-    int32 endDate = 8;
+    string startDate = 7;
+    string endDate = 8;
     string createdBy = 9;
     string taskColumnId = 10;
     repeated Subtasks subtasks = 11;
@@ -139,6 +140,7 @@ message TaskColumn {
     int32 limit = 3;
     int32 order = 4;
     string projectId = 5;
+    repeated Task task = 6;
 }
 
 message TaskColumnResponse {

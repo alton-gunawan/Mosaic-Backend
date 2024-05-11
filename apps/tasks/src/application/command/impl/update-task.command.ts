@@ -1,18 +1,16 @@
 import { ICommand } from '@nestjs/cqrs';
+import { Resources } from 'apps/tasks/src/protos/task';
 
 export class UpdateTaskCommand implements ICommand {
   constructor(
-    public id: string,
+    public readonly id: number,
     public name?: string,
     public featuredImage?: string,
     public description?: string,
-    public status?: string,
     public priority?: string,
-    public startDate?: number,
-    public endDate?: number,
+    public startDate?: Date,
+    public endDate?: Date,
     public taskColumnId?: string,
-    public subtasks?: Array<any>,
-    public assignees?: Array<string>,
-    public dependencies?: Array<any>,
+    public resources?: Resources[],
   ) {}
 }

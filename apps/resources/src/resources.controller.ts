@@ -61,7 +61,7 @@ export class ResourcesController {
         findAllResourcesDto?.projectId,
       ),
     );
-    
+
     return ResourcesResponse.create({
       message: 'func:FindAllResources()',
       statusCode: 200,
@@ -71,10 +71,10 @@ export class ResourcesController {
 
   @GrpcMethod('ResourcesService', 'CreateResource')
   async create(createResourceDto: CreateResourceRequest) {
-    const { name, unit, projectId } = createResourceDto;
+    const { name, unit, resourceGroupId, projectId } = createResourceDto;
 
     const response = await this.commandBus.execute(
-      new CreateResourceCommand(name, unit, projectId),
+      new CreateResourceCommand(name, unit, resourceGroupId, projectId),
     );
 
     return ResourceResponse.create({
@@ -116,11 +116,15 @@ export class ResourcesController {
 
   @GrpcMethod('ResourcesService', 'AssignResource')
   async assignResource(assignResourceDto: AssignResourceRequest) {
-    const { projectId, resourceId, targetId, unit } = assignResourceDto;
+    const { resourceId, taskId, unit } = assignResourceDto;
 
     const response = await this.commandBus.execute(
-      new AssignResourceCommand(resourceId, +targetId, unit, projectId),
+      new AssignResourceCommand(resourceId, taskId, unit),
     );
+
+    this.logger.log('AssignResource');
+    this.logger.log(JSON.stringify(assignResourceDto));
+    this.logger.log(JSON.stringify(response));
 
     return ResourceResponse.create({
       message: 'func:AssignResource()',

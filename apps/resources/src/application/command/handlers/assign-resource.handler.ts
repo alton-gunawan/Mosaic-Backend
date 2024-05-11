@@ -14,6 +14,10 @@ export class AssignResourceHandler
   ) {}
 
   async execute(command: AssignResourceCommand): Promise<ResourceAllocation> {
-    return await this.resourceAllocationRepository.save({ ...command });
+    return await this.resourceAllocationRepository.save({
+      resource: { id: command.resourceId },
+      taskId: command.taskId,
+      unit: command?.unit,
+    });
   }
 }

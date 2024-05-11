@@ -44,9 +44,14 @@ export class TasksController implements OnModuleInit {
   public async listTask(
     @Query() findAllTaskDto?: FindAllTasksRequest,
   ): Promise<any> {
-    return await this.taskService.FindAllTasks({
+    const response = this.taskService.FindAllTasks({
       ...findAllTaskDto,
     });
+
+    this.logger.log('findAllTaskDto: result()');
+    this.logger.log(JSON.stringify(response));
+
+    return response;
   }
 
   @Post()

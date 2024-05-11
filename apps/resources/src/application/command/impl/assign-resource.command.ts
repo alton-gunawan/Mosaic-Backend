@@ -2,19 +2,16 @@ import { ICommand } from '@nestjs/cqrs';
 
 export class AssignResourceCommand implements ICommand {
   public readonly resourceId: number;
-  public readonly targetId: number;
+  public readonly taskId: number;
   public readonly unit: number;
-  public readonly projectId: string;
 
   constructor(
     resourceId: number,
-    targetId: number,
+    taskId: number,
     unit: number,
-    projectId: string,
   ) {
     this.resourceId = resourceId;
-    this.targetId = targetId;
+    this.taskId = taskId;
     this.unit = unit;
-    this.projectId = projectId;
   }
 }

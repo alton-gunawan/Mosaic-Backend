@@ -57,6 +57,7 @@ message CreateResourceRequest {
     string name = 1;
     int32 unit = 2;
     string projectId = 3;
+    string resourceGroupId = 4;
   }
 }
 
@@ -65,6 +66,7 @@ message UpdateResourceRequest {
   oneof Resource {
     string name = 2;
     int32 unit = 3;
+    string resourceGroupId = 4;
   }
 }
 
@@ -81,9 +83,8 @@ message ResourceGroup {
 message AssignResourceRequest {
   oneof AssignResourceRequest {
     int32 resourceId = 1;
-    string targetId = 2;
+    int32 taskId = 2;
     int32 unit = 3;
-    string projectId = 4;
   }
 }
 message UnassignResourceRequest {

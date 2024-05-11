@@ -20,6 +20,8 @@ import { UnassignResourceHandler } from './application/command/handlers/unassign
 import { CreateResourceGroupHandler } from './application/command/handlers/create-resource-group.handler';
 import { UpdateResourceGroupHandler } from './application/command/handlers/update-resource-group.handler';
 import { DeleteResourceGroupHandler } from './application/command/handlers/delete-resource-group.handler';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { join } from 'path';
 
 const application = [
   CreateResourceHandler,
@@ -42,6 +44,17 @@ const application = [
     CqrsModule,
     TypeOrmModule.forFeature([Resource, ResourceGroup, ResourceAllocation]),
     databaseProviders,
+    ClientsModule.register([
+      {
+        name: 'RESOURCE_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          url: 'resources-service:3004',
+          package: 'resource',
+          protoPath: join(__dirname, '/protos/resource.proto'),
+        },
+      },
+    ]),
   ],
   controllers: [ResourcesController],
   providers: [ResourcesService, ...application],

@@ -7,6 +7,7 @@ import { ProjectsController } from './controllers/project.controller';
 import { TasksController } from './controllers/task.controller';
 import { ResourcesController } from './controllers/resource.controller';
 import { ResourceGroupsController } from './controllers/resource-group.controller';
+import { TaskGroupController } from './controllers/task-group.controller';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ResourceGroupsController } from './controllers/resource-group.controlle
     TasksController,
     ResourcesController,
     ResourceGroupsController,
+    TaskGroupController,
   ],
   providers: [GatewayService],
 })

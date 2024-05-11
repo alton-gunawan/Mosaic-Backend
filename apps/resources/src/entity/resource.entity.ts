@@ -45,10 +45,9 @@ export class Resource {
     () => ResourceAllocation,
     (resourceAllocation) => resourceAllocation.resource,
   )
-  // @JoinColumn({ name: 'id', referencedColumnName: 'resource_id' })
   resource_allocation: ResourceAllocation[] | undefined;
 
   @ManyToOne(() => ResourceGroup, (resourceGroup) => resourceGroup.resource)
   @JoinColumn({ name: 'resource_group_id', referencedColumnName: 'id' })
-  resource_group: ResourceGroup[] | undefined;
+  resource_group: ResourceGroup | undefined;
 }

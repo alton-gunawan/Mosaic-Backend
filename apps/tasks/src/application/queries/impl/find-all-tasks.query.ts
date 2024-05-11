@@ -1,15 +1,8 @@
-import { FindAllTasksRequest } from '../../../protos/task';
+import { IQuery } from '@nestjs/cqrs';
 
-export class FindAllTasksQuery {
+export class FindAllTasksQuery implements IQuery {
   constructor(
-    public readonly id: string,
-    public name: string,
-    public featuredImage: string,
-    public description: string,
-    public status: string,
-    public priority: string,
-    public startDate: number,
-    public endDate: number,
+    public readonly id: number,
     public createdBy: string,
     public projectId: string,
     public taskColumnId: string,

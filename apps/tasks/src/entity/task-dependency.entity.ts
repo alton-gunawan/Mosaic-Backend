@@ -5,29 +5,25 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
   CreateDateColumn,
-  OneToMany,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Resource } from './resource.entity';
+import { Task } from './task.entity';
 
 @Entity()
-export class ResourceGroup {
+export class TaskDependency {
   @PrimaryGeneratedColumn()
   id: number | undefined;
-
-  @Column({ type: 'text' })
-  name: string | undefined;
-
-  @Column({
-    type: 'text',
-    nullable: true,
-  })
-  description: string | undefined;
 
   @Column({
     type: 'varchar',
   })
-  project_id: string | undefined;
+  type: string | undefined;
+
+  @Column({
+    type: 'varchar',
+  })
+  offset: string | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at: string | undefined;
@@ -35,6 +31,10 @@ export class ResourceGroup {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updated_at: string | undefined;
 
-  @OneToMany(() => Resource, (resource) => resource.resource_group)
-  resource: Resource[] | undefined;
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deleted_at: string | undefined;
+
+  @ManyToOne(() => Task, (task) => task.task_dependency)
+  @JoinColumn({ name: 'task_dependency_id', referencedColumnName: 'id' })
+  task: Task[] | undefined;
 }
