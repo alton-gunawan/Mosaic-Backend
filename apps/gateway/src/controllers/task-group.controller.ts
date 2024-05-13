@@ -11,7 +11,10 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { UpdateResourceGroupRequest } from '../protos/resource';
+import {
+  ResourcesService,
+  UpdateResourceGroupRequest,
+} from '../protos/resource';
 import { ClientGrpc } from '@nestjs/microservices';
 import {
   CreateTaskColumnRequest,
@@ -26,22 +29,73 @@ import {
 export class TaskGroupController implements OnModuleInit {
   private readonly logger = new Logger(TaskGroupController.name);
   private tasksService: TasksService;
+  private resourcesService: ResourcesService;
 
   constructor(
     @Inject('TASK_PACKAGE')
+    private readonly taskPackageClient: ClientGrpc,
+    @Inject('RESOURCE_PACKAGE')
     private readonly resourcePackageClient: ClientGrpc,
   ) {}
 
   onModuleInit() {
-    this.tasksService = this.resourcePackageClient.getService('TasksService');
+    this.tasksService = this.taskPackageClient.getService('TasksService');
+    this.resourcesService =
+      this.resourcePackageClient.getService('ResourcesService');
   }
 
   @Get()
-  public async listResource(
+  public async listTaskGroup(
     @Query() findAllTaskGroupDto?: FindAllTaskColumnRequest,
   ): Promise<any> {
-    return await this.tasksService.FindAllTaskColumn({
-      ...findAllTaskGroupDto,
+    return new Promise((resolve) => {
+      this.tasksService
+        .FindAllTaskColumn({
+          ...findAllTaskGroupDto,
+        })
+        .subscribe((taskGroupResult) => {
+          if (taskGroupResult.data && taskGroupResult.data.length > 0) {
+            const taskIdArr = taskGroupResult.data.flatMap((taskColumn) =>
+              taskColumn.task.map((item) => +item.id),
+            );
+            return new Promise((resourcesServiceResolve) => {
+              this.resourcesService
+                .FindAllResources({
+                  taskId: taskIdArr,
+                })
+                .subscribe((resourceResult) => {
+                  const resourceAllocations = resourceResult.data.reduce(
+                    (acc, resource) => {
+                      if (resource.resourceAllocation) {
+                        return acc.concat(resource.resourceAllocation);
+                      } else {
+                        return acc;
+                      }
+                    },
+                    [],
+                  );
+
+                  const response = taskGroupResult.data.map((taskColumn) => ({
+                    ...taskColumn,
+                    task:
+                      taskColumn?.task.map((task) => ({
+                        ...task,
+                        resources:
+                          resourceAllocations.filter(
+                            (resourceAllocationItem) =>
+                              resourceAllocationItem.taskId === task.id,
+                          ) || [],
+                      })) || [],
+                  }));
+
+                  resourcesServiceResolve(taskGroupResult);
+                  resolve(response);
+                });
+            });
+          } else {
+            resolve(taskGroupResult);
+          }
+        });
     });
   }
 

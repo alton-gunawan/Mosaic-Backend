@@ -3,7 +3,7 @@ syntax = "proto3";
 package resource;
 
 service ResourcesService {
-  rpc FindAllResources(FindAllResourcesRequest) returns (ResourcesResponse);
+  rpc FindAllResources(FindAllResourcesRequest) returns (stream ResourcesResponse);
   rpc FindOneResource(FindOneResourceRequest) returns (ResourceResponse);
   rpc CreateResource(CreateResourceRequest) returns (ResourceResponse);
   rpc UpdateResource(UpdateResourceRequest) returns (ResourceResponse);
@@ -18,6 +18,14 @@ service ResourcesService {
       returns (ResourceGroupResponse);
   rpc DeleteResourceGroup(DeleteResourceGroupRequest)
       returns (ResourceGroupResponse);
+  rpc FindAllResourceAllocationByCriteria(FindAllResourceAllocationByCriteriaRequest)
+      returns (ResourceResponse);
+}
+
+message ResourceAllocation {
+  int32 id = 1;
+  int32 unit = 2;
+  string taskId = 3; 
 }
 
 message Resource {
@@ -25,6 +33,7 @@ message Resource {
   string name = 2;
   int32 unit = 3;
   string projectId = 4;
+  repeated ResourceAllocation resourceAllocation = 5;
 }
 
 message ResourcesResponse {
@@ -48,6 +57,7 @@ message FindAllResourcesRequest {
     int32 unit = 3;
     string projectId = 4;
   }
+  repeated int32 taskId = 5;
 }
 
 message FindOneResourceRequest { int32 id = 1; }
@@ -89,6 +99,13 @@ message AssignResourceRequest {
 }
 message UnassignResourceRequest {
   int32 id = 1;
+}
+
+message FindAllResourceAllocationByCriteriaRequest {
+  oneof Resource {
+    int32 id = 1;
+  }
+  repeated int32 taskId = 2;
 }
 
 message FindAllResourceGroupsByCriteriaRequest {

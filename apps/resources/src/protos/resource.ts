@@ -1,13 +1,22 @@
 /* eslint-disable */
 import * as _m0 from "protobufjs/minimal";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 export const protobufPackage = "resource";
+
+export interface ResourceAllocation {
+  id: number;
+  unit: number;
+  taskId: string;
+}
 
 export interface Resource {
   id?: number | undefined;
   name: string;
   unit: number;
   projectId: string;
+  resourceAllocation: ResourceAllocation[];
 }
 
 export interface ResourcesResponse {
@@ -27,6 +36,7 @@ export interface FindAllResourcesRequest {
   name?: string | undefined;
   unit?: number | undefined;
   projectId?: string | undefined;
+  taskId: number[];
 }
 
 export interface FindOneResourceRequest {
@@ -69,6 +79,11 @@ export interface UnassignResourceRequest {
   id: number;
 }
 
+export interface FindAllResourceAllocationByCriteriaRequest {
+  id?: number | undefined;
+  taskId: number[];
+}
+
 export interface FindAllResourceGroupsByCriteriaRequest {
   id: number;
   projectId: string;
@@ -102,8 +117,97 @@ export interface ResourceGroupResponse {
   data?: ResourceGroup | undefined;
 }
 
+function createBaseResourceAllocation(): ResourceAllocation {
+  return { id: 0, unit: 0, taskId: "" };
+}
+
+export const ResourceAllocation = {
+  encode(message: ResourceAllocation, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
+    }
+    if (message.unit !== 0) {
+      writer.uint32(16).int32(message.unit);
+    }
+    if (message.taskId !== "") {
+      writer.uint32(26).string(message.taskId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ResourceAllocation {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResourceAllocation();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.int32();
+          continue;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.unit = reader.int32();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.taskId = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ResourceAllocation {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      unit: isSet(object.unit) ? globalThis.Number(object.unit) : 0,
+      taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
+    };
+  },
+
+  toJSON(message: ResourceAllocation): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.unit !== 0) {
+      obj.unit = Math.round(message.unit);
+    }
+    if (message.taskId !== "") {
+      obj.taskId = message.taskId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ResourceAllocation>, I>>(base?: I): ResourceAllocation {
+    return ResourceAllocation.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ResourceAllocation>, I>>(object: I): ResourceAllocation {
+    const message = createBaseResourceAllocation();
+    message.id = object.id ?? 0;
+    message.unit = object.unit ?? 0;
+    message.taskId = object.taskId ?? "";
+    return message;
+  },
+};
+
 function createBaseResource(): Resource {
-  return { id: undefined, name: "", unit: 0, projectId: "" };
+  return { id: undefined, name: "", unit: 0, projectId: "", resourceAllocation: [] };
 }
 
 export const Resource = {
@@ -119,6 +223,9 @@ export const Resource = {
     }
     if (message.projectId !== "") {
       writer.uint32(34).string(message.projectId);
+    }
+    for (const v of message.resourceAllocation) {
+      ResourceAllocation.encode(v!, writer.uint32(42).fork()).ldelim();
     }
     return writer;
   },
@@ -158,6 +265,13 @@ export const Resource = {
 
           message.projectId = reader.string();
           continue;
+        case 5:
+          if (tag !== 42) {
+            break;
+          }
+
+          message.resourceAllocation.push(ResourceAllocation.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -173,6 +287,9 @@ export const Resource = {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       unit: isSet(object.unit) ? globalThis.Number(object.unit) : 0,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      resourceAllocation: globalThis.Array.isArray(object?.resourceAllocation)
+        ? object.resourceAllocation.map((e: any) => ResourceAllocation.fromJSON(e))
+        : [],
     };
   },
 
@@ -190,6 +307,9 @@ export const Resource = {
     if (message.projectId !== "") {
       obj.projectId = message.projectId;
     }
+    if (message.resourceAllocation?.length) {
+      obj.resourceAllocation = message.resourceAllocation.map((e) => ResourceAllocation.toJSON(e));
+    }
     return obj;
   },
 
@@ -202,6 +322,7 @@ export const Resource = {
     message.name = object.name ?? "";
     message.unit = object.unit ?? 0;
     message.projectId = object.projectId ?? "";
+    message.resourceAllocation = object.resourceAllocation?.map((e) => ResourceAllocation.fromPartial(e)) || [];
     return message;
   },
 };
@@ -385,7 +506,7 @@ export const ResourceResponse = {
 };
 
 function createBaseFindAllResourcesRequest(): FindAllResourcesRequest {
-  return { id: undefined, name: undefined, unit: undefined, projectId: undefined };
+  return { id: undefined, name: undefined, unit: undefined, projectId: undefined, taskId: [] };
 }
 
 export const FindAllResourcesRequest = {
@@ -402,6 +523,11 @@ export const FindAllResourcesRequest = {
     if (message.projectId !== undefined) {
       writer.uint32(34).string(message.projectId);
     }
+    writer.uint32(42).fork();
+    for (const v of message.taskId) {
+      writer.int32(v);
+    }
+    writer.ldelim();
     return writer;
   },
 
@@ -440,6 +566,23 @@ export const FindAllResourcesRequest = {
 
           message.projectId = reader.string();
           continue;
+        case 5:
+          if (tag === 40) {
+            message.taskId.push(reader.int32());
+
+            continue;
+          }
+
+          if (tag === 42) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.taskId.push(reader.int32());
+            }
+
+            continue;
+          }
+
+          break;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -455,6 +598,7 @@ export const FindAllResourcesRequest = {
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
       unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
+      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.Number(e)) : [],
     };
   },
 
@@ -472,6 +616,9 @@ export const FindAllResourcesRequest = {
     if (message.projectId !== undefined) {
       obj.projectId = message.projectId;
     }
+    if (message.taskId?.length) {
+      obj.taskId = message.taskId.map((e) => Math.round(e));
+    }
     return obj;
   },
 
@@ -484,6 +631,7 @@ export const FindAllResourcesRequest = {
     message.name = object.name ?? undefined;
     message.unit = object.unit ?? undefined;
     message.projectId = object.projectId ?? undefined;
+    message.taskId = object.taskId?.map((e) => e) || [];
     return message;
   },
 };
@@ -1075,6 +1223,96 @@ export const UnassignResourceRequest = {
   },
 };
 
+function createBaseFindAllResourceAllocationByCriteriaRequest(): FindAllResourceAllocationByCriteriaRequest {
+  return { id: undefined, taskId: [] };
+}
+
+export const FindAllResourceAllocationByCriteriaRequest = {
+  encode(message: FindAllResourceAllocationByCriteriaRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== undefined) {
+      writer.uint32(8).int32(message.id);
+    }
+    writer.uint32(18).fork();
+    for (const v of message.taskId) {
+      writer.int32(v);
+    }
+    writer.ldelim();
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): FindAllResourceAllocationByCriteriaRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFindAllResourceAllocationByCriteriaRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.int32();
+          continue;
+        case 2:
+          if (tag === 16) {
+            message.taskId.push(reader.int32());
+
+            continue;
+          }
+
+          if (tag === 18) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.taskId.push(reader.int32());
+            }
+
+            continue;
+          }
+
+          break;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FindAllResourceAllocationByCriteriaRequest {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.Number(e)) : [],
+    };
+  },
+
+  toJSON(message: FindAllResourceAllocationByCriteriaRequest): unknown {
+    const obj: any = {};
+    if (message.id !== undefined) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.taskId?.length) {
+      obj.taskId = message.taskId.map((e) => Math.round(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FindAllResourceAllocationByCriteriaRequest>, I>>(
+    base?: I,
+  ): FindAllResourceAllocationByCriteriaRequest {
+    return FindAllResourceAllocationByCriteriaRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FindAllResourceAllocationByCriteriaRequest>, I>>(
+    object: I,
+  ): FindAllResourceAllocationByCriteriaRequest {
+    const message = createBaseFindAllResourceAllocationByCriteriaRequest();
+    message.id = object.id ?? undefined;
+    message.taskId = object.taskId?.map((e) => e) || [];
+    return message;
+  },
+};
+
 function createBaseFindAllResourceGroupsByCriteriaRequest(): FindAllResourceGroupsByCriteriaRequest {
   return { id: 0, projectId: "" };
 }
@@ -1569,7 +1807,7 @@ export const ResourceGroupResponse = {
 };
 
 export interface ResourcesService {
-  FindAllResources(request: FindAllResourcesRequest): Promise<ResourcesResponse>;
+  FindAllResources(request: FindAllResourcesRequest): Observable<ResourcesResponse>;
   FindOneResource(request: FindOneResourceRequest): Promise<ResourceResponse>;
   CreateResource(request: CreateResourceRequest): Promise<ResourceResponse>;
   UpdateResource(request: UpdateResourceRequest): Promise<ResourceResponse>;
@@ -1580,6 +1818,7 @@ export interface ResourcesService {
   CreateResourceGroup(request: CreateResourceGroupRequest): Promise<ResourceGroupResponse>;
   UpdateResourceGroup(request: UpdateResourceGroupRequest): Promise<ResourceGroupResponse>;
   DeleteResourceGroup(request: DeleteResourceGroupRequest): Promise<ResourceGroupResponse>;
+  FindAllResourceAllocationByCriteria(request: FindAllResourceAllocationByCriteriaRequest): Promise<ResourceResponse>;
 }
 
 export const ResourcesServiceServiceName = "resource.ResourcesService";
@@ -1600,11 +1839,12 @@ export class ResourcesServiceClientImpl implements ResourcesService {
     this.CreateResourceGroup = this.CreateResourceGroup.bind(this);
     this.UpdateResourceGroup = this.UpdateResourceGroup.bind(this);
     this.DeleteResourceGroup = this.DeleteResourceGroup.bind(this);
+    this.FindAllResourceAllocationByCriteria = this.FindAllResourceAllocationByCriteria.bind(this);
   }
-  FindAllResources(request: FindAllResourcesRequest): Promise<ResourcesResponse> {
+  FindAllResources(request: FindAllResourcesRequest): Observable<ResourcesResponse> {
     const data = FindAllResourcesRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FindAllResources", data);
-    return promise.then((data) => ResourcesResponse.decode(_m0.Reader.create(data)));
+    const result = this.rpc.serverStreamingRequest(this.service, "FindAllResources", data);
+    return result.pipe(map((data) => ResourcesResponse.decode(_m0.Reader.create(data))));
   }
 
   FindOneResource(request: FindOneResourceRequest): Promise<ResourceResponse> {
@@ -1666,10 +1906,19 @@ export class ResourcesServiceClientImpl implements ResourcesService {
     const promise = this.rpc.request(this.service, "DeleteResourceGroup", data);
     return promise.then((data) => ResourceGroupResponse.decode(_m0.Reader.create(data)));
   }
+
+  FindAllResourceAllocationByCriteria(request: FindAllResourceAllocationByCriteriaRequest): Promise<ResourceResponse> {
+    const data = FindAllResourceAllocationByCriteriaRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "FindAllResourceAllocationByCriteria", data);
+    return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
+  }
 }
 
 interface Rpc {
   request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
+  clientStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Promise<Uint8Array>;
+  serverStreamingRequest(service: string, method: string, data: Uint8Array): Observable<Uint8Array>;
+  bidirectionalStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Observable<Uint8Array>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

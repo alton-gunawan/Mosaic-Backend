@@ -13,11 +13,11 @@ export class AssignResourceHandler
     private readonly resourceAllocationRepository: Repository<ResourceAllocation>,
   ) {}
 
-  async execute(command: AssignResourceCommand): Promise<ResourceAllocation> {
+  async execute(command: AssignResourceCommand): Promise<any> {
     return await this.resourceAllocationRepository.save({
-      resource: { id: command.resourceId },
-      taskId: command.taskId,
-      unit: command?.unit,
+      resource: { id: 1 },
+      taskId: 2,
+      unit: 15,
     });
   }
 }

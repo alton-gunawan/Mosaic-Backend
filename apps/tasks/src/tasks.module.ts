@@ -31,27 +31,22 @@ const EventHandlers = [TaskUpdatedHandler];
 
 @Module({
   imports: [
-    CqrsModule,
-    TypeOrmModule.forFeature([Task, TaskGroup, TaskDependency, TaskAssignees]),
-    databaseProviders,
     ClientsModule.register([
       {
         name: 'RESOURCE_PACKAGE',
         transport: Transport.GRPC,
         options: {
-          url: 'resources-service:3004',
+          url: '0.0.0.0:3004',
           package: 'resource',
           protoPath: join(__dirname, '/protos/resource.proto'),
         },
       },
     ]),
+    CqrsModule,
+    TypeOrmModule.forFeature([Task, TaskGroup, TaskDependency, TaskAssignees]),
+    databaseProviders,
   ],
   controllers: [TasksController],
-  providers: [
-    TasksService,
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-  ],
+  providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers],
 })
 export class TasksModule {}

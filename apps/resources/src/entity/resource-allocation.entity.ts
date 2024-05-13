@@ -5,8 +5,8 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
   CreateDateColumn,
+  ManyToOne,
   JoinColumn,
-  ManyToMany,
 } from 'typeorm';
 import { Resource } from './resource.entity';
 
@@ -32,7 +32,7 @@ export class ResourceAllocation {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt?: string | undefined;
 
-  @ManyToMany(() => Resource, (resource) => resource.resource_allocation)
+  @ManyToOne(() => Resource, (resource) => resource.resource_allocation)
   @JoinColumn({ name: 'resource_id', referencedColumnName: 'id' })
   resource: Resource | undefined;
 }

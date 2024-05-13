@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetResourceByCriteriaQuery } from '../impl/get-resource-by-criteria.query';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Resource } from '../../../entity/resource.entity';
 
 @QueryHandler(GetResourceByCriteriaQuery)
@@ -14,8 +14,16 @@ export class GetResourceByCriteriaHandler
   ) {}
 
   async execute(command: GetResourceByCriteriaQuery): Promise<Resource[]> {
-    return await this.resourceRepository.findBy({
-      ...command,
+    return await this.resourceRepository.find({
+      relations: ['resource_allocation'],
+      // where: {
+      //   resource_allocation: {
+      //     taskId:
+      //       typeof command.taskId == 'number'
+      //         ? command.taskId
+      //         : In(command.taskId),
+      //   },
+      // },
     });
   }
 }

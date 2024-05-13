@@ -5,12 +5,14 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
   CreateDateColumn,
-  OneToMany,
   ManyToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
 } from 'typeorm';
-import { ResourceAllocation } from './resource-allocation.entity';
 import { ResourceGroup } from './resource-group.entity';
+import { ResourceAllocation } from './resource-allocation.entity';
 
 @Entity()
 export class Resource {

@@ -1,5 +1,7 @@
 /* eslint-disable */
 import * as _m0 from "protobufjs/minimal";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 export const protobufPackage = "task";
 
@@ -15,9 +17,8 @@ export interface FindAllTasksRequest {
 
 export interface Resources {
   id?: number | undefined;
-  name?: string | undefined;
   unit?: number | undefined;
-  resourceGroupId?: number | undefined;
+  taskId?: number | undefined;
 }
 
 export interface FindAllTasksResponse {
@@ -96,6 +97,7 @@ export interface Task {
   subtasks: Subtasks[];
   assignees: string[];
   dependencies: Dependencies[];
+  resources: Resources[];
 }
 
 export interface TaskResponse {
@@ -301,7 +303,7 @@ export const FindAllTasksRequest = {
 };
 
 function createBaseResources(): Resources {
-  return { id: undefined, name: undefined, unit: undefined, resourceGroupId: undefined };
+  return { id: undefined, unit: undefined, taskId: undefined };
 }
 
 export const Resources = {
@@ -309,14 +311,11 @@ export const Resources = {
     if (message.id !== undefined) {
       writer.uint32(8).int32(message.id);
     }
-    if (message.name !== undefined) {
-      writer.uint32(18).string(message.name);
-    }
     if (message.unit !== undefined) {
-      writer.uint32(24).int32(message.unit);
+      writer.uint32(16).int32(message.unit);
     }
-    if (message.resourceGroupId !== undefined) {
-      writer.uint32(32).int32(message.resourceGroupId);
+    if (message.taskId !== undefined) {
+      writer.uint32(24).int32(message.taskId);
     }
     return writer;
   },
@@ -336,25 +335,18 @@ export const Resources = {
           message.id = reader.int32();
           continue;
         case 2:
-          if (tag !== 18) {
+          if (tag !== 16) {
             break;
           }
 
-          message.name = reader.string();
+          message.unit = reader.int32();
           continue;
         case 3:
           if (tag !== 24) {
             break;
           }
 
-          message.unit = reader.int32();
-          continue;
-        case 4:
-          if (tag !== 32) {
-            break;
-          }
-
-          message.resourceGroupId = reader.int32();
+          message.taskId = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -368,9 +360,8 @@ export const Resources = {
   fromJSON(object: any): Resources {
     return {
       id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
-      name: isSet(object.name) ? globalThis.String(object.name) : undefined,
       unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
-      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.Number(object.resourceGroupId) : undefined,
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : undefined,
     };
   },
 
@@ -379,14 +370,11 @@ export const Resources = {
     if (message.id !== undefined) {
       obj.id = Math.round(message.id);
     }
-    if (message.name !== undefined) {
-      obj.name = message.name;
-    }
     if (message.unit !== undefined) {
       obj.unit = Math.round(message.unit);
     }
-    if (message.resourceGroupId !== undefined) {
-      obj.resourceGroupId = Math.round(message.resourceGroupId);
+    if (message.taskId !== undefined) {
+      obj.taskId = Math.round(message.taskId);
     }
     return obj;
   },
@@ -397,9 +385,8 @@ export const Resources = {
   fromPartial<I extends Exact<DeepPartial<Resources>, I>>(object: I): Resources {
     const message = createBaseResources();
     message.id = object.id ?? undefined;
-    message.name = object.name ?? undefined;
     message.unit = object.unit ?? undefined;
-    message.resourceGroupId = object.resourceGroupId ?? undefined;
+    message.taskId = object.taskId ?? undefined;
     return message;
   },
 };
@@ -1371,6 +1358,7 @@ function createBaseTask(): Task {
     subtasks: [],
     assignees: [],
     dependencies: [],
+    resources: [],
   };
 }
 
@@ -1414,6 +1402,9 @@ export const Task = {
     }
     for (const v of message.dependencies) {
       Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
+    }
+    for (const v of message.resources) {
+      Resources.encode(v!, writer.uint32(114).fork()).ldelim();
     }
     return writer;
   },
@@ -1516,6 +1507,13 @@ export const Task = {
 
           message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
           continue;
+        case 14:
+          if (tag !== 114) {
+            break;
+          }
+
+          message.resources.push(Resources.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1543,6 +1541,9 @@ export const Task = {
         : [],
       dependencies: globalThis.Array.isArray(object?.dependencies)
         ? object.dependencies.map((e: any) => Dependencies.fromJSON(e))
+        : [],
+      resources: globalThis.Array.isArray(object?.resources)
+        ? object.resources.map((e: any) => Resources.fromJSON(e))
         : [],
     };
   },
@@ -1588,6 +1589,9 @@ export const Task = {
     if (message.dependencies?.length) {
       obj.dependencies = message.dependencies.map((e) => Dependencies.toJSON(e));
     }
+    if (message.resources?.length) {
+      obj.resources = message.resources.map((e) => Resources.toJSON(e));
+    }
     return obj;
   },
 
@@ -1609,6 +1613,7 @@ export const Task = {
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
     message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
+    message.resources = object.resources?.map((e) => Resources.fromPartial(e)) || [];
     return message;
   },
 };
@@ -2433,7 +2438,7 @@ export interface TasksService {
   CreateTask(request: CreateTaskRequest): Promise<TaskResponse>;
   UpdateTask(request: UpdateTaskRequest): Promise<TaskResponse>;
   DeleteTask(request: DeleteTaskRequest): Promise<TaskResponse>;
-  FindAllTaskColumn(request: FindAllTaskColumnRequest): Promise<TaskColumnsResponse>;
+  FindAllTaskColumn(request: FindAllTaskColumnRequest): Observable<TaskColumnsResponse>;
   CreateTaskColumn(request: CreateTaskColumnRequest): Promise<TaskColumnResponse>;
   UpdateTaskColumn(request: UpdateTaskColumnRequest): Promise<TaskColumnResponse>;
   RemoveTaskColumn(request: RemoveTaskColumnRequest): Promise<TaskColumnResponse>;
@@ -2486,10 +2491,10 @@ export class TasksServiceClientImpl implements TasksService {
     return promise.then((data) => TaskResponse.decode(_m0.Reader.create(data)));
   }
 
-  FindAllTaskColumn(request: FindAllTaskColumnRequest): Promise<TaskColumnsResponse> {
+  FindAllTaskColumn(request: FindAllTaskColumnRequest): Observable<TaskColumnsResponse> {
     const data = FindAllTaskColumnRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FindAllTaskColumn", data);
-    return promise.then((data) => TaskColumnsResponse.decode(_m0.Reader.create(data)));
+    const result = this.rpc.serverStreamingRequest(this.service, "FindAllTaskColumn", data);
+    return result.pipe(map((data) => TaskColumnsResponse.decode(_m0.Reader.create(data))));
   }
 
   CreateTaskColumn(request: CreateTaskColumnRequest): Promise<TaskColumnResponse> {
@@ -2513,6 +2518,9 @@ export class TasksServiceClientImpl implements TasksService {
 
 interface Rpc {
   request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
+  clientStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Promise<Uint8Array>;
+  serverStreamingRequest(service: string, method: string, data: Uint8Array): Observable<Uint8Array>;
+  bidirectionalStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Observable<Uint8Array>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

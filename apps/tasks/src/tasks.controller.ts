@@ -25,7 +25,6 @@ import { Task } from './entity/task.entity';
 @Controller()
 export class TasksController {
   private readonly logger = new Logger(TasksController.name);
-
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
@@ -79,7 +78,7 @@ export class TasksController {
       return TaskResponse.create({
         message: 'func:CreateTask()',
         statusCode: 201,
-        data: response,
+        data: response as any,
       });
     } catch (error) {
       throw new HttpException(error.message, error.status);
@@ -88,25 +87,33 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'UpdateTask')
   async update(updateTaskDto: UpdateTaskRequest) {
-    const response = await this.commandBus.execute(
-      new UpdateTaskCommand(
-        +updateTaskDto.id,
-        updateTaskDto?.name,
-        updateTaskDto?.featuredImage,
-        updateTaskDto?.description,
-        updateTaskDto?.priority,
-        new Date(updateTaskDto?.startDate),
-        new Date(updateTaskDto?.endDate),
-        updateTaskDto?.taskColumnId,
-        updateTaskDto?.resources,
-      ),
-    );
+    try {
+      const response = await this.commandBus.execute(
+        new UpdateTaskCommand(
+          +updateTaskDto.id,
+          updateTaskDto?.name,
+          updateTaskDto?.featuredImage,
+          updateTaskDto?.description,
+          updateTaskDto?.priority,
+          new Date(updateTaskDto?.startDate),
+          new Date(updateTaskDto?.endDate),
+          updateTaskDto?.taskColumnId,
+          updateTaskDto?.resources,
+        ),
+      );
 
-    return TaskResponse.create({
-      message: 'func:UpdateTask()',
-      statusCode: 200,
-      data: response,
-    });
+      return TaskResponse.create({
+        message: 'func:UpdateTask()',
+        statusCode: 200,
+        data: response,
+      });
+    } catch (error) {
+      return TaskResponse.create({
+        message: 'func:UpdateTask():error',
+        statusCode: 400,
+        data: error,
+      });
+    }
   }
 
   @GrpcMethod('TasksService', 'DeleteTask')
@@ -127,10 +134,6 @@ export class TasksController {
     const response = await this.queryBus.execute(
       new FindAllTaskColumnQuery(findAllTaskColumnDto.projectId),
     );
-
-    this.logger.log('func:FindAllTaskColumn()');
-    this.logger.log(JSON.stringify(response));
-    this.logger.log('-------------------');
 
     return TaskColumnsResponse.create({
       message: 'func:FindAllTaskColumn()',

@@ -42,8 +42,16 @@ export class ResourcesController implements OnModuleInit {
   public async listResource(
     @Query() findAllResourceDto?: FindAllResourcesRequest,
   ): Promise<any> {
-    return await this.resourcesService.FindAllResources({
-      ...findAllResourceDto,
+    const taskId =
+      JSON.parse(findAllResourceDto?.taskId as unknown as string) || [];
+
+    return new Promise((resolve) => {
+      resolve(
+        this.resourcesService.FindAllResources({
+          ...findAllResourceDto,
+          taskId: taskId,
+        }),
+      );
     });
   }
 

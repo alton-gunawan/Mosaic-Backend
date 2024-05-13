@@ -10,6 +10,7 @@ import {
   FindAllResourceGroupsByCriteriaRequest,
   FindAllResourcesRequest,
   FindOneResourceRequest,
+  Resource,
   ResourceGroupResponse,
   ResourceGroupsResponse,
   ResourceResponse,
@@ -59,18 +60,27 @@ export class ResourcesController {
       new GetResourceByCriteriaQuery(
         findAllResourcesDto?.id,
         findAllResourcesDto?.projectId,
+        findAllResourcesDto?.taskId || [],
       ),
     );
 
     return ResourcesResponse.create({
       message: 'func:FindAllResources()',
       statusCode: 200,
-      data: response || [],
+      data:
+        response.map((resource) => ({
+          id: resource.id,
+          name: resource.name,
+          unit: resource.unit,
+          projectId: resource.project_id,
+          resourceAllocation: resource.resource_allocation,
+        })) || [],
     });
   }
 
   @GrpcMethod('ResourcesService', 'CreateResource')
   async create(createResourceDto: CreateResourceRequest) {
+    this.logger.log('func:CreateResource()');
     const { name, unit, resourceGroupId, projectId } = createResourceDto;
 
     const response = await this.commandBus.execute(
