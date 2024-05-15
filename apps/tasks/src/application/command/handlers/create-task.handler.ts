@@ -16,9 +16,13 @@ export class CreateTaskHandler
   async execute(command: CreateTaskCommand): Promise<any> {
     return await this.taskRepository.save({
       ...command,
-      startDate: new Date(command.startDate).toISOString(),
-      endDate: new Date(command.startDate).toISOString(),
-      task_group: { id: +command.taskColumnId },
+      startDate: command.startDate
+        ? new Date(command?.startDate)
+        : null,
+      endDate: command.endDate
+        ? new Date(command?.endDate)
+        : null,
+      task_group: command.taskColumnId ? { id: +command.taskColumnId } : null,
     });
   }
 }

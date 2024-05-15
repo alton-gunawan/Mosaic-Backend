@@ -1812,7 +1812,7 @@ export interface ResourcesService {
   CreateResource(request: CreateResourceRequest): Promise<ResourceResponse>;
   UpdateResource(request: UpdateResourceRequest): Promise<ResourceResponse>;
   DeleteResource(request: DeleteResourceRequest): Promise<ResourceResponse>;
-  AssignResource(request: AssignResourceRequest): Promise<ResourceResponse>;
+  AssignResource(request: AssignResourceRequest): Observable<ResourceResponse>;
   UnassignResource(request: UnassignResourceRequest): Promise<ResourceResponse>;
   FindAllResourceGroupsByCriteria(request: FindAllResourceGroupsByCriteriaRequest): Promise<ResourceGroupsResponse>;
   CreateResourceGroup(request: CreateResourceGroupRequest): Promise<ResourceGroupResponse>;
@@ -1871,10 +1871,10 @@ export class ResourcesServiceClientImpl implements ResourcesService {
     return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
   }
 
-  AssignResource(request: AssignResourceRequest): Promise<ResourceResponse> {
+  AssignResource(request: AssignResourceRequest): Observable<ResourceResponse> {
     const data = AssignResourceRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "AssignResource", data);
-    return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
+    const result = this.rpc.serverStreamingRequest(this.service, "AssignResource", data);
+    return result.pipe(map((data) => ResourceResponse.decode(_m0.Reader.create(data))));
   }
 
   UnassignResource(request: UnassignResourceRequest): Promise<ResourceResponse> {

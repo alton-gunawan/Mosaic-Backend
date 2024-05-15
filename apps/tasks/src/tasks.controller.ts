@@ -72,8 +72,12 @@ export class TasksController {
           createTaskDto?.createdBy,
           createTaskDto?.projectId,
           createTaskDto?.taskColumnId,
+          createTaskDto?.predecessor,
         ),
       );
+
+      Logger.log('CreateTask');
+      Logger.log(createTaskDto);
 
       return TaskResponse.create({
         message: 'func:CreateTask()',
@@ -99,6 +103,7 @@ export class TasksController {
           new Date(updateTaskDto?.endDate),
           updateTaskDto?.taskColumnId,
           updateTaskDto?.resources,
+          updateTaskDto?.predecessor,
         ),
       );
 
@@ -153,10 +158,13 @@ export class TasksController {
       ),
     );
 
-    return TasksResponse.create({
+    Logger.log('CreateTaskColumn');
+    Logger.log(JSON.stringify(response));
+
+    return TaskResponse.create({
       message: 'func:CreateTaskColumn()',
       statusCode: 201,
-      data: [],
+      data: response,
     });
   }
 

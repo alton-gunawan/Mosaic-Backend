@@ -29,17 +29,12 @@ export class TaskUpdatedHandler
     //     await this.resourcePackageClient.getService('ResourcesService'),
     //   ),
     // );
-    const response = await this.resourceService.AssignResource({
-      resourceId: event.resourceId,
-      taskId: event.taskId,
-      unit: event.unit,
-    });
+    // const response = await this.resourceService.AssignResource({
+    //   resourceId: event.resourceId,
+    //   taskId: event.taskId,
+    //   unit: event.unit,
+    // });
 
     return;
-
-    this.logger.log('TaskUpdatedEvent handled successfully!');
-    this.logger.log(response);
-    this.logger.log(response?.statusCode);
-    this.logger.log(JSON.stringify(response));
   }
 }

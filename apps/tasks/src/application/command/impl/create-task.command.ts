@@ -12,5 +12,6 @@ export class CreateTaskCommand implements ICommand {
     public createdBy: string,
     public projectId: string,
     public taskColumnId: string,
+    public predecessor: string,
   ) {}
 }

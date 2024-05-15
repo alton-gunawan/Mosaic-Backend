@@ -12,5 +12,6 @@ export class UpdateTaskCommand implements ICommand {
     public endDate?: Date,
     public taskColumnId?: string,
     public resources?: Resources[],
+    public predecessor?: string,
   ) {}
 }

@@ -55,16 +55,19 @@ export class TaskGroupController implements OnModuleInit {
         })
         .subscribe((taskGroupResult) => {
           if (taskGroupResult.data && taskGroupResult.data.length > 0) {
-            const taskIdArr = taskGroupResult.data.flatMap((taskColumn) =>
-              taskColumn.task.map((item) => +item.id),
-            );
+            const taskIdArr = taskGroupResult?.data
+              ? taskGroupResult?.data?.flatMap((taskColumn) =>
+                  taskColumn?.task?.map((item) => +item.id),
+                )
+              : [];
+
             return new Promise((resourcesServiceResolve) => {
               this.resourcesService
                 .FindAllResources({
-                  taskId: taskIdArr,
+                  taskId: taskIdArr.filter((e) => e != null),
                 })
                 .subscribe((resourceResult) => {
-                  const resourceAllocations = resourceResult.data.reduce(
+                  const resourceAllocations = resourceResult?.data?.reduce(
                     (acc, resource) => {
                       if (resource.resourceAllocation) {
                         return acc.concat(resource.resourceAllocation);
@@ -75,10 +78,13 @@ export class TaskGroupController implements OnModuleInit {
                     [],
                   );
 
-                  const response = taskGroupResult.data.map((taskColumn) => ({
+                  Logger.log('resourceAllocations');
+                  Logger.log(resourceAllocations);
+
+                  const response = taskGroupResult?.data?.map((taskColumn) => ({
                     ...taskColumn,
                     task:
-                      taskColumn?.task.map((task) => ({
+                      taskColumn?.task?.map((task) => ({
                         ...task,
                         resources:
                           resourceAllocations.filter(
@@ -89,7 +95,10 @@ export class TaskGroupController implements OnModuleInit {
                   }));
 
                   resourcesServiceResolve(taskGroupResult);
-                  resolve(response);
+                  resolve({
+                    ...taskGroupResult,
+                    data: response,
+                  });
                 });
             });
           } else {

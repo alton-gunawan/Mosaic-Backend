@@ -5,7 +5,6 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
   CreateDateColumn,
-  JoinColumn,
   OneToMany,
 } from 'typeorm';
 import { Task } from './task.entity';
@@ -21,9 +20,10 @@ export class TaskGroup {
   name: string | undefined;
 
   @Column({
+    name: 'project_id',
     type: 'varchar',
   })
-  project_id: string | number | undefined;
+  projectId: string | number | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at: string | undefined;

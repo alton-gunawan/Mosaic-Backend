@@ -41,10 +41,20 @@ export class Task {
   startDate: Date | undefined;
 
   @Column({
+    type: 'tinyint',
+  })
+  duration: number | undefined;
+
+  @Column({
     type: 'date',
     name: 'end_date',
   })
   endDate: Date | undefined;
+
+  @Column({
+    type: 'varchar',
+  })
+  predecessor: string | undefined;
 
   @Column({
     type: 'varchar',

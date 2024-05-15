@@ -6,7 +6,7 @@ service TasksService {
     rpc FindAllTasks(FindAllTasksRequest) returns (TasksResponse);
     rpc FindOneTask(FindOneTaskRequest) returns (TasksResponse);
     rpc CreateTask(CreateTaskRequest) returns (TaskResponse);
-    rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse);
+    rpc UpdateTask(UpdateTaskRequest) returns (stream TaskResponse);
     rpc DeleteTask(DeleteTaskRequest) returns (TaskResponse);
     rpc FindAllTaskColumn(FindAllTaskColumnRequest) returns (stream TaskColumnsResponse);
     rpc CreateTaskColumn(CreateTaskColumnRequest) returns (TaskColumnResponse);
@@ -22,6 +22,7 @@ message FindAllTasksRequest {
         string createdBy = 2;
         string projectId = 3;
         string taskColumnId = 4;
+        string predecessor = 5;
     }
 }
 
@@ -57,10 +58,11 @@ message CreateTaskRequest {
         string createdBy = 8;
         string projectId = 9;
         string taskColumnId = 10;
+        string predecessor = 11;
     }
-    repeated Subtasks subtasks = 11;
-    repeated string assignees = 12;
-    repeated Dependencies dependencies = 13;
+    repeated Subtasks subtasks = 12;
+    repeated string assignees = 13;
+    repeated Dependencies dependencies = 14;
 }
 
 message UpdateTaskRequest {
@@ -74,8 +76,9 @@ message UpdateTaskRequest {
         string startDate = 7;
         string endDate = 8;
         string taskColumnId = 9;
+        string predecessor = 10;
     }
-    repeated Subtasks subtasks = 10;
+    repeated Subtasks subtasks = 11;
     repeated string assignees = 12;
     repeated Dependencies dependencies = 13;
     repeated Resources resources = 14;
@@ -114,10 +117,11 @@ message Task {
     string endDate = 8;
     string createdBy = 9;
     string taskColumnId = 10;
-    repeated Subtasks subtasks = 11;
-    repeated string assignees = 12;
-    repeated Dependencies dependencies = 13;
-    repeated Resources resources = 14;
+    string predecessor = 11;
+    repeated Subtasks subtasks = 12;
+    repeated string assignees = 13;
+    repeated Dependencies dependencies = 14;
+    repeated Resources resources = 15;
 }
 
 message TaskResponse {
@@ -139,7 +143,7 @@ message TaskColumn {
     string name = 2;
     int32 limit = 3;
     int32 order = 4;
-    string projectId = 5;
+    int32 projectId = 5;
     repeated Task task = 6;
 }
 
@@ -165,7 +169,7 @@ message CreateTaskColumnRequest {
         int32 limit = 2;
     }
     int32 order = 3;
-    string projectId = 4;
+    int32 projectId = 4;
 }
 
 message UpdateTaskColumnRequest {

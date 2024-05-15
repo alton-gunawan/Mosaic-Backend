@@ -22,7 +22,15 @@ import {
   UpdateTaskRequest,
 } from '../protos/task';
 import { ResourcesService } from '../protos/resource';
-import { combineLatest, concat, firstValueFrom, from, map } from 'rxjs';
+import {
+  combineLatest,
+  concat,
+  concatMap,
+  firstValueFrom,
+  from,
+  map,
+  of,
+} from 'rxjs';
 
 @Controller({
   version: '1',
@@ -59,30 +67,11 @@ export class TasksController implements OnModuleInit {
 
   @Post()
   public async create(@Body() createTaskDto: CreateTaskRequest): Promise<any> {
-    const taskResponse = from(
-      this.taskService.CreateTask({
-        ...createTaskDto,
-      }),
-    );
-
-    const resourceResponse = from(
-      this.resourcesService.CreateResource({
-        name: 'Resource 620',
-        projectId: '1',
-        resourceGroupId: '1',
-        unit: 3,
-      }),
-    );
-
-    const result$ = concat(taskResponse, resourceResponse);
-
-    return result$.subscribe({
-      next(value) {
-        Logger.log('value');
-        Logger.log(value);
-        return value;
-      },
+    const taskResponse$ = await this.taskService.CreateTask({
+      ...createTaskDto,
     });
+
+    return taskResponse$;
   }
 
   @Put(':id')
@@ -97,36 +86,171 @@ export class TasksController implements OnModuleInit {
       }),
     );
 
-    const resourceResponse$ = from(updateTaskDto.resources).pipe(
-      map((resource) =>
-        from(
-          this.resourcesService.AssignResource({
-            resourceId: resource.id,
-            taskId: id,
-            unit: resource.unit,
-          }),
-        ),
-      ),
-    );
+    const resourceResponse$ = updateTaskDto?.resources
+      ? updateTaskDto?.resources.map((value) => {
+          return from(
+            this.resourcesService.AssignResource({
+              resourceId: value.id,
+              taskId: id,
+              unit: value.unit,
+            }),
+          );
+        })
+      : from([]);
 
-    const result$ = concat(taskResponse$, resourceResponse$);
+    // this works:
+    // const resourceResponse$ = updateTaskDto?.resources
+    //   ? from(
+    //       this.resourcesService.AssignResource({
+    //         resourceId: updateTaskDto.resources[0].id,
+    //         taskId: id,
+    //         unit: updateTaskDto.resources[0].unit,
+    //       }),
+    //     )
+    //   : from([]);
 
-    const combinedResponse$ = combineLatest(taskResponse$, resourceResponse$);
+    // const resourceResponse$ = updateTaskDto?.resources
+    //   ? from(
+    //       updateTaskDto?.resources?.map(async (resource) => {
+    //         const response = from(
+    //           this.resourcesService.AssignResource({
+    //             resourceId: resource.id,
+    //             taskId: id,
+    //             unit: resource.unit,
+    //           }),
+    //         );
 
-    return firstValueFrom(combinedResponse$).then(
-      ([taskData, resourcesData]) => ({
-        ...taskData,
-        resources: resourcesData,
-      }),
-    );
+    //         return {
+    //           resourceId: resource.id,
+    //           taskId: id,
+    //         };
+    //       }),
+    //     )
+    //   : from([]);
 
-    return result$.subscribe({
+    return concat(taskResponse$, resourceResponse$).subscribe({
       next(value) {
-        Logger.log('value');
-        Logger.log(value);
+        Logger.log('Combined response:', JSON.stringify(value)); // Log the response for each resource
         value;
       },
     });
+
+    // const response =
+    //   updateTaskDto?.resources &&
+    //   from(
+    //     this.resourcesService.AssignResource({
+    //       resourceId: updateTaskDto.resources[0].id,
+    //       taskId: id,
+    //       unit: updateTaskDto.resources[0].unit,
+    //     }),
+    //   );
+
+    return updateTaskDto?.resources
+      ? concat(taskResponse$).subscribe({
+          next(value) {
+            Logger.log('Combined response:', JSON.stringify(value)); // Log the response for each resource
+            value;
+          },
+          error(err) {
+            Logger.error('Error taskResponse$ 1:', err);
+          },
+        })
+      : taskResponse$.subscribe({
+          next(value) {
+            Logger.log('Combined response no resource:', JSON.stringify(value)); // Log the response for each resource
+            value;
+          },
+          error(err) {
+            Logger.error('Error taskResponse$ 2:', err);
+          },
+        });
+
+    // const combinedResponse$ = from(updateTaskDto?.resources).pipe(
+    //   concatMap((resource) =>
+    //     concat(
+    //       from(
+    //         this.taskService.UpdateTask({ ...updateTaskDto, id: String(id) }),
+    //       ),
+    //       from(
+    //         this.resourcesService.AssignResource({
+    //           resourceId: resource.id,
+    //           taskId: id,
+    //           unit: resource.unit,
+    //         }),
+    //       ),
+    //     ),
+    //   ),
+    // );
+
+    // return combinedResponse$.subscribe({
+    //   next(value) {
+    //     Logger.log('Combined response:', value); // Log the response for each resource
+    //   },
+    //   error(error) {
+    //     // Handle errors from the subscription
+    //     console.error('Error in subscription:', error);
+    //   },
+    // });
+
+    // const taskResponse$ = from(
+    //   this.taskService.UpdateTask({
+    //     ...updateTaskDto,
+    //     id: String(id),
+    //   }),
+    // );
+
+    // const resourceResponse$ = from(updateTaskDto.resources).pipe(
+    //   map((resource) =>
+    //     from(
+    //       this.resourcesService.AssignResource({
+    //         resourceId: resource.id,
+    //         taskId: id,
+    //         unit: resource.unit,
+    //       }),
+    //     ),
+    //   ),
+    // );
+
+    // if (updateTaskDto?.resources?.length ?? 0 > 0) {
+    //   this.logger.log('updateTaskDto.resources');
+    //   const resourceResponse$ = from(updateTaskDto.resources).pipe(
+    //     map((resource) =>
+    //       from(
+    //         this.resourcesService.AssignResource({
+    //           resourceId: resource.id,
+    //           taskId: id,
+    //           unit: resource.unit,
+    //         }),
+    //       ),
+    //     ),
+    //   );
+
+    //   const result$ = concat(taskResponse$, resourceResponse$);
+
+    //   const combinedResponse$ = combineLatest(taskResponse$, resourceResponse$);
+
+    // return firstValueFrom(combinedResponse$).then(
+    //   ([taskData, resourcesData]) => ({
+    //     ...taskData,
+    //     resources: resourcesData,
+    //   }),
+    // );
+
+    // return result$.subscribe({
+    //   next(value) {
+    //     Logger.log('value');
+    //     Logger.log(value);
+    //     value;
+    //   },
+    // });
+    // } else {
+    //   this.logger.log('false updateTaskDto.resources');
+    //   return taskResponse$.subscribe({
+    //     next(value) {
+    //       return value;
+    //     },
+    //   });
+    // }
   }
 
   @Delete(':id')

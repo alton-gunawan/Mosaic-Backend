@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package risk;
+
+service RisksService {
+    rpc FindAllRisks(FindAllRisksRequest) returns (stream RisksResponse);
+    rpc FindOneRisk(FindOneRiskRequest) returns (RiskResponse);
+    rpc CreateRisk(CreateRiskRequest) returns (RiskResponse);
+    rpc UpdateRisk(UpdateRiskRequest) returns (RiskResponse);
+    rpc DeleteRisk(DeleteRiskRequest) returns (RiskResponse);
+}
+
+message FindAllRisksRequest {}
+
+message FindOneRiskRequest {}
+
+message CreateRiskRequest {}
+
+message UpdateRiskRequest {}
+
+message DeleteRiskRequest {}
+
+message RisksResponse {}
+
+message RiskResponse {}

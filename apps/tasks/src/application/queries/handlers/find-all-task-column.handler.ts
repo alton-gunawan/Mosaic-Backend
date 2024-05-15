@@ -16,7 +16,7 @@ export class FindAllTaskColumnQueryHandler
   async execute(command: FindAllTaskColumnQuery): Promise<TaskGroup[]> {
     return await this.taskGroupRepository.find({
       relations: ['task'],
-      where: { project_id: command.projectId },
+      where: { projectId: command.projectId },
     });
   }
 }

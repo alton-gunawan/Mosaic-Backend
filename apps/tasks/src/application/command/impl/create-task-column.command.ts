@@ -5,6 +5,6 @@ export class CreateTaskColumnCommand implements ICommand {
     public name: string,
     public limit: number,
     public order: number,
-    public projectId: string,
+    public projectId: number,
   ) {}
 }

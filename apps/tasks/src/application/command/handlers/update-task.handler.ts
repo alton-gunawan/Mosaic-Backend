@@ -33,23 +33,6 @@ export class UpdateTaskHandler
       ...data,
     });
 
-    try {
-      const resourceResponse = await this.resourcesService.CreateResource({
-        name: 'Resource 1',
-        unit: 1,
-        projectId: '1',
-        resourceGroupId: '1',
-      });
-
-      Logger.log('resourceResponse inside task handler!');
-      Logger.log(resourceResponse);
-      Logger.log(JSON.stringify(resourceResponse));
-    } catch (error) {
-      Logger.error("error inside task handler's resource service call!");
-      Logger.error(error);
-      Logger.error(JSON.stringify(error));
-    }
-
     if (taskResponse.affected > 0 && resources) {
       resources.forEach(async (resource) => {
         await this.eventBus.publish(

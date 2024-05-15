@@ -8,7 +8,7 @@ service ResourcesService {
   rpc CreateResource(CreateResourceRequest) returns (ResourceResponse);
   rpc UpdateResource(UpdateResourceRequest) returns (ResourceResponse);
   rpc DeleteResource(DeleteResourceRequest) returns (ResourceResponse);
-  rpc AssignResource(AssignResourceRequest) returns (ResourceResponse);
+  rpc AssignResource(AssignResourceRequest) returns (stream ResourceResponse);
   rpc UnassignResource(UnassignResourceRequest) returns (ResourceResponse);
   rpc FindAllResourceGroupsByCriteria(FindAllResourceGroupsByCriteriaRequest)
       returns (ResourceGroupsResponse);

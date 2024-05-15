@@ -13,6 +13,7 @@ export interface FindAllTasksRequest {
   createdBy?: string | undefined;
   projectId?: string | undefined;
   taskColumnId?: string | undefined;
+  predecessor?: string | undefined;
 }
 
 export interface Resources {
@@ -44,6 +45,7 @@ export interface CreateTaskRequest {
   createdBy?: string | undefined;
   projectId?: string | undefined;
   taskColumnId?: string | undefined;
+  predecessor?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
   dependencies: Dependencies[];
@@ -59,6 +61,7 @@ export interface UpdateTaskRequest {
   startDate?: string | undefined;
   endDate?: string | undefined;
   taskColumnId?: string | undefined;
+  predecessor?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
   dependencies: Dependencies[];
@@ -94,6 +97,7 @@ export interface Task {
   endDate: string;
   createdBy: string;
   taskColumnId: string;
+  predecessor: string;
   subtasks: Subtasks[];
   assignees: string[];
   dependencies: Dependencies[];
@@ -117,7 +121,7 @@ export interface TaskColumn {
   name: string;
   limit: number;
   order: number;
-  projectId: string;
+  projectId: number;
   task: Task[];
 }
 
@@ -141,7 +145,7 @@ export interface CreateTaskColumnRequest {
   name: string;
   limit?: number | undefined;
   order: number;
-  projectId: string;
+  projectId: number;
 }
 
 export interface UpdateTaskColumnRequest {
@@ -199,7 +203,7 @@ export const Empty = {
 };
 
 function createBaseFindAllTasksRequest(): FindAllTasksRequest {
-  return { id: undefined, createdBy: undefined, projectId: undefined, taskColumnId: undefined };
+  return { id: undefined, createdBy: undefined, projectId: undefined, taskColumnId: undefined, predecessor: undefined };
 }
 
 export const FindAllTasksRequest = {
@@ -215,6 +219,9 @@ export const FindAllTasksRequest = {
     }
     if (message.taskColumnId !== undefined) {
       writer.uint32(34).string(message.taskColumnId);
+    }
+    if (message.predecessor !== undefined) {
+      writer.uint32(42).string(message.predecessor);
     }
     return writer;
   },
@@ -254,6 +261,13 @@ export const FindAllTasksRequest = {
 
           message.taskColumnId = reader.string();
           continue;
+        case 5:
+          if (tag !== 42) {
+            break;
+          }
+
+          message.predecessor = reader.string();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -269,6 +283,7 @@ export const FindAllTasksRequest = {
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : undefined,
     };
   },
 
@@ -286,6 +301,9 @@ export const FindAllTasksRequest = {
     if (message.taskColumnId !== undefined) {
       obj.taskColumnId = message.taskColumnId;
     }
+    if (message.predecessor !== undefined) {
+      obj.predecessor = message.predecessor;
+    }
     return obj;
   },
 
@@ -298,6 +316,7 @@ export const FindAllTasksRequest = {
     message.createdBy = object.createdBy ?? undefined;
     message.projectId = object.projectId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
+    message.predecessor = object.predecessor ?? undefined;
     return message;
   },
 };
@@ -574,6 +593,7 @@ function createBaseCreateTaskRequest(): CreateTaskRequest {
     createdBy: undefined,
     projectId: undefined,
     taskColumnId: undefined,
+    predecessor: undefined,
     subtasks: [],
     assignees: [],
     dependencies: [],
@@ -612,14 +632,17 @@ export const CreateTaskRequest = {
     if (message.taskColumnId !== undefined) {
       writer.uint32(82).string(message.taskColumnId);
     }
+    if (message.predecessor !== undefined) {
+      writer.uint32(90).string(message.predecessor);
+    }
     for (const v of message.subtasks) {
-      Subtasks.encode(v!, writer.uint32(90).fork()).ldelim();
+      Subtasks.encode(v!, writer.uint32(98).fork()).ldelim();
     }
     for (const v of message.assignees) {
-      writer.uint32(98).string(v!);
+      writer.uint32(106).string(v!);
     }
     for (const v of message.dependencies) {
-      Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
+      Dependencies.encode(v!, writer.uint32(114).fork()).ldelim();
     }
     return writer;
   },
@@ -706,17 +729,24 @@ export const CreateTaskRequest = {
             break;
           }
 
-          message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
+          message.predecessor = reader.string();
           continue;
         case 12:
           if (tag !== 98) {
             break;
           }
 
-          message.assignees.push(reader.string());
+          message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
           continue;
         case 13:
           if (tag !== 106) {
+            break;
+          }
+
+          message.assignees.push(reader.string());
+          continue;
+        case 14:
+          if (tag !== 114) {
             break;
           }
 
@@ -743,6 +773,7 @@ export const CreateTaskRequest = {
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
         ? object.assignees.map((e: any) => globalThis.String(e))
@@ -785,6 +816,9 @@ export const CreateTaskRequest = {
     if (message.taskColumnId !== undefined) {
       obj.taskColumnId = message.taskColumnId;
     }
+    if (message.predecessor !== undefined) {
+      obj.predecessor = message.predecessor;
+    }
     if (message.subtasks?.length) {
       obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
     }
@@ -812,6 +846,7 @@ export const CreateTaskRequest = {
     message.createdBy = object.createdBy ?? undefined;
     message.projectId = object.projectId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
+    message.predecessor = object.predecessor ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
     message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
@@ -830,6 +865,7 @@ function createBaseUpdateTaskRequest(): UpdateTaskRequest {
     startDate: undefined,
     endDate: undefined,
     taskColumnId: undefined,
+    predecessor: undefined,
     subtasks: [],
     assignees: [],
     dependencies: [],
@@ -866,8 +902,11 @@ export const UpdateTaskRequest = {
     if (message.taskColumnId !== undefined) {
       writer.uint32(74).string(message.taskColumnId);
     }
+    if (message.predecessor !== undefined) {
+      writer.uint32(82).string(message.predecessor);
+    }
     for (const v of message.subtasks) {
-      Subtasks.encode(v!, writer.uint32(82).fork()).ldelim();
+      Subtasks.encode(v!, writer.uint32(90).fork()).ldelim();
     }
     for (const v of message.assignees) {
       writer.uint32(98).string(v!);
@@ -956,6 +995,13 @@ export const UpdateTaskRequest = {
             break;
           }
 
+          message.predecessor = reader.string();
+          continue;
+        case 11:
+          if (tag !== 90) {
+            break;
+          }
+
           message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
           continue;
         case 12:
@@ -999,6 +1045,7 @@ export const UpdateTaskRequest = {
       startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : undefined,
       endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
         ? object.assignees.map((e: any) => globalThis.String(e))
@@ -1041,6 +1088,9 @@ export const UpdateTaskRequest = {
     if (message.taskColumnId !== undefined) {
       obj.taskColumnId = message.taskColumnId;
     }
+    if (message.predecessor !== undefined) {
+      obj.predecessor = message.predecessor;
+    }
     if (message.subtasks?.length) {
       obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
     }
@@ -1070,6 +1120,7 @@ export const UpdateTaskRequest = {
     message.startDate = object.startDate ?? undefined;
     message.endDate = object.endDate ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
+    message.predecessor = object.predecessor ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
     message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
@@ -1355,6 +1406,7 @@ function createBaseTask(): Task {
     endDate: "",
     createdBy: "",
     taskColumnId: "",
+    predecessor: "",
     subtasks: [],
     assignees: [],
     dependencies: [],
@@ -1394,17 +1446,20 @@ export const Task = {
     if (message.taskColumnId !== "") {
       writer.uint32(82).string(message.taskColumnId);
     }
+    if (message.predecessor !== "") {
+      writer.uint32(90).string(message.predecessor);
+    }
     for (const v of message.subtasks) {
-      Subtasks.encode(v!, writer.uint32(90).fork()).ldelim();
+      Subtasks.encode(v!, writer.uint32(98).fork()).ldelim();
     }
     for (const v of message.assignees) {
-      writer.uint32(98).string(v!);
+      writer.uint32(106).string(v!);
     }
     for (const v of message.dependencies) {
-      Dependencies.encode(v!, writer.uint32(106).fork()).ldelim();
+      Dependencies.encode(v!, writer.uint32(114).fork()).ldelim();
     }
     for (const v of message.resources) {
-      Resources.encode(v!, writer.uint32(114).fork()).ldelim();
+      Resources.encode(v!, writer.uint32(122).fork()).ldelim();
     }
     return writer;
   },
@@ -1491,24 +1546,31 @@ export const Task = {
             break;
           }
 
-          message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
+          message.predecessor = reader.string();
           continue;
         case 12:
           if (tag !== 98) {
             break;
           }
 
-          message.assignees.push(reader.string());
+          message.subtasks.push(Subtasks.decode(reader, reader.uint32()));
           continue;
         case 13:
           if (tag !== 106) {
             break;
           }
 
-          message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
+          message.assignees.push(reader.string());
           continue;
         case 14:
           if (tag !== 114) {
+            break;
+          }
+
+          message.dependencies.push(Dependencies.decode(reader, reader.uint32()));
+          continue;
+        case 15:
+          if (tag !== 122) {
             break;
           }
 
@@ -1535,6 +1597,7 @@ export const Task = {
       endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : "",
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
       taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : "",
+      predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : "",
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
         ? object.assignees.map((e: any) => globalThis.String(e))
@@ -1580,6 +1643,9 @@ export const Task = {
     if (message.taskColumnId !== "") {
       obj.taskColumnId = message.taskColumnId;
     }
+    if (message.predecessor !== "") {
+      obj.predecessor = message.predecessor;
+    }
     if (message.subtasks?.length) {
       obj.subtasks = message.subtasks.map((e) => Subtasks.toJSON(e));
     }
@@ -1610,6 +1676,7 @@ export const Task = {
     message.endDate = object.endDate ?? "";
     message.createdBy = object.createdBy ?? "";
     message.taskColumnId = object.taskColumnId ?? "";
+    message.predecessor = object.predecessor ?? "";
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
     message.dependencies = object.dependencies?.map((e) => Dependencies.fromPartial(e)) || [];
@@ -1797,7 +1864,7 @@ export const TasksResponse = {
 };
 
 function createBaseTaskColumn(): TaskColumn {
-  return { id: "", name: "", limit: 0, order: 0, projectId: "", task: [] };
+  return { id: "", name: "", limit: 0, order: 0, projectId: 0, task: [] };
 }
 
 export const TaskColumn = {
@@ -1814,8 +1881,8 @@ export const TaskColumn = {
     if (message.order !== 0) {
       writer.uint32(32).int32(message.order);
     }
-    if (message.projectId !== "") {
-      writer.uint32(42).string(message.projectId);
+    if (message.projectId !== 0) {
+      writer.uint32(40).int32(message.projectId);
     }
     for (const v of message.task) {
       Task.encode(v!, writer.uint32(50).fork()).ldelim();
@@ -1859,11 +1926,11 @@ export const TaskColumn = {
           message.order = reader.int32();
           continue;
         case 5:
-          if (tag !== 42) {
+          if (tag !== 40) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.int32();
           continue;
         case 6:
           if (tag !== 50) {
@@ -1887,7 +1954,7 @@ export const TaskColumn = {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       order: isSet(object.order) ? globalThis.Number(object.order) : 0,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
       task: globalThis.Array.isArray(object?.task) ? object.task.map((e: any) => Task.fromJSON(e)) : [],
     };
   },
@@ -1906,8 +1973,8 @@ export const TaskColumn = {
     if (message.order !== 0) {
       obj.order = Math.round(message.order);
     }
-    if (message.projectId !== "") {
-      obj.projectId = message.projectId;
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
     }
     if (message.task?.length) {
       obj.task = message.task.map((e) => Task.toJSON(e));
@@ -1924,7 +1991,7 @@ export const TaskColumn = {
     message.name = object.name ?? "";
     message.limit = object.limit ?? 0;
     message.order = object.order ?? 0;
-    message.projectId = object.projectId ?? "";
+    message.projectId = object.projectId ?? 0;
     message.task = object.task?.map((e) => Task.fromPartial(e)) || [];
     return message;
   },
@@ -2168,7 +2235,7 @@ export const FindAllTaskColumnRequest = {
 };
 
 function createBaseCreateTaskColumnRequest(): CreateTaskColumnRequest {
-  return { name: "", limit: undefined, order: 0, projectId: "" };
+  return { name: "", limit: undefined, order: 0, projectId: 0 };
 }
 
 export const CreateTaskColumnRequest = {
@@ -2182,8 +2249,8 @@ export const CreateTaskColumnRequest = {
     if (message.order !== 0) {
       writer.uint32(24).int32(message.order);
     }
-    if (message.projectId !== "") {
-      writer.uint32(34).string(message.projectId);
+    if (message.projectId !== 0) {
+      writer.uint32(32).int32(message.projectId);
     }
     return writer;
   },
@@ -2217,11 +2284,11 @@ export const CreateTaskColumnRequest = {
           message.order = reader.int32();
           continue;
         case 4:
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -2237,7 +2304,7 @@ export const CreateTaskColumnRequest = {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : undefined,
       order: isSet(object.order) ? globalThis.Number(object.order) : 0,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
   },
 
@@ -2252,8 +2319,8 @@ export const CreateTaskColumnRequest = {
     if (message.order !== 0) {
       obj.order = Math.round(message.order);
     }
-    if (message.projectId !== "") {
-      obj.projectId = message.projectId;
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
     }
     return obj;
   },
@@ -2266,7 +2333,7 @@ export const CreateTaskColumnRequest = {
     message.name = object.name ?? "";
     message.limit = object.limit ?? undefined;
     message.order = object.order ?? 0;
-    message.projectId = object.projectId ?? "";
+    message.projectId = object.projectId ?? 0;
     return message;
   },
 };
@@ -2436,7 +2503,7 @@ export interface TasksService {
   FindAllTasks(request: FindAllTasksRequest): Promise<TasksResponse>;
   FindOneTask(request: FindOneTaskRequest): Promise<TasksResponse>;
   CreateTask(request: CreateTaskRequest): Promise<TaskResponse>;
-  UpdateTask(request: UpdateTaskRequest): Promise<TaskResponse>;
+  UpdateTask(request: UpdateTaskRequest): Observable<TaskResponse>;
   DeleteTask(request: DeleteTaskRequest): Promise<TaskResponse>;
   FindAllTaskColumn(request: FindAllTaskColumnRequest): Observable<TaskColumnsResponse>;
   CreateTaskColumn(request: CreateTaskColumnRequest): Promise<TaskColumnResponse>;
@@ -2479,10 +2546,10 @@ export class TasksServiceClientImpl implements TasksService {
     return promise.then((data) => TaskResponse.decode(_m0.Reader.create(data)));
   }
 
-  UpdateTask(request: UpdateTaskRequest): Promise<TaskResponse> {
+  UpdateTask(request: UpdateTaskRequest): Observable<TaskResponse> {
     const data = UpdateTaskRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "UpdateTask", data);
-    return promise.then((data) => TaskResponse.decode(_m0.Reader.create(data)));
+    const result = this.rpc.serverStreamingRequest(this.service, "UpdateTask", data);
+    return result.pipe(map((data) => TaskResponse.decode(_m0.Reader.create(data))));
   }
 
   DeleteTask(request: DeleteTaskRequest): Promise<TaskResponse> {
