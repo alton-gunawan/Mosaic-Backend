@@ -9,10 +9,10 @@ export interface Empty {
 }
 
 export interface FindAllTasksRequest {
-  id?: string | undefined;
+  id?: number | undefined;
   createdBy?: string | undefined;
-  projectId?: string | undefined;
-  taskColumnId?: string | undefined;
+  projectId?: number | undefined;
+  taskColumnId?: number | undefined;
   predecessor?: string | undefined;
 }
 
@@ -27,7 +27,7 @@ export interface FindAllTasksResponse {
 }
 
 export interface FindOneTaskRequest {
-  id: string;
+  id: number;
 }
 
 export interface FindOneTaskResponse {
@@ -40,11 +40,11 @@ export interface CreateTaskRequest {
   description?: string | undefined;
   status?: string | undefined;
   priority?: string | undefined;
-  startDate?: string | undefined;
-  endDate?: string | undefined;
+  startDate?: number | undefined;
+  duration?: number | undefined;
   createdBy?: string | undefined;
-  projectId?: string | undefined;
-  taskColumnId?: string | undefined;
+  projectId?: number | undefined;
+  taskColumnId?: number | undefined;
   predecessor?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
@@ -52,15 +52,15 @@ export interface CreateTaskRequest {
 }
 
 export interface UpdateTaskRequest {
-  id: string;
+  id: number;
   name?: string | undefined;
   featuredImage?: string | undefined;
   description?: string | undefined;
   status?: string | undefined;
   priority?: string | undefined;
-  startDate?: string | undefined;
-  endDate?: string | undefined;
-  taskColumnId?: string | undefined;
+  startDate?: number | undefined;
+  duration?: number | undefined;
+  taskColumnId?: number | undefined;
   predecessor?: string | undefined;
   subtasks: Subtasks[];
   assignees: string[];
@@ -69,17 +69,17 @@ export interface UpdateTaskRequest {
 }
 
 export interface DeleteTaskRequest {
-  id: string;
+  id: number;
 }
 
 export interface Subtasks {
-  id?: string | undefined;
+  id?: number | undefined;
   label: string;
   status: boolean;
 }
 
 export interface Dependencies {
-  id?: string | undefined;
+  id?: number | undefined;
   from: string;
   to: string;
   type: string;
@@ -87,16 +87,16 @@ export interface Dependencies {
 }
 
 export interface Task {
-  id: string;
+  id: number;
   name: string;
   featuredImage: string;
   description: string;
   status: string;
   priority: string;
-  startDate: string;
-  endDate: string;
+  startDate: number;
+  duration: number;
   createdBy: string;
-  taskColumnId: string;
+  taskColumnId: number;
   predecessor: string;
   subtasks: Subtasks[];
   assignees: string[];
@@ -117,7 +117,7 @@ export interface TasksResponse {
 }
 
 export interface TaskColumn {
-  id: string;
+  id: number;
   name: string;
   limit: number;
   order: number;
@@ -149,14 +149,14 @@ export interface CreateTaskColumnRequest {
 }
 
 export interface UpdateTaskColumnRequest {
-  id: string;
+  id: number;
   name?: string | undefined;
   order?: number | undefined;
   limit?: number | undefined;
 }
 
 export interface RemoveTaskColumnRequest {
-  id: string;
+  id: number;
 }
 
 function createBaseEmpty(): Empty {
@@ -209,16 +209,16 @@ function createBaseFindAllTasksRequest(): FindAllTasksRequest {
 export const FindAllTasksRequest = {
   encode(message: FindAllTasksRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== undefined) {
-      writer.uint32(10).string(message.id);
+      writer.uint32(8).int32(message.id);
     }
     if (message.createdBy !== undefined) {
       writer.uint32(18).string(message.createdBy);
     }
     if (message.projectId !== undefined) {
-      writer.uint32(26).string(message.projectId);
+      writer.uint32(24).int32(message.projectId);
     }
     if (message.taskColumnId !== undefined) {
-      writer.uint32(34).string(message.taskColumnId);
+      writer.uint32(32).int32(message.taskColumnId);
     }
     if (message.predecessor !== undefined) {
       writer.uint32(42).string(message.predecessor);
@@ -234,11 +234,11 @@ export const FindAllTasksRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -248,18 +248,18 @@ export const FindAllTasksRequest = {
           message.createdBy = reader.string();
           continue;
         case 3:
-          if (tag !== 26) {
+          if (tag !== 24) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.int32();
           continue;
         case 4:
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.taskColumnId = reader.string();
+          message.taskColumnId = reader.int32();
           continue;
         case 5:
           if (tag !== 42) {
@@ -279,10 +279,10 @@ export const FindAllTasksRequest = {
 
   fromJSON(object: any): FindAllTasksRequest {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
-      taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : undefined,
+      taskColumnId: isSet(object.taskColumnId) ? globalThis.Number(object.taskColumnId) : undefined,
       predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : undefined,
     };
   },
@@ -290,16 +290,16 @@ export const FindAllTasksRequest = {
   toJSON(message: FindAllTasksRequest): unknown {
     const obj: any = {};
     if (message.id !== undefined) {
-      obj.id = message.id;
+      obj.id = Math.round(message.id);
     }
     if (message.createdBy !== undefined) {
       obj.createdBy = message.createdBy;
     }
     if (message.projectId !== undefined) {
-      obj.projectId = message.projectId;
+      obj.projectId = Math.round(message.projectId);
     }
     if (message.taskColumnId !== undefined) {
-      obj.taskColumnId = message.taskColumnId;
+      obj.taskColumnId = Math.round(message.taskColumnId);
     }
     if (message.predecessor !== undefined) {
       obj.predecessor = message.predecessor;
@@ -468,13 +468,13 @@ export const FindAllTasksResponse = {
 };
 
 function createBaseFindOneTaskRequest(): FindOneTaskRequest {
-  return { id: "" };
+  return { id: 0 };
 }
 
 export const FindOneTaskRequest = {
   encode(message: FindOneTaskRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     return writer;
   },
@@ -487,11 +487,11 @@ export const FindOneTaskRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -503,13 +503,13 @@ export const FindOneTaskRequest = {
   },
 
   fromJSON(object: any): FindOneTaskRequest {
-    return { id: isSet(object.id) ? globalThis.String(object.id) : "" };
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
   },
 
   toJSON(message: FindOneTaskRequest): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     return obj;
   },
@@ -519,7 +519,7 @@ export const FindOneTaskRequest = {
   },
   fromPartial<I extends Exact<DeepPartial<FindOneTaskRequest>, I>>(object: I): FindOneTaskRequest {
     const message = createBaseFindOneTaskRequest();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     return message;
   },
 };
@@ -589,7 +589,7 @@ function createBaseCreateTaskRequest(): CreateTaskRequest {
     status: undefined,
     priority: undefined,
     startDate: undefined,
-    endDate: undefined,
+    duration: undefined,
     createdBy: undefined,
     projectId: undefined,
     taskColumnId: undefined,
@@ -618,19 +618,19 @@ export const CreateTaskRequest = {
       writer.uint32(42).string(message.priority);
     }
     if (message.startDate !== undefined) {
-      writer.uint32(50).string(message.startDate);
+      writer.uint32(48).int32(message.startDate);
     }
-    if (message.endDate !== undefined) {
-      writer.uint32(58).string(message.endDate);
+    if (message.duration !== undefined) {
+      writer.uint32(56).int32(message.duration);
     }
     if (message.createdBy !== undefined) {
       writer.uint32(66).string(message.createdBy);
     }
     if (message.projectId !== undefined) {
-      writer.uint32(74).string(message.projectId);
+      writer.uint32(72).int32(message.projectId);
     }
     if (message.taskColumnId !== undefined) {
-      writer.uint32(82).string(message.taskColumnId);
+      writer.uint32(80).int32(message.taskColumnId);
     }
     if (message.predecessor !== undefined) {
       writer.uint32(90).string(message.predecessor);
@@ -690,18 +690,18 @@ export const CreateTaskRequest = {
           message.priority = reader.string();
           continue;
         case 6:
-          if (tag !== 50) {
+          if (tag !== 48) {
             break;
           }
 
-          message.startDate = reader.string();
+          message.startDate = reader.int32();
           continue;
         case 7:
-          if (tag !== 58) {
+          if (tag !== 56) {
             break;
           }
 
-          message.endDate = reader.string();
+          message.duration = reader.int32();
           continue;
         case 8:
           if (tag !== 66) {
@@ -711,18 +711,18 @@ export const CreateTaskRequest = {
           message.createdBy = reader.string();
           continue;
         case 9:
-          if (tag !== 74) {
+          if (tag !== 72) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.int32();
           continue;
         case 10:
-          if (tag !== 82) {
+          if (tag !== 80) {
             break;
           }
 
-          message.taskColumnId = reader.string();
+          message.taskColumnId = reader.int32();
           continue;
         case 11:
           if (tag !== 90) {
@@ -768,11 +768,11 @@ export const CreateTaskRequest = {
       description: isSet(object.description) ? globalThis.String(object.description) : undefined,
       status: isSet(object.status) ? globalThis.String(object.status) : undefined,
       priority: isSet(object.priority) ? globalThis.String(object.priority) : undefined,
-      startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : undefined,
-      endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : undefined,
+      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : undefined,
+      duration: isSet(object.duration) ? globalThis.Number(object.duration) : undefined,
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : undefined,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
-      taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : undefined,
+      taskColumnId: isSet(object.taskColumnId) ? globalThis.Number(object.taskColumnId) : undefined,
       predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
@@ -802,19 +802,19 @@ export const CreateTaskRequest = {
       obj.priority = message.priority;
     }
     if (message.startDate !== undefined) {
-      obj.startDate = message.startDate;
+      obj.startDate = Math.round(message.startDate);
     }
-    if (message.endDate !== undefined) {
-      obj.endDate = message.endDate;
+    if (message.duration !== undefined) {
+      obj.duration = Math.round(message.duration);
     }
     if (message.createdBy !== undefined) {
       obj.createdBy = message.createdBy;
     }
     if (message.projectId !== undefined) {
-      obj.projectId = message.projectId;
+      obj.projectId = Math.round(message.projectId);
     }
     if (message.taskColumnId !== undefined) {
-      obj.taskColumnId = message.taskColumnId;
+      obj.taskColumnId = Math.round(message.taskColumnId);
     }
     if (message.predecessor !== undefined) {
       obj.predecessor = message.predecessor;
@@ -842,7 +842,7 @@ export const CreateTaskRequest = {
     message.status = object.status ?? undefined;
     message.priority = object.priority ?? undefined;
     message.startDate = object.startDate ?? undefined;
-    message.endDate = object.endDate ?? undefined;
+    message.duration = object.duration ?? undefined;
     message.createdBy = object.createdBy ?? undefined;
     message.projectId = object.projectId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
@@ -856,14 +856,14 @@ export const CreateTaskRequest = {
 
 function createBaseUpdateTaskRequest(): UpdateTaskRequest {
   return {
-    id: "",
+    id: 0,
     name: undefined,
     featuredImage: undefined,
     description: undefined,
     status: undefined,
     priority: undefined,
     startDate: undefined,
-    endDate: undefined,
+    duration: undefined,
     taskColumnId: undefined,
     predecessor: undefined,
     subtasks: [],
@@ -875,8 +875,8 @@ function createBaseUpdateTaskRequest(): UpdateTaskRequest {
 
 export const UpdateTaskRequest = {
   encode(message: UpdateTaskRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     if (message.name !== undefined) {
       writer.uint32(18).string(message.name);
@@ -894,13 +894,13 @@ export const UpdateTaskRequest = {
       writer.uint32(50).string(message.priority);
     }
     if (message.startDate !== undefined) {
-      writer.uint32(58).string(message.startDate);
+      writer.uint32(56).int32(message.startDate);
     }
-    if (message.endDate !== undefined) {
-      writer.uint32(66).string(message.endDate);
+    if (message.duration !== undefined) {
+      writer.uint32(64).int32(message.duration);
     }
     if (message.taskColumnId !== undefined) {
-      writer.uint32(74).string(message.taskColumnId);
+      writer.uint32(72).int32(message.taskColumnId);
     }
     if (message.predecessor !== undefined) {
       writer.uint32(82).string(message.predecessor);
@@ -928,11 +928,11 @@ export const UpdateTaskRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -970,25 +970,25 @@ export const UpdateTaskRequest = {
           message.priority = reader.string();
           continue;
         case 7:
-          if (tag !== 58) {
+          if (tag !== 56) {
             break;
           }
 
-          message.startDate = reader.string();
+          message.startDate = reader.int32();
           continue;
         case 8:
-          if (tag !== 66) {
+          if (tag !== 64) {
             break;
           }
 
-          message.endDate = reader.string();
+          message.duration = reader.int32();
           continue;
         case 9:
-          if (tag !== 74) {
+          if (tag !== 72) {
             break;
           }
 
-          message.taskColumnId = reader.string();
+          message.taskColumnId = reader.int32();
           continue;
         case 10:
           if (tag !== 82) {
@@ -1036,15 +1036,15 @@ export const UpdateTaskRequest = {
 
   fromJSON(object: any): UpdateTaskRequest {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
       featuredImage: isSet(object.featuredImage) ? globalThis.String(object.featuredImage) : undefined,
       description: isSet(object.description) ? globalThis.String(object.description) : undefined,
       status: isSet(object.status) ? globalThis.String(object.status) : undefined,
       priority: isSet(object.priority) ? globalThis.String(object.priority) : undefined,
-      startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : undefined,
-      endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : undefined,
-      taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : undefined,
+      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : undefined,
+      duration: isSet(object.duration) ? globalThis.Number(object.duration) : undefined,
+      taskColumnId: isSet(object.taskColumnId) ? globalThis.Number(object.taskColumnId) : undefined,
       predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : undefined,
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
@@ -1061,8 +1061,8 @@ export const UpdateTaskRequest = {
 
   toJSON(message: UpdateTaskRequest): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     if (message.name !== undefined) {
       obj.name = message.name;
@@ -1080,13 +1080,13 @@ export const UpdateTaskRequest = {
       obj.priority = message.priority;
     }
     if (message.startDate !== undefined) {
-      obj.startDate = message.startDate;
+      obj.startDate = Math.round(message.startDate);
     }
-    if (message.endDate !== undefined) {
-      obj.endDate = message.endDate;
+    if (message.duration !== undefined) {
+      obj.duration = Math.round(message.duration);
     }
     if (message.taskColumnId !== undefined) {
-      obj.taskColumnId = message.taskColumnId;
+      obj.taskColumnId = Math.round(message.taskColumnId);
     }
     if (message.predecessor !== undefined) {
       obj.predecessor = message.predecessor;
@@ -1111,14 +1111,14 @@ export const UpdateTaskRequest = {
   },
   fromPartial<I extends Exact<DeepPartial<UpdateTaskRequest>, I>>(object: I): UpdateTaskRequest {
     const message = createBaseUpdateTaskRequest();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     message.name = object.name ?? undefined;
     message.featuredImage = object.featuredImage ?? undefined;
     message.description = object.description ?? undefined;
     message.status = object.status ?? undefined;
     message.priority = object.priority ?? undefined;
     message.startDate = object.startDate ?? undefined;
-    message.endDate = object.endDate ?? undefined;
+    message.duration = object.duration ?? undefined;
     message.taskColumnId = object.taskColumnId ?? undefined;
     message.predecessor = object.predecessor ?? undefined;
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
@@ -1130,13 +1130,13 @@ export const UpdateTaskRequest = {
 };
 
 function createBaseDeleteTaskRequest(): DeleteTaskRequest {
-  return { id: "" };
+  return { id: 0 };
 }
 
 export const DeleteTaskRequest = {
   encode(message: DeleteTaskRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     return writer;
   },
@@ -1149,11 +1149,11 @@ export const DeleteTaskRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1165,13 +1165,13 @@ export const DeleteTaskRequest = {
   },
 
   fromJSON(object: any): DeleteTaskRequest {
-    return { id: isSet(object.id) ? globalThis.String(object.id) : "" };
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
   },
 
   toJSON(message: DeleteTaskRequest): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     return obj;
   },
@@ -1181,7 +1181,7 @@ export const DeleteTaskRequest = {
   },
   fromPartial<I extends Exact<DeepPartial<DeleteTaskRequest>, I>>(object: I): DeleteTaskRequest {
     const message = createBaseDeleteTaskRequest();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     return message;
   },
 };
@@ -1193,7 +1193,7 @@ function createBaseSubtasks(): Subtasks {
 export const Subtasks = {
   encode(message: Subtasks, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== undefined) {
-      writer.uint32(10).string(message.id);
+      writer.uint32(8).int32(message.id);
     }
     if (message.label !== "") {
       writer.uint32(18).string(message.label);
@@ -1212,11 +1212,11 @@ export const Subtasks = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1243,7 +1243,7 @@ export const Subtasks = {
 
   fromJSON(object: any): Subtasks {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
       label: isSet(object.label) ? globalThis.String(object.label) : "",
       status: isSet(object.status) ? globalThis.Boolean(object.status) : false,
     };
@@ -1252,7 +1252,7 @@ export const Subtasks = {
   toJSON(message: Subtasks): unknown {
     const obj: any = {};
     if (message.id !== undefined) {
-      obj.id = message.id;
+      obj.id = Math.round(message.id);
     }
     if (message.label !== "") {
       obj.label = message.label;
@@ -1282,7 +1282,7 @@ function createBaseDependencies(): Dependencies {
 export const Dependencies = {
   encode(message: Dependencies, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== undefined) {
-      writer.uint32(10).string(message.id);
+      writer.uint32(8).int32(message.id);
     }
     if (message.from !== "") {
       writer.uint32(18).string(message.from);
@@ -1307,11 +1307,11 @@ export const Dependencies = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1352,7 +1352,7 @@ export const Dependencies = {
 
   fromJSON(object: any): Dependencies {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
       from: isSet(object.from) ? globalThis.String(object.from) : "",
       to: isSet(object.to) ? globalThis.String(object.to) : "",
       type: isSet(object.type) ? globalThis.String(object.type) : "",
@@ -1363,7 +1363,7 @@ export const Dependencies = {
   toJSON(message: Dependencies): unknown {
     const obj: any = {};
     if (message.id !== undefined) {
-      obj.id = message.id;
+      obj.id = Math.round(message.id);
     }
     if (message.from !== "") {
       obj.from = message.from;
@@ -1396,16 +1396,16 @@ export const Dependencies = {
 
 function createBaseTask(): Task {
   return {
-    id: "",
+    id: 0,
     name: "",
     featuredImage: "",
     description: "",
     status: "",
     priority: "",
-    startDate: "",
-    endDate: "",
+    startDate: 0,
+    duration: 0,
     createdBy: "",
-    taskColumnId: "",
+    taskColumnId: 0,
     predecessor: "",
     subtasks: [],
     assignees: [],
@@ -1416,8 +1416,8 @@ function createBaseTask(): Task {
 
 export const Task = {
   encode(message: Task, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     if (message.name !== "") {
       writer.uint32(18).string(message.name);
@@ -1434,17 +1434,17 @@ export const Task = {
     if (message.priority !== "") {
       writer.uint32(50).string(message.priority);
     }
-    if (message.startDate !== "") {
-      writer.uint32(58).string(message.startDate);
+    if (message.startDate !== 0) {
+      writer.uint32(56).int32(message.startDate);
     }
-    if (message.endDate !== "") {
-      writer.uint32(66).string(message.endDate);
+    if (message.duration !== 0) {
+      writer.uint32(64).int32(message.duration);
     }
     if (message.createdBy !== "") {
       writer.uint32(74).string(message.createdBy);
     }
-    if (message.taskColumnId !== "") {
-      writer.uint32(82).string(message.taskColumnId);
+    if (message.taskColumnId !== 0) {
+      writer.uint32(80).int32(message.taskColumnId);
     }
     if (message.predecessor !== "") {
       writer.uint32(90).string(message.predecessor);
@@ -1472,11 +1472,11 @@ export const Task = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1514,18 +1514,18 @@ export const Task = {
           message.priority = reader.string();
           continue;
         case 7:
-          if (tag !== 58) {
+          if (tag !== 56) {
             break;
           }
 
-          message.startDate = reader.string();
+          message.startDate = reader.int32();
           continue;
         case 8:
-          if (tag !== 66) {
+          if (tag !== 64) {
             break;
           }
 
-          message.endDate = reader.string();
+          message.duration = reader.int32();
           continue;
         case 9:
           if (tag !== 74) {
@@ -1535,11 +1535,11 @@ export const Task = {
           message.createdBy = reader.string();
           continue;
         case 10:
-          if (tag !== 82) {
+          if (tag !== 80) {
             break;
           }
 
-          message.taskColumnId = reader.string();
+          message.taskColumnId = reader.int32();
           continue;
         case 11:
           if (tag !== 90) {
@@ -1587,16 +1587,16 @@ export const Task = {
 
   fromJSON(object: any): Task {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       featuredImage: isSet(object.featuredImage) ? globalThis.String(object.featuredImage) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       status: isSet(object.status) ? globalThis.String(object.status) : "",
       priority: isSet(object.priority) ? globalThis.String(object.priority) : "",
-      startDate: isSet(object.startDate) ? globalThis.String(object.startDate) : "",
-      endDate: isSet(object.endDate) ? globalThis.String(object.endDate) : "",
+      startDate: isSet(object.startDate) ? globalThis.Number(object.startDate) : 0,
+      duration: isSet(object.duration) ? globalThis.Number(object.duration) : 0,
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
-      taskColumnId: isSet(object.taskColumnId) ? globalThis.String(object.taskColumnId) : "",
+      taskColumnId: isSet(object.taskColumnId) ? globalThis.Number(object.taskColumnId) : 0,
       predecessor: isSet(object.predecessor) ? globalThis.String(object.predecessor) : "",
       subtasks: globalThis.Array.isArray(object?.subtasks) ? object.subtasks.map((e: any) => Subtasks.fromJSON(e)) : [],
       assignees: globalThis.Array.isArray(object?.assignees)
@@ -1613,8 +1613,8 @@ export const Task = {
 
   toJSON(message: Task): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     if (message.name !== "") {
       obj.name = message.name;
@@ -1631,17 +1631,17 @@ export const Task = {
     if (message.priority !== "") {
       obj.priority = message.priority;
     }
-    if (message.startDate !== "") {
-      obj.startDate = message.startDate;
+    if (message.startDate !== 0) {
+      obj.startDate = Math.round(message.startDate);
     }
-    if (message.endDate !== "") {
-      obj.endDate = message.endDate;
+    if (message.duration !== 0) {
+      obj.duration = Math.round(message.duration);
     }
     if (message.createdBy !== "") {
       obj.createdBy = message.createdBy;
     }
-    if (message.taskColumnId !== "") {
-      obj.taskColumnId = message.taskColumnId;
+    if (message.taskColumnId !== 0) {
+      obj.taskColumnId = Math.round(message.taskColumnId);
     }
     if (message.predecessor !== "") {
       obj.predecessor = message.predecessor;
@@ -1666,16 +1666,16 @@ export const Task = {
   },
   fromPartial<I extends Exact<DeepPartial<Task>, I>>(object: I): Task {
     const message = createBaseTask();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     message.name = object.name ?? "";
     message.featuredImage = object.featuredImage ?? "";
     message.description = object.description ?? "";
     message.status = object.status ?? "";
     message.priority = object.priority ?? "";
-    message.startDate = object.startDate ?? "";
-    message.endDate = object.endDate ?? "";
+    message.startDate = object.startDate ?? 0;
+    message.duration = object.duration ?? 0;
     message.createdBy = object.createdBy ?? "";
-    message.taskColumnId = object.taskColumnId ?? "";
+    message.taskColumnId = object.taskColumnId ?? 0;
     message.predecessor = object.predecessor ?? "";
     message.subtasks = object.subtasks?.map((e) => Subtasks.fromPartial(e)) || [];
     message.assignees = object.assignees?.map((e) => e) || [];
@@ -1864,13 +1864,13 @@ export const TasksResponse = {
 };
 
 function createBaseTaskColumn(): TaskColumn {
-  return { id: "", name: "", limit: 0, order: 0, projectId: 0, task: [] };
+  return { id: 0, name: "", limit: 0, order: 0, projectId: 0, task: [] };
 }
 
 export const TaskColumn = {
   encode(message: TaskColumn, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     if (message.name !== "") {
       writer.uint32(18).string(message.name);
@@ -1898,11 +1898,11 @@ export const TaskColumn = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1950,7 +1950,7 @@ export const TaskColumn = {
 
   fromJSON(object: any): TaskColumn {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       order: isSet(object.order) ? globalThis.Number(object.order) : 0,
@@ -1961,8 +1961,8 @@ export const TaskColumn = {
 
   toJSON(message: TaskColumn): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     if (message.name !== "") {
       obj.name = message.name;
@@ -1987,7 +1987,7 @@ export const TaskColumn = {
   },
   fromPartial<I extends Exact<DeepPartial<TaskColumn>, I>>(object: I): TaskColumn {
     const message = createBaseTaskColumn();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     message.name = object.name ?? "";
     message.limit = object.limit ?? 0;
     message.order = object.order ?? 0;
@@ -2339,13 +2339,13 @@ export const CreateTaskColumnRequest = {
 };
 
 function createBaseUpdateTaskColumnRequest(): UpdateTaskColumnRequest {
-  return { id: "", name: undefined, order: undefined, limit: undefined };
+  return { id: 0, name: undefined, order: undefined, limit: undefined };
 }
 
 export const UpdateTaskColumnRequest = {
   encode(message: UpdateTaskColumnRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     if (message.name !== undefined) {
       writer.uint32(18).string(message.name);
@@ -2367,11 +2367,11 @@ export const UpdateTaskColumnRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -2405,7 +2405,7 @@ export const UpdateTaskColumnRequest = {
 
   fromJSON(object: any): UpdateTaskColumnRequest {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
       order: isSet(object.order) ? globalThis.Number(object.order) : undefined,
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : undefined,
@@ -2414,8 +2414,8 @@ export const UpdateTaskColumnRequest = {
 
   toJSON(message: UpdateTaskColumnRequest): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     if (message.name !== undefined) {
       obj.name = message.name;
@@ -2434,7 +2434,7 @@ export const UpdateTaskColumnRequest = {
   },
   fromPartial<I extends Exact<DeepPartial<UpdateTaskColumnRequest>, I>>(object: I): UpdateTaskColumnRequest {
     const message = createBaseUpdateTaskColumnRequest();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     message.name = object.name ?? undefined;
     message.order = object.order ?? undefined;
     message.limit = object.limit ?? undefined;
@@ -2443,13 +2443,13 @@ export const UpdateTaskColumnRequest = {
 };
 
 function createBaseRemoveTaskColumnRequest(): RemoveTaskColumnRequest {
-  return { id: "" };
+  return { id: 0 };
 }
 
 export const RemoveTaskColumnRequest = {
   encode(message: RemoveTaskColumnRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
     }
     return writer;
   },
@@ -2462,11 +2462,11 @@ export const RemoveTaskColumnRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.id = reader.string();
+          message.id = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -2478,13 +2478,13 @@ export const RemoveTaskColumnRequest = {
   },
 
   fromJSON(object: any): RemoveTaskColumnRequest {
-    return { id: isSet(object.id) ? globalThis.String(object.id) : "" };
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
   },
 
   toJSON(message: RemoveTaskColumnRequest): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
     }
     return obj;
   },
@@ -2494,7 +2494,7 @@ export const RemoveTaskColumnRequest = {
   },
   fromPartial<I extends Exact<DeepPartial<RemoveTaskColumnRequest>, I>>(object: I): RemoveTaskColumnRequest {
     const message = createBaseRemoveTaskColumnRequest();
-    message.id = object.id ?? "";
+    message.id = object.id ?? 0;
     return message;
   },
 };

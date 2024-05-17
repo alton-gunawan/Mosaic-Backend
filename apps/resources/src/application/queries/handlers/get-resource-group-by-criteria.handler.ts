@@ -18,7 +18,7 @@ export class GetResourceGroupByCriteriaHandler
   ): Promise<ResourceGroup[]> {
     return await this.resourceGroupRepository.find({
       relations: ['resource'],
-      where: { ...command },
+      where: { ...command, projectId: command?.projectId || undefined },
     });
   }
 }

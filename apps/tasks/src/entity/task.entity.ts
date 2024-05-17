@@ -46,12 +46,6 @@ export class Task {
   duration: number | undefined;
 
   @Column({
-    type: 'date',
-    name: 'end_date',
-  })
-  endDate: Date | undefined;
-
-  @Column({
     type: 'varchar',
   })
   predecessor: string | undefined;
@@ -65,7 +59,7 @@ export class Task {
     type: 'varchar',
     name: 'project_id',
   })
-  projectId: string | undefined;
+  projectId: number | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at: string | undefined;

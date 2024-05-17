@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { GatewayController } from './gateway.controller';
-import { GatewayService } from './gateway.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { ProjectsController } from './controllers/project.controller';
@@ -42,13 +40,12 @@ import { TaskGroupController } from './controllers/task-group.controller';
     ]),
   ],
   controllers: [
-    GatewayController,
     ProjectsController,
     TasksController,
     ResourcesController,
     ResourceGroupsController,
     TaskGroupController,
   ],
-  providers: [GatewayService],
+  providers: [],
 })
 export class GatewayModule {}

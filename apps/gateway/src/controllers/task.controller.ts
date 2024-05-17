@@ -82,7 +82,7 @@ export class TasksController implements OnModuleInit {
     const taskResponse$ = from(
       this.taskService.UpdateTask({
         ...updateTaskDto,
-        id: String(id),
+        id: id,
       }),
     );
 
@@ -254,7 +254,7 @@ export class TasksController implements OnModuleInit {
   }
 
   @Delete(':id')
-  public async remove(@Param('id') id: string): Promise<any> {
+  public async remove(@Param('id') id: number): Promise<any> {
     return await this.taskService.DeleteTask({
       id: id,
     });
@@ -280,7 +280,7 @@ export class TasksController implements OnModuleInit {
 
   @Put('column/:id')
   public async updateTaskColumn(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateTaskColumnDto: UpdateTaskColumnRequest,
   ): Promise<any> {
     return await this.taskService.UpdateTaskColumn({
@@ -290,7 +290,7 @@ export class TasksController implements OnModuleInit {
   }
 
   @Delete('column/:id')
-  public async removeTaskColumn(@Param('id') id: string): Promise<any> {
+  public async removeTaskColumn(@Param('id') id: number): Promise<any> {
     return await this.taskService.RemoveTaskColumn({
       id: id,
     });

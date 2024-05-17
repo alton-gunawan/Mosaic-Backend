@@ -9,8 +9,8 @@ export class UpdateTaskCommand implements ICommand {
     public description?: string,
     public priority?: string,
     public startDate?: Date,
-    public endDate?: Date,
-    public taskColumnId?: string,
+    public duration?: number,
+    public taskColumnId?: number,
     public resources?: Resources[],
     public predecessor?: string,
   ) {}

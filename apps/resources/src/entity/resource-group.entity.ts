@@ -26,8 +26,9 @@ export class ResourceGroup {
 
   @Column({
     type: 'varchar',
+    name: 'project_id',
   })
-  project_id: string | undefined;
+  projectId: string | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at: string | undefined;

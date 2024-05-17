@@ -25,6 +25,7 @@ import { Task } from './entity/task.entity';
 @Controller()
 export class TasksController {
   private readonly logger = new Logger(TasksController.name);
+
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
@@ -41,9 +42,6 @@ export class TasksController {
       ),
     );
 
-    this.logger.log('FindAllTasks');
-    this.logger.log(response);
-
     return TasksResponse.create({
       message: 'func:FindAllTasks()',
       statusCode: 200,
@@ -59,6 +57,9 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'CreateTask')
   async create(createTaskDto: CreateTaskRequest) {
+    this.logger.log('CreateTaskRequest:');
+    this.logger.log(createTaskDto);
+
     try {
       const response = await this.commandBus.execute(
         new CreateTaskCommand(
@@ -68,7 +69,7 @@ export class TasksController {
           createTaskDto?.status,
           createTaskDto?.priority,
           createTaskDto?.startDate,
-          createTaskDto?.endDate,
+          createTaskDto?.duration,
           createTaskDto?.createdBy,
           createTaskDto?.projectId,
           createTaskDto?.taskColumnId,
@@ -100,7 +101,7 @@ export class TasksController {
           updateTaskDto?.description,
           updateTaskDto?.priority,
           new Date(updateTaskDto?.startDate),
-          new Date(updateTaskDto?.endDate),
+          updateTaskDto?.duration,
           updateTaskDto?.taskColumnId,
           updateTaskDto?.resources,
           updateTaskDto?.predecessor,

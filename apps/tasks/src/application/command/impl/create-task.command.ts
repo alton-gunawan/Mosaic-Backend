@@ -7,11 +7,11 @@ export class CreateTaskCommand implements ICommand {
     public description: string,
     public status: string,
     public priority: string,
-    public startDate: string,
-    public endDate: string,
+    public startDate: number,
+    public duration: number,
     public createdBy: string,
-    public projectId: string,
-    public taskColumnId: string,
+    public projectId: number,
+    public taskColumnId: number,
     public predecessor: string,
   ) {}
 }

@@ -117,17 +117,17 @@ export class TaskGroupController implements OnModuleInit {
 
   @Put(':id')
   public async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateResourceGroupDto: UpdateResourceGroupRequest,
   ) {
     return await this.tasksService.UpdateTaskColumn({
       ...updateResourceGroupDto,
-      id: String(id),
+      id: id,
     });
   }
 
   @Delete(':id')
-  public async remove(@Param('id') id: string) {
+  public async remove(@Param('id') id: number) {
     return await this.tasksService.RemoveTaskColumn({
       id: id,
     });
