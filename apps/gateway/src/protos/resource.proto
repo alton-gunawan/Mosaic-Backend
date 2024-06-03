@@ -1,144 +1,159 @@
 syntax = "proto3";
 
-package resource;
+package packages.resource;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service ResourcesService {
-  rpc FindAllResources(FindAllResourcesRequest) returns (stream ResourcesResponse);
-  rpc FindOneResource(FindOneResourceRequest) returns (ResourceResponse);
+  rpc ListResources(ListResourcesRequest) returns (ResourceResponse);
   rpc CreateResource(CreateResourceRequest) returns (ResourceResponse);
   rpc UpdateResource(UpdateResourceRequest) returns (ResourceResponse);
-  rpc DeleteResource(DeleteResourceRequest) returns (ResourceResponse);
-  rpc AssignResource(AssignResourceRequest) returns (stream ResourceResponse);
-  rpc UnassignResource(UnassignResourceRequest) returns (ResourceResponse);
-  rpc FindAllResourceGroupsByCriteria(FindAllResourceGroupsByCriteriaRequest)
-      returns (ResourceGroupsResponse);
+  rpc DeleteResource(DeleteResourceRequest) returns (google.protobuf.Empty);
+  rpc UpdateTaskResourceAllocation(UpdateTaskResourceAllocationRequest) returns (ResourceResponse);
+  rpc ListResourceGroups(ListResourceGroupsRequest)
+      returns (ResourceGroupResponse);
   rpc CreateResourceGroup(CreateResourceGroupRequest)
       returns (ResourceGroupResponse);
   rpc UpdateResourceGroup(UpdateResourceGroupRequest)
       returns (ResourceGroupResponse);
   rpc DeleteResourceGroup(DeleteResourceGroupRequest)
-      returns (ResourceGroupResponse);
-  rpc FindAllResourceAllocationByCriteria(FindAllResourceAllocationByCriteriaRequest)
-      returns (ResourceResponse);
+      returns (google.protobuf.Empty);
+}
+
+message Datestamps {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp deleted_at = 3;
+}
+
+message Unit {
+  uint32 id = 1;
+  string name = 2;
 }
 
 message ResourceAllocation {
-  int32 id = 1;
-  int32 unit = 2;
-  string taskId = 3; 
+  uint32 quantity = 1;
+  uint32 allocated_unit = 2;
+  string task_id = 3;
+  string notes = 4;
+  uint32 resource_id = 5;
+  repeated uint32 role_id = 6;
 }
 
 message Resource {
-  oneof Resource { int32 id = 1; }
+  uint32 id = 1;
   string name = 2;
-  int32 unit = 3;
-  string projectId = 4;
-  repeated ResourceAllocation resourceAllocation = 5;
+  Unit unit = 3;
+  uint32 unit_quantity = 4;
+  string project_id = 5;
+  uint32 role_id = 6;
+  uint32 resource_group_id = 7;
+  repeated ResourceAllocation resource_allocation = 8;
+  Datestamps datestamps = 9;
 }
 
-message ResourcesResponse {
-  oneof ResourceResponse {
-    int32 statusCode = 1;
-    string message = 2;
-  }
-  repeated Resource data = 3;
+message ResourcesList {
+  repeated Resource data = 1;
+}
+  
+message ErrorResponse {
+  uint32 status_code = 1;
+  string message = 2;
 }
 
 message ResourceResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  Resource data = 3;
-}
-
-message FindAllResourcesRequest {
-  oneof Resource {
-    int32 id = 1;
-    string name = 2;
-    int32 unit = 3;
-    string projectId = 4;
+  oneof response {
+    ResourcesList data = 1;
+    ErrorResponse error = 2;
   }
-  repeated int32 taskId = 5;
 }
 
-message FindOneResourceRequest { int32 id = 1; }
+message ListResourcesRequest {
+  oneof resource {
+    uint32 id = 1;
+    uint32 resource_group_id = 2;
+    uint32 project_id = 3;
+  }
+  repeated uint32 task_id = 4;
+  oneof pagination {
+    uint32 limit = 5;
+    uint32 offset = 6;
+  }
+}
 
 message CreateResourceRequest {
-  oneof Resource {
+  oneof resource {
     string name = 1;
-    int32 unit = 2;
-    string projectId = 3;
-    string resourceGroupId = 4;
+    uint32 cost = 2;
+    uint32 unit_quantity = 3;
+    Unit unit = 4;
+    uint32 resource_group_id = 5;
+    uint32 project_id = 6;
   }
 }
 
 message UpdateResourceRequest {
-  int32 id = 1;
-  oneof Resource {
+  uint32 id = 1;
+  oneof resource {
     string name = 2;
-    int32 unit = 3;
-    string resourceGroupId = 4;
+    uint32 cost = 3;
+    uint32 unit_quantity = 4;
+    uint32 unit_id = 5;
+    uint32 resource_group_id = 6;
   }
 }
 
-message DeleteResourceRequest { int32 id = 1; }
+message DeleteResourceRequest { uint32 id = 1; }
 
 message ResourceGroup {
-  oneof ResourceGroup { int32 id = 1; }
+  uint32 id = 1;
   string name = 2;
   string description = 3;
-  string projectId = 4;
+  uint32 project_id = 4;
   repeated Resource resource = 5;
+  Datestamps datestamps = 6;
 }
 
-message AssignResourceRequest {
-  oneof AssignResourceRequest {
-    int32 resourceId = 1;
-    int32 taskId = 2;
-    int32 unit = 3;
+message UpdateTaskResourceAllocationRequest {
+  uint32 task_id = 1;
+  uint32 resource_id = 2;
+  uint32 unit = 3;
+  enum Operation {
+    ALLOCATE = 0;
+    UNALLOCATE = 1;
   }
-}
-message UnassignResourceRequest {
-  int32 id = 1;
+  Operation operation = 4;
 }
 
-message FindAllResourceAllocationByCriteriaRequest {
-  oneof Resource {
-    int32 id = 1;
-  }
-  repeated int32 taskId = 2;
-}
-
-message FindAllResourceGroupsByCriteriaRequest {
-  int32 id = 1;
-  string projectId = 2;
+message ListResourceGroupsRequest {
+  uint32 id = 1;
+  uint32 project_id = 2;
 }
 
 message CreateResourceGroupRequest {
   string name = 1;
   string description = 2;
-  string projectId = 3;
+  uint32 project_id = 3;
 }
 
 message UpdateResourceGroupRequest {
-  int32 id = 1;
-  oneof UpdateResourceGroupRequest {
+  uint32 id = 1;
+  oneof resource {
     string name = 2;
     string description = 3;
   }
 }
 
-message DeleteResourceGroupRequest { int32 id = 1; }
+message DeleteResourceGroupRequest { uint32 id = 1; }
 
-message ResourceGroupsResponse {
-  oneof ResourceResponse {
-    int32 statusCode = 1;
-    string message = 2;
-  }
-  repeated ResourceGroup data = 3;
+message ResourceGroupsList {
+  repeated ResourceGroup data = 1;
 }
 
 message ResourceGroupResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  oneof ResourceGroupResponse { ResourceGroup data = 3; }
+    oneof response {
+      ResourceGroupsList data = 1;
+      ErrorResponse error = 2;
+    }
 }

@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Inject,
   Logger,
   OnModuleInit,
@@ -12,13 +14,16 @@ import {
   Query,
 } from '@nestjs/common';
 import {
-  AssignResourceRequest,
   CreateResourceRequest,
-  FindAllResourcesRequest,
   ResourcesService,
   UpdateResourceRequest,
+  ListResourcesRequest,
+  UpdateTaskResourceAllocationRequest_Operation,
+  UpdateTaskResourceAllocationRequest,
+  ResourceResponse,
 } from '../protos/resource';
 import { ClientGrpc } from '@nestjs/microservices';
+import { Observable, catchError, from, map } from 'rxjs';
 
 @Controller({
   version: '1',
@@ -40,51 +45,112 @@ export class ResourcesController implements OnModuleInit {
 
   @Get()
   public async listResource(
-    @Query() findAllResourceDto?: FindAllResourcesRequest,
+    @Query() listResourcesDto?: ListResourcesRequest,
   ): Promise<any> {
-    const taskId =
-      JSON.parse(findAllResourceDto?.taskId as unknown as string) || [];
+    Logger.log('listResourcesDto:first()');
+    Logger.log(listResourcesDto);
 
-    return new Promise((resolve) => {
-      resolve(
-        this.resourcesService.FindAllResources({
-          ...findAllResourceDto,
-          taskId: taskId,
+    return new Promise((resolve, reject) => {
+      from(
+        this.resourcesService.ListResources({
+          ...listResourcesDto,
+          taskId: listResourcesDto.taskId
+            ? Array.isArray(listResourcesDto?.taskId)
+              ? listResourcesDto.taskId
+              : [listResourcesDto.taskId]
+            : undefined,
         }),
+      )
+        .pipe(
+          catchError((error: Error, caught: Observable<ResourceResponse>) => {
+            throw error;
+          }),
+        )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe({
+          next: (resourceResult) => {
+            Logger.log('resourceResult data:');
+            Logger.log(resourceResult);
+            resolve(resourceResult || []);
+          },
+          error: (error) => {
+            reject(error);
+          },
+        });
+    }).catch((error) => {
+      throw new HttpException(
+        error.message || 'Error creating task...',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     });
   }
 
   @Post()
   public async create(@Body() createResourceDto: CreateResourceRequest) {
-    return await this.resourcesService.CreateResource({
-      ...createResourceDto,
+    return new Promise((resolve, reject) => {
+      from(
+        this.resourcesService.CreateResource({
+          ...createResourceDto,
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe({
+          next: (resourceResult) => {
+            resolve(
+              resourceResult instanceof Array && resourceResult.length > 0
+                ? resourceResult[0]
+                : resourceResult,
+            );
+          },
+          error: (error) => {
+            reject(error);
+          },
+        });
+    }).catch((error) => {
+      throw new HttpException(
+        error.message || 'Error creating resource...',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     });
   }
 
   @Put(':id')
   public async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateResourceDto: UpdateResourceRequest,
   ) {
-    return await this.resourcesService.UpdateResource({
-      id: +id,
-      ...updateResourceDto,
+    return new Promise((resolve) => {
+      from(
+        this.resourcesService.UpdateResource({
+          ...updateResourceDto,
+          id: id,
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((resourceResult) => {
+          resolve(resourceResult[0]);
+        });
     });
   }
 
   @Delete(':id')
-  public async remove(@Param('id') id: string) {
-    return await this.resourcesService.DeleteResource({
-      id: +id,
+  public async remove(@Param('id') id: number) {
+    return new Promise((resolve) => {
+      from(
+        this.resourcesService.DeleteResource({
+          id: +id,
+        }),
+      ).subscribe((resourceResult) => {
+        resolve(resourceResult);
+      });
     });
   }
 
   @Post(':id/assignments')
   public async assignResourceToTask(
-    @Body() assignResourceDto: AssignResourceRequest,
+    @Body() assignResourceDto: UpdateTaskResourceAllocationRequest,
   ) {
-    return await this.resourcesService.AssignResource({
+    return await this.resourcesService.UpdateTaskResourceAllocation({
       ...assignResourceDto,
     });
   }
@@ -94,8 +160,11 @@ export class ResourcesController implements OnModuleInit {
     @Param('resourceId') resourceId: string,
     @Param('resourceAllocationId') resourceAllocationId: string,
   ) {
-    return await this.resourcesService.UnassignResource({
-      id: +resourceAllocationId,
+    return await this.resourcesService.UpdateTaskResourceAllocation({
+      unit: undefined,
+      resourceId: +resourceAllocationId,
+      taskId: 0,
+      operation: UpdateTaskResourceAllocationRequest_Operation.UNALLOCATE,
     });
   }
 }

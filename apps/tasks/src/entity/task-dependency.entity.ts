@@ -34,7 +34,7 @@ export class TaskDependency {
   @DeleteDateColumn({ name: 'deleted_at' })
   deleted_at: string | undefined;
 
-  @ManyToOne(() => Task, (task) => task.task_dependency)
-  @JoinColumn({ name: 'task_dependency_id', referencedColumnName: 'id' })
-  task: Task[] | undefined;
+  // @ManyToOne(() => Task, (task) => task.task)
+  // @JoinColumn({ name: 'task_dependency_id', referencedColumnName: 'id' })
+  // task: Task[] | undefined;
 }

@@ -22,6 +22,7 @@ import { ResourceAllocation } from './entity/resource-allocation.entity';
 import { GetResourceAllocationByCriteriaHandler } from './application/queries/handlers/get-resource-allocation-by-criteria.handler';
 import { AssignResourceHandler } from './application/command/handlers/assign-resource.handler';
 import { UnassignResourceHandler } from './application/command/handlers/unassign-resource.handler';
+import { Unit } from './entity/unit.entity';
 
 const application = [
   CreateResourceHandler,
@@ -46,6 +47,7 @@ const application = [
       Resource,
       ResourceGroup,
       ResourceAllocation,
+      Unit,
     ]),
     databaseProviders,
     ClientsModule.register([
@@ -54,7 +56,7 @@ const application = [
         transport: Transport.GRPC,
         options: {
           url: 'resources-service:3004',
-          package: 'resource',
+          package: 'packages.resource',
           protoPath: join(__dirname, '/protos/resource.proto'),
         },
       },

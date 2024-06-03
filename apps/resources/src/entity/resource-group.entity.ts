@@ -6,7 +6,6 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   OneToMany,
-  JoinColumn,
 } from 'typeorm';
 import { Resource } from './resource.entity';
 
@@ -19,23 +18,20 @@ export class ResourceGroup {
   name: string | undefined;
 
   @Column({
-    type: 'text',
-    nullable: true,
-  })
-  description: string | undefined;
-
-  @Column({
     type: 'varchar',
     name: 'project_id',
   })
-  projectId: string | undefined;
+  projectId: number | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  created_at: string | undefined;
+  createdAt: Date | undefined;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updated_at: string | undefined;
+  updatedAt: Date | undefined;
 
-  @OneToMany(() => Resource, (resource) => resource.resource_group)
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
+  deletedAt: Date | undefined;
+
+  @OneToMany(() => Resource, (resource) => resource.resourceGroup)
   resource: Resource[] | undefined;
 }

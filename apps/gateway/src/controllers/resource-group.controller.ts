@@ -13,11 +13,12 @@ import {
 } from '@nestjs/common';
 import {
   CreateResourceGroupRequest,
-  FindAllResourceGroupsByCriteriaRequest,
   ResourcesService,
   UpdateResourceGroupRequest,
+  ListResourceGroupsRequest,
 } from '../protos/resource';
 import { ClientGrpc } from '@nestjs/microservices';
+import { from, map } from 'rxjs';
 
 @Controller({
   version: '1',
@@ -38,11 +39,19 @@ export class ResourceGroupsController implements OnModuleInit {
   }
 
   @Get()
-  public async listResource(
-    @Query() findAllResourceGroupDto?: FindAllResourceGroupsByCriteriaRequest,
+  public async listResourceGroups(
+    @Query() listResourceGroupsDto?: ListResourceGroupsRequest,
   ): Promise<any> {
-    return await this.resourcesService.FindAllResourceGroupsByCriteria({
-      ...findAllResourceGroupDto,
+    return new Promise((resolve) => {
+      from(
+        this.resourcesService.ListResourceGroups({
+          ...listResourceGroupsDto,
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((resourceGroupResult) => {
+          resolve(resourceGroupResult);
+        });
     });
   }
 
@@ -50,26 +59,54 @@ export class ResourceGroupsController implements OnModuleInit {
   public async create(
     @Body() createResourceGroupDto: CreateResourceGroupRequest,
   ) {
-    return await this.resourcesService.CreateResourceGroup({
-      ...createResourceGroupDto,
+    return new Promise((resolve) => {
+      from(
+        this.resourcesService.CreateResourceGroup({
+          ...createResourceGroupDto,
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((resourceGroupResult) => {
+          resourceGroupResult
+            ? resolve(resourceGroupResult[0])
+            : resolve(resourceGroupResult);
+        });
     });
   }
 
   @Put(':id')
   public async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateResourceGroupDto: UpdateResourceGroupRequest,
   ) {
-    return await this.resourcesService.UpdateResourceGroup({
-      id: +id,
-      ...updateResourceGroupDto,
+    return new Promise((resolve) => {
+      from(
+        this.resourcesService.UpdateResourceGroup({
+          ...updateResourceGroupDto,
+          id: id,
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((resourceGroupResult) => {
+          resourceGroupResult
+            ? resolve(resourceGroupResult[0])
+            : resolve(resourceGroupResult);
+        });
     });
   }
 
   @Delete(':id')
-  public async remove(@Param('id') id: string) {
-    return await this.resourcesService.DeleteResourceGroup({
-      id: +id,
+  public async remove(@Param('id') id: number) {
+    return new Promise((resolve) => {
+      from(
+        this.resourcesService.DeleteResourceGroup({
+          id: +id,
+        }),
+      ).subscribe((resourceGroupResult) => {
+        resourceGroupResult
+          ? resolve(resourceGroupResult[0])
+          : resolve(resourceGroupResult);
+      });
     });
   }
 }

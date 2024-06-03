@@ -1,36 +1,28 @@
 import { Controller, Logger } from '@nestjs/common';
-import { ResourcesService } from './resources.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
-  AssignResourceRequest,
   CreateResourceGroupRequest,
   CreateResourceRequest,
   DeleteResourceGroupRequest,
   DeleteResourceRequest,
-  FindAllResourceGroupsByCriteriaRequest,
-  FindAllResourcesRequest,
-  FindOneResourceRequest,
-  Resource,
   ResourceGroupResponse,
-  ResourceGroupsResponse,
   ResourceResponse,
-  ResourcesResponse,
-  UnassignResourceRequest,
   UpdateResourceGroupRequest,
   UpdateResourceRequest,
+  ListResourcesRequest,
+  UpdateTaskResourceAllocationRequest,
+  ListResourceGroupsRequest,
 } from './protos/resource';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GetResourceByIdQuery } from './application/queries/impl/get-resource-by-id.query';
-import { GetResourceByCriteriaQuery } from './application/queries/impl/get-resource-by-criteria.query';
 import { CreateResourceCommand } from './application/command/impl/create-resource.command';
 import { UpdateResourceCommand } from './application/command/impl/update-resource.command';
 import { DeleteResourceCommand } from './application/command/impl/delete-resource.command';
 import { AssignResourceCommand } from './application/command/impl/assign-resource.command';
-import { UnassignResourceCommand } from './application/command/impl/unassign-resource.command';
 import { CreateResourceGroupCommand } from './application/command/impl/create-resource-group.command';
 import { UpdateResourceGroupCommand } from './application/command/impl/update-resource-group.command';
 import { GetResourceGroupByCriteriaQuery } from './application/queries/impl/get-resource-group-by-criteria.handler';
 import { DeleteResourceGroupCommand } from './application/command/impl/delete-resource-group.command';
+import { ListResourceQuery } from './application/queries/impl/get-resource-by-criteria.query';
 
 @Controller()
 export class ResourcesController {
@@ -41,188 +33,243 @@ export class ResourcesController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @GrpcMethod('ResourcesService', 'FindOneResource')
-  async findOne(findOneResourceDto: FindOneResourceRequest) {
-    const response = await this.queryBus.execute(
-      new GetResourceByIdQuery(findOneResourceDto.id),
-    );
+  @GrpcMethod('ResourcesService', 'ListResources')
+  async findAll(listResourcesDto: ListResourcesRequest) {
+    try {
+      const { id, resourceGroupId, taskId, projectId, limit, offset } =
+        listResourcesDto;
 
-    return ResourceResponse.create({
-      message: 'func:FindOneResource()',
-      statusCode: 200,
-      data: response,
-    });
-  }
+      const result = await this.queryBus.execute(
+        new ListResourceQuery(
+          id,
+          resourceGroupId,
+          taskId,
+          projectId,
+          limit,
+          offset,
+        ),
+      );
 
-  @GrpcMethod('ResourcesService', 'FindAllResources')
-  async findAll(findAllResourcesDto: FindAllResourcesRequest) {
-    const response = await this.queryBus.execute(
-      new GetResourceByCriteriaQuery(
-        findAllResourcesDto?.id,
-        findAllResourcesDto?.projectId,
-        findAllResourcesDto?.taskId || [],
-      ),
-    );
-
-    return ResourcesResponse.create({
-      message: 'func:FindAllResources()',
-      statusCode: 200,
-      data:
-        response.map((resource) => ({
-          id: resource.id,
-          name: resource.name,
-          unit: resource.unit,
-          projectId: resource.project_id,
-          resourceAllocation: resource.resource_allocation,
-        })) || [],
-    });
+      return ResourceResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error: any) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error retrieving project data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('ResourcesService', 'CreateResource')
   async create(createResourceDto: CreateResourceRequest) {
-    this.logger.log('func:CreateResource()');
-    const { name, unit, resourceGroupId, projectId } = createResourceDto;
+    try {
+      const { name, cost, unit, unitQuantity, resourceGroupId, projectId } =
+        createResourceDto;
 
-    const response = await this.commandBus.execute(
-      new CreateResourceCommand(name, unit, resourceGroupId, projectId),
-    );
+      const result = await this.commandBus.execute(
+        new CreateResourceCommand(
+          name,
+          cost,
+          unitQuantity,
+          unit,
+          resourceGroupId,
+          projectId,
+        ),
+      );
 
-    return ResourceResponse.create({
-      message: 'func:CreateResource()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
+      });
+    } catch (error: any) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error creating resource data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('ResourcesService', 'UpdateResource')
   async update(updateResourceDto: UpdateResourceRequest) {
-    const { id, name, unit } = updateResourceDto;
+    try {
+      const { id, name, cost, unitId, unitQuantity } = updateResourceDto;
 
-    const response = await this.commandBus.execute(
-      new UpdateResourceCommand(id, name, unit),
-    );
+      const result = await this.commandBus.execute(
+        new UpdateResourceCommand(id, name, cost, unitId, unitQuantity),
+      );
 
-    return ResourceResponse.create({
-      message: 'func:UpdateResource()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('ResourcesService', 'DeleteResource')
   async remove(deleteResourceDto: DeleteResourceRequest) {
-    const { id } = deleteResourceDto;
+    try {
+      const { id } = deleteResourceDto;
 
-    const response = await this.commandBus.execute(
-      new DeleteResourceCommand(id),
-    );
+      const result = await this.commandBus.execute(
+        new DeleteResourceCommand(id),
+      );
 
-    return ResourceResponse.create({
-      message: 'func:DeleteResource()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
   }
 
-  @GrpcMethod('ResourcesService', 'AssignResource')
-  async assignResource(assignResourceDto: AssignResourceRequest) {
-    const { resourceId, taskId, unit } = assignResourceDto;
-
-    const response = await this.commandBus.execute(
-      new AssignResourceCommand(resourceId, taskId, unit),
-    );
-
-    this.logger.log('AssignResource');
-    this.logger.log(JSON.stringify(assignResourceDto));
-    this.logger.log(JSON.stringify(response));
-
-    return ResourceResponse.create({
-      message: 'func:AssignResource()',
-      statusCode: 200,
-      data: response,
-    });
-  }
-
-  @GrpcMethod('ResourcesService', 'UnassignResource')
-  async unassignResource(unassignResourceDto: UnassignResourceRequest) {
-    const { id } = unassignResourceDto;
-
-    const response = await this.commandBus.execute(
-      new UnassignResourceCommand(id),
-    );
-
-    return ResourceResponse.create({
-      message: 'func:UnassignResource()',
-      statusCode: 200,
-      data: response,
-    });
-  }
-
-  @GrpcMethod('ResourcesService', 'FindAllResourceGroupsByCriteria')
-  async findAllResourceGroupsByCriteria(
-    findAllResourceGroupsByCriteriaDto: FindAllResourceGroupsByCriteriaRequest,
+  @GrpcMethod('ResourcesService', 'UpdateTaskResourceAllocation')
+  async updateTaskResourceAllocation(
+    updateTaskResourceAllocationDto: UpdateTaskResourceAllocationRequest,
   ) {
-    const { id, projectId } = findAllResourceGroupsByCriteriaDto;
+    try {
+      const { resourceId, taskId, unit } = updateTaskResourceAllocationDto;
 
-    const response = await this.queryBus.execute(
-      new GetResourceGroupByCriteriaQuery(id, projectId),
-    );
+      const result = await this.commandBus.execute(
+        new AssignResourceCommand(resourceId, taskId, unit),
+      );
 
-    return ResourceGroupsResponse.create({
-      message: 'func:FindAllResourceGroupsByCriteria()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('ResourcesService', 'ListResourceGroups')
+  async listResourceGroups(listResourceGroupsDto: ListResourceGroupsRequest) {
+    try {
+      const { id, projectId } = listResourceGroupsDto;
+
+      const result = await this.queryBus.execute(
+        new GetResourceGroupByCriteriaQuery(id, projectId),
+      );
+
+      return ResourceGroupResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('ResourcesService', 'CreateResourceGroup')
   async createResourceGroup(
     createResourceGroupDto: CreateResourceGroupRequest,
   ) {
-    const { name, description, projectId } = createResourceGroupDto;
+    try {
+      const { name, description, projectId } = createResourceGroupDto;
 
-    const response = await this.commandBus.execute(
-      new CreateResourceGroupCommand(name, description, projectId),
-    );
+      const result = await this.commandBus.execute(
+        new CreateResourceGroupCommand(name, description, projectId),
+      );
 
-    return ResourceGroupResponse.create({
-      message: 'func:CreateResource()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceGroupResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('ResourcesService', 'UpdateResourceGroup')
   async updateResourceGroup(
     updateResourceGroupDto: UpdateResourceGroupRequest,
   ) {
-    const { id, name, description } = updateResourceGroupDto;
+    try {
+      const { id, name, description } = updateResourceGroupDto;
 
-    const response = await this.commandBus.execute(
-      new UpdateResourceGroupCommand(id, name, description),
-    );
+      const result = await this.commandBus.execute(
+        new UpdateResourceGroupCommand(id, name, description),
+      );
 
-    return ResourceGroupResponse.create({
-      message: 'func:UpdateResourceGroup()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceGroupResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('ResourcesService', 'DeleteResourceGroup')
   async deleteResourceGroup(
     deleteResourceGroupDto: DeleteResourceGroupRequest,
   ) {
-    const { id } = deleteResourceGroupDto;
+    try {
+      const { id } = deleteResourceGroupDto;
 
-    const response = await this.commandBus.execute(
-      new DeleteResourceGroupCommand(id),
-    );
+      const result = await this.commandBus.execute(
+        new DeleteResourceGroupCommand(id),
+      );
 
-    return ResourceGroupResponse.create({
-      message: 'func:DeleteResourceGroup()',
-      statusCode: 200,
-      data: response,
-    });
+      return ResourceGroupResponse.create({
+        data: {
+          data: result || undefined,
+        },
+      });
+    } catch (error) {
+      return ResourceResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting resource data',
+        },
+      });
+    }
   }
 }

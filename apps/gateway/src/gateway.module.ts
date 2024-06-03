@@ -6,6 +6,7 @@ import { TasksController } from './controllers/task.controller';
 import { ResourcesController } from './controllers/resource.controller';
 import { ResourceGroupsController } from './controllers/resource-group.controller';
 import { TaskGroupController } from './controllers/task-group.controller';
+import { RisksController } from './controllers/risk.controller';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { TaskGroupController } from './controllers/task-group.controller';
         transport: Transport.GRPC,
         options: {
           url: 'projects-service:3002',
-          package: 'project',
+          package: 'packages.project',
           protoPath: join(__dirname, '/protos/project.proto'),
         },
       },
@@ -24,7 +25,7 @@ import { TaskGroupController } from './controllers/task-group.controller';
         transport: Transport.GRPC,
         options: {
           url: 'tasks-service:3003',
-          package: 'task',
+          package: 'packages.task',
           protoPath: join(__dirname, '/protos/task.proto'),
         },
       },
@@ -33,8 +34,17 @@ import { TaskGroupController } from './controllers/task-group.controller';
         transport: Transport.GRPC,
         options: {
           url: 'resources-service:3004',
-          package: 'resource',
+          package: 'packages.resource',
           protoPath: join(__dirname, '/protos/resource.proto'),
+        },
+      },
+      {
+        name: 'RISK_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          url: 'risks-service:3005',
+          package: 'packages.risk',
+          protoPath: join(__dirname, '/protos/risk.proto'),
         },
       },
     ]),
@@ -45,6 +55,7 @@ import { TaskGroupController } from './controllers/task-group.controller';
     ResourcesController,
     ResourceGroupsController,
     TaskGroupController,
+    RisksController,
   ],
   providers: [],
 })

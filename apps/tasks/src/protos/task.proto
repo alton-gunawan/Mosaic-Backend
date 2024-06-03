@@ -1,184 +1,180 @@
 syntax = "proto3";
 
-package task;
+package packages.task;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "resource.proto";
 
 service TasksService {
-    rpc FindAllTasks(FindAllTasksRequest) returns (TasksResponse);
-    rpc FindOneTask(FindOneTaskRequest) returns (TasksResponse);
+    rpc ListTasks(ListTasksRequest) returns (TaskResponse);
     rpc CreateTask(CreateTaskRequest) returns (TaskResponse);
-    rpc UpdateTask(UpdateTaskRequest) returns (stream TaskResponse);
-    rpc DeleteTask(DeleteTaskRequest) returns (TaskResponse);
-    rpc FindAllTaskColumn(FindAllTaskColumnRequest) returns (stream TaskColumnsResponse);
+    rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse);
+    rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty);
+    rpc ListTaskColumns(ListTaskColumnsRequest) returns (TaskColumnResponse);
     rpc CreateTaskColumn(CreateTaskColumnRequest) returns (TaskColumnResponse);
     rpc UpdateTaskColumn(UpdateTaskColumnRequest) returns (TaskColumnResponse);
-    rpc RemoveTaskColumn(RemoveTaskColumnRequest) returns (TaskColumnResponse);
+    rpc DeleteTaskColumn(DeleteTaskColumnRequest) returns (TaskColumnResponse);
 }
 
-message Empty {}
-
-message FindAllTasksRequest {
-    oneof Task {
-        int32 id = 1;
-        string createdBy = 2;
-        int32 projectId = 3;
-        int32 taskColumnId = 4;
-        string predecessor = 5;
-    }
-}
-
-message Resources {
-    oneof Resources {
-        int32 id = 1;
-        int32 unit = 2;
-        int32 taskId = 3;
-    }
+message Datestamps {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp deleted_at = 3;
 }
 
 message FindAllTasksResponse {
     repeated Task tasks = 1;
 }
 
-message FindOneTaskRequest {
-    int32 id = 1;
-}
-
-message FindOneTaskResponse {
-    repeated Task tasks = 1;
+message ListTasksRequest {
+    oneof task {
+        uint32 id = 1;
+        string created_by = 2;
+        uint32 project_id = 3;
+        uint32 task_column_id = 4;
+    }
+    oneof pagination {
+      uint32 limit = 5;
+      uint32 offset = 6;
+    }
 }
 
 message CreateTaskRequest {
-    oneof Task {
-        string name = 1;
-        string featuredImage = 2;
-        string description = 3;
-        string status = 4;
-        string priority = 5;
-        int32 startDate = 6;
-        int32 duration = 7;
-        string createdBy = 8;
-        int32 projectId = 9;
-        int32 taskColumnId = 10;
-        string predecessor = 11;
-    }
-    repeated Subtasks subtasks = 12;
-    repeated string assignees = 13;
-    repeated Dependencies dependencies = 14;
+    string name = 2;
+    string featured_image = 3;
+    string description = 4;
+    TaskStatus status = 5;
+    TaskPriority priority = 6;
+    google.protobuf.Timestamp start_date = 7;
+    google.protobuf.Duration duration = 8;
+    string predecessor = 9;
+    repeated Subtask subtasks = 10;
+    uint32 order = 11;
+    string created_by = 12;
+    repeated string assigned_to = 14;
+    optional uint32 issue_id = 15;
+    uint32 task_column_id = 16;
+    uint32 project_id = 17;
 }
 
 message UpdateTaskRequest {
-    int32 id = 1;
-    oneof Task {
-        string name = 2;
-        string featuredImage = 3;
-        string description = 4;
-        string status = 5;
-        string priority = 6;
-        int32 startDate = 7;
-        int32 duration = 8;
-        int32 taskColumnId = 9;
-        string predecessor = 10;
-    }
-    repeated Subtasks subtasks = 11;
-    repeated string assignees = 12;
-    repeated Dependencies dependencies = 13;
-    repeated Resources resources = 14;
+    uint32 id = 1;
+    string name = 2;
+    string featured_image = 3;
+    string description = 4;
+    TaskStatus status = 5;
+    TaskPriority priority = 6;
+    google.protobuf.Timestamp start_date = 7;
+    google.protobuf.Duration duration = 8;
+    string predecessor = 9;
+    repeated Subtask subtasks = 10;
+    repeated resource.Resource resources = 11;
+    uint32 order = 12;
+    repeated string assigned_to = 13;
+    optional uint32 issue_id = 14;
+    uint32 task_column_id = 15;
+    uint32 project_id = 16;
 }
 
 message DeleteTaskRequest {
-    int32 id = 1;
+    uint32 id = 1;
 }
 
-message Subtasks {
-    oneof Subtasks {
-        int32 id = 1;
-    }
+message Subtask {
+    uint32 id = 1;
     string label = 2;
     bool status = 3;
 }
 
-message Dependencies {
-    oneof Dependencies {
-        int32 id = 1;
-    }
-    string from = 2;
-    string to = 3;
-    string type = 4;
-    int32 lagTime = 5;
+message Task {
+    uint32 id = 1;
+    string name = 2;
+    string featured_image = 3;
+    string description = 4;
+    TaskStatus status = 5;
+    TaskPriority priority = 6;
+    google.protobuf.Timestamp start_date = 7;
+    google.protobuf.Duration duration = 8;
+    string predecessor = 9;
+    repeated Subtask subtasks = 10;
+    repeated resource.Resource resources = 11;
+    uint32 order = 12;
+    string created_by = 13;
+    repeated string assigned_to = 14;
+    optional uint32 issue_id = 15;
+    uint32 task_column_id = 16;
+    uint32 project_id = 17;
+    optional Datestamps datestamps = 18;
 }
 
-message Task {
-    int32 id = 1;
-    string name = 2;
-    string featuredImage = 3;
-    string description = 4;
-    string status = 5;
-    string priority = 6;
-    int32 startDate = 7;
-    int32 duration = 8;
-    string createdBy = 9;
-    int32 taskColumnId = 10;
-    string predecessor = 11;
-    repeated Subtasks subtasks = 12;
-    repeated string assignees = 13;
-    repeated Dependencies dependencies = 14;
-    repeated Resources resources = 15;
+message TasksList {
+    repeated Task data = 1;
+}
+  
+message ErrorResponse {
+    uint32 status_code = 1;
+    string message = 2;
 }
 
 message TaskResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  Task data = 3;
-}
-
-message TasksResponse {
-  oneof ProjectResponse {
-    int32 statusCode = 1;
-    string message = 2;
-  }
-  repeated Task data = 3;
+    oneof response {
+        TasksList data = 1;
+        ErrorResponse error = 2;
+    }
 }
 
 message TaskColumn {
-    int32 id = 1;
+    uint32 id = 1;
     string name = 2;
-    int32 limit = 3;
-    int32 order = 4;
-    int32 projectId = 5;
+    uint32 limit = 3;
+    uint32 order = 4;
+    uint32 project_id = 5;
     repeated Task task = 6;
+    Datestamps datestamps = 7;
+}
+
+message TaskColumnsList {
+    repeated TaskColumn data = 1;
 }
 
 message TaskColumnResponse {
-    int32 statusCode = 1;
-    string message = 2;
-    TaskColumn data = 3;
+    oneof response {
+        TaskColumnsList data = 1;
+        ErrorResponse error = 2;
+    }
 }
 
-message TaskColumnsResponse {
-    int32 statusCode = 1;
-    string message = 2;
-    repeated TaskColumn data = 3;
-}
-
-message FindAllTaskColumnRequest {
-    int32 projectId = 1;
+message ListTaskColumnsRequest {
+    uint32 project_id = 1;
 }
 
 message CreateTaskColumnRequest {
     string name = 1;
-    oneof TaskColumn {
-        int32 limit = 2;
-    }
-    int32 order = 3;
-    int32 projectId = 4;
+    uint32 limit = 2;
+    uint32 order = 3;
+    uint32 project_id = 4;
 }
 
 message UpdateTaskColumnRequest {
-    int32 id = 1;
-    oneof TaskColumn {
-        string name = 2;
-        int32 order = 3;
-        int32 limit = 4;
-    }
+    uint32 id = 1;
+    string name = 2;
+    uint32 order = 3;
+    uint32 limit = 4;
 }
 
-message RemoveTaskColumnRequest { int32 id = 1; }
+message DeleteTaskColumnRequest { uint32 id = 1; }
+
+enum TaskStatus {
+    PENDING = 0;
+    OPEN = 1;
+    WORK_IN_PROGRESS = 2;
+    COMPLETED = 3;
+}
+
+enum TaskPriority {
+    HIGH = 0;
+    MEDIUM = 1;
+    LOW = 2;
+}

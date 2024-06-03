@@ -1,60 +1,73 @@
 /* eslint-disable */
 import * as _m0 from "protobufjs/minimal";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import { Empty } from "./google/protobuf/empty";
 
-export const protobufPackage = "resource";
+export const protobufPackage = "packages.resource";
+
+export interface Unit {
+  id: number;
+  name: string;
+}
 
 export interface ResourceAllocation {
-  id: number;
-  unit: number;
+  quantity: number;
+  allocatedUnit: number;
   taskId: string;
+  notes: string;
+  resourceId: number;
+  roleId: number[];
 }
 
 export interface Resource {
-  id?: number | undefined;
+  id: number;
   name: string;
-  unit: number;
+  unit: Unit | undefined;
+  unitQuantity: number;
   projectId: string;
+  roleId: number;
+  resourceGroupId: number;
   resourceAllocation: ResourceAllocation[];
 }
 
-export interface ResourcesResponse {
-  statusCode?: number | undefined;
-  message?: string | undefined;
+export interface ResourcesList {
   data: Resource[];
 }
 
-export interface ResourceResponse {
+export interface ErrorResponse {
   statusCode: number;
   message: string;
-  data: Resource | undefined;
 }
 
-export interface FindAllResourcesRequest {
+export interface ResourceResponse {
+  data?: ResourcesList | undefined;
+  error?: ErrorResponse | undefined;
+}
+
+export interface ListResourcesRequest {
   id?: number | undefined;
-  name?: string | undefined;
-  unit?: number | undefined;
-  projectId?: string | undefined;
+  resourceGroupId?: number | undefined;
+  projectId?: number | undefined;
   taskId: number[];
-}
-
-export interface FindOneResourceRequest {
-  id: number;
+  limit?: number | undefined;
+  offset?: number | undefined;
 }
 
 export interface CreateResourceRequest {
   name?: string | undefined;
-  unit?: number | undefined;
-  projectId?: string | undefined;
-  resourceGroupId?: string | undefined;
+  cost?: number | undefined;
+  unitQuantity?: number | undefined;
+  unit?: Unit | undefined;
+  resourceGroupId?: number | undefined;
+  projectId?: number | undefined;
 }
 
 export interface UpdateResourceRequest {
   id: number;
   name?: string | undefined;
-  unit?: number | undefined;
-  resourceGroupId?: string | undefined;
+  cost?: number | undefined;
+  unitQuantity?: number | undefined;
+  unitId?: number | undefined;
+  resourceGroupId?: number | undefined;
 }
 
 export interface DeleteResourceRequest {
@@ -62,37 +75,66 @@ export interface DeleteResourceRequest {
 }
 
 export interface ResourceGroup {
-  id?: number | undefined;
+  id: number;
   name: string;
   description: string;
-  projectId: string;
+  projectId: number;
   resource: Resource[];
 }
 
-export interface AssignResourceRequest {
-  resourceId?: number | undefined;
-  taskId?: number | undefined;
-  unit?: number | undefined;
+export interface UpdateTaskResourceAllocationRequest {
+  taskId: number;
+  resourceId: number;
+  unit: number;
+  operation: UpdateTaskResourceAllocationRequest_Operation;
 }
 
-export interface UnassignResourceRequest {
+export enum UpdateTaskResourceAllocationRequest_Operation {
+  ALLOCATE = 0,
+  UNALLOCATE = 1,
+  UNRECOGNIZED = -1,
+}
+
+export function updateTaskResourceAllocationRequest_OperationFromJSON(
+  object: any,
+): UpdateTaskResourceAllocationRequest_Operation {
+  switch (object) {
+    case 0:
+    case "ALLOCATE":
+      return UpdateTaskResourceAllocationRequest_Operation.ALLOCATE;
+    case 1:
+    case "UNALLOCATE":
+      return UpdateTaskResourceAllocationRequest_Operation.UNALLOCATE;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return UpdateTaskResourceAllocationRequest_Operation.UNRECOGNIZED;
+  }
+}
+
+export function updateTaskResourceAllocationRequest_OperationToJSON(
+  object: UpdateTaskResourceAllocationRequest_Operation,
+): string {
+  switch (object) {
+    case UpdateTaskResourceAllocationRequest_Operation.ALLOCATE:
+      return "ALLOCATE";
+    case UpdateTaskResourceAllocationRequest_Operation.UNALLOCATE:
+      return "UNALLOCATE";
+    case UpdateTaskResourceAllocationRequest_Operation.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export interface ListResourceGroupsRequest {
   id: number;
-}
-
-export interface FindAllResourceAllocationByCriteriaRequest {
-  id?: number | undefined;
-  taskId: number[];
-}
-
-export interface FindAllResourceGroupsByCriteriaRequest {
-  id: number;
-  projectId: string;
+  projectId: number;
 }
 
 export interface CreateResourceGroupRequest {
   name: string;
   description: string;
-  projectId: string;
+  projectId: number;
 }
 
 export interface UpdateResourceGroupRequest {
@@ -105,33 +147,115 @@ export interface DeleteResourceGroupRequest {
   id: number;
 }
 
-export interface ResourceGroupsResponse {
-  statusCode?: number | undefined;
-  message?: string | undefined;
+export interface ResourceGroupsList {
   data: ResourceGroup[];
 }
 
 export interface ResourceGroupResponse {
-  statusCode: number;
-  message: string;
-  data?: ResourceGroup | undefined;
+  data?: ResourceGroupsList | undefined;
+  error?: ErrorResponse | undefined;
 }
 
+function createBaseUnit(): Unit {
+  return { id: 0, name: "" };
+}
+
+export const Unit = {
+  encode(message: Unit, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
+    }
+    if (message.name !== "") {
+      writer.uint32(18).string(message.name);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Unit {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUnit();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Unit {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+    };
+  },
+
+  toJSON(message: Unit): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Unit>, I>>(base?: I): Unit {
+    return Unit.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Unit>, I>>(object: I): Unit {
+    const message = createBaseUnit();
+    message.id = object.id ?? 0;
+    message.name = object.name ?? "";
+    return message;
+  },
+};
+
 function createBaseResourceAllocation(): ResourceAllocation {
-  return { id: 0, unit: 0, taskId: "" };
+  return { quantity: 0, allocatedUnit: 0, taskId: "", notes: "", resourceId: 0, roleId: [] };
 }
 
 export const ResourceAllocation = {
   encode(message: ResourceAllocation, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
+    if (message.quantity !== 0) {
+      writer.uint32(8).uint32(message.quantity);
     }
-    if (message.unit !== 0) {
-      writer.uint32(16).int32(message.unit);
+    if (message.allocatedUnit !== 0) {
+      writer.uint32(16).uint32(message.allocatedUnit);
     }
     if (message.taskId !== "") {
       writer.uint32(26).string(message.taskId);
     }
+    if (message.notes !== "") {
+      writer.uint32(34).string(message.notes);
+    }
+    if (message.resourceId !== 0) {
+      writer.uint32(40).uint32(message.resourceId);
+    }
+    writer.uint32(50).fork();
+    for (const v of message.roleId) {
+      writer.uint32(v);
+    }
+    writer.ldelim();
     return writer;
   },
 
@@ -147,14 +271,14 @@ export const ResourceAllocation = {
             break;
           }
 
-          message.id = reader.int32();
+          message.quantity = reader.uint32();
           continue;
         case 2:
           if (tag !== 16) {
             break;
           }
 
-          message.unit = reader.int32();
+          message.allocatedUnit = reader.uint32();
           continue;
         case 3:
           if (tag !== 26) {
@@ -163,6 +287,37 @@ export const ResourceAllocation = {
 
           message.taskId = reader.string();
           continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.notes = reader.string();
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.resourceId = reader.uint32();
+          continue;
+        case 6:
+          if (tag === 48) {
+            message.roleId.push(reader.uint32());
+
+            continue;
+          }
+
+          if (tag === 50) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.roleId.push(reader.uint32());
+            }
+
+            continue;
+          }
+
+          break;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -174,22 +329,34 @@ export const ResourceAllocation = {
 
   fromJSON(object: any): ResourceAllocation {
     return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : 0,
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+      allocatedUnit: isSet(object.allocatedUnit) ? globalThis.Number(object.allocatedUnit) : 0,
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
+      notes: isSet(object.notes) ? globalThis.String(object.notes) : "",
+      resourceId: isSet(object.resourceId) ? globalThis.Number(object.resourceId) : 0,
+      roleId: globalThis.Array.isArray(object?.roleId) ? object.roleId.map((e: any) => globalThis.Number(e)) : [],
     };
   },
 
   toJSON(message: ResourceAllocation): unknown {
     const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
     }
-    if (message.unit !== 0) {
-      obj.unit = Math.round(message.unit);
+    if (message.allocatedUnit !== 0) {
+      obj.allocatedUnit = Math.round(message.allocatedUnit);
     }
     if (message.taskId !== "") {
       obj.taskId = message.taskId;
+    }
+    if (message.notes !== "") {
+      obj.notes = message.notes;
+    }
+    if (message.resourceId !== 0) {
+      obj.resourceId = Math.round(message.resourceId);
+    }
+    if (message.roleId?.length) {
+      obj.roleId = message.roleId.map((e) => Math.round(e));
     }
     return obj;
   },
@@ -199,33 +366,54 @@ export const ResourceAllocation = {
   },
   fromPartial<I extends Exact<DeepPartial<ResourceAllocation>, I>>(object: I): ResourceAllocation {
     const message = createBaseResourceAllocation();
-    message.id = object.id ?? 0;
-    message.unit = object.unit ?? 0;
+    message.quantity = object.quantity ?? 0;
+    message.allocatedUnit = object.allocatedUnit ?? 0;
     message.taskId = object.taskId ?? "";
+    message.notes = object.notes ?? "";
+    message.resourceId = object.resourceId ?? 0;
+    message.roleId = object.roleId?.map((e) => e) || [];
     return message;
   },
 };
 
 function createBaseResource(): Resource {
-  return { id: undefined, name: "", unit: 0, projectId: "", resourceAllocation: [] };
+  return {
+    id: 0,
+    name: "",
+    unit: undefined,
+    unitQuantity: 0,
+    projectId: "",
+    roleId: 0,
+    resourceGroupId: 0,
+    resourceAllocation: [],
+  };
 }
 
 export const Resource = {
   encode(message: Resource, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== undefined) {
-      writer.uint32(8).int32(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
     }
     if (message.name !== "") {
       writer.uint32(18).string(message.name);
     }
-    if (message.unit !== 0) {
-      writer.uint32(24).int32(message.unit);
+    if (message.unit !== undefined) {
+      Unit.encode(message.unit, writer.uint32(26).fork()).ldelim();
+    }
+    if (message.unitQuantity !== 0) {
+      writer.uint32(32).uint32(message.unitQuantity);
     }
     if (message.projectId !== "") {
-      writer.uint32(34).string(message.projectId);
+      writer.uint32(42).string(message.projectId);
+    }
+    if (message.roleId !== 0) {
+      writer.uint32(48).uint32(message.roleId);
+    }
+    if (message.resourceGroupId !== 0) {
+      writer.uint32(56).uint32(message.resourceGroupId);
     }
     for (const v of message.resourceAllocation) {
-      ResourceAllocation.encode(v!, writer.uint32(42).fork()).ldelim();
+      ResourceAllocation.encode(v!, writer.uint32(66).fork()).ldelim();
     }
     return writer;
   },
@@ -242,7 +430,7 @@ export const Resource = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -252,21 +440,42 @@ export const Resource = {
           message.name = reader.string();
           continue;
         case 3:
-          if (tag !== 24) {
+          if (tag !== 26) {
             break;
           }
 
-          message.unit = reader.int32();
+          message.unit = Unit.decode(reader, reader.uint32());
           continue;
         case 4:
-          if (tag !== 34) {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.unitQuantity = reader.uint32();
+          continue;
+        case 5:
+          if (tag !== 42) {
             break;
           }
 
           message.projectId = reader.string();
           continue;
-        case 5:
-          if (tag !== 42) {
+        case 6:
+          if (tag !== 48) {
+            break;
+          }
+
+          message.roleId = reader.uint32();
+          continue;
+        case 7:
+          if (tag !== 56) {
+            break;
+          }
+
+          message.resourceGroupId = reader.uint32();
+          continue;
+        case 8:
+          if (tag !== 66) {
             break;
           }
 
@@ -283,10 +492,13 @@ export const Resource = {
 
   fromJSON(object: any): Resource {
     return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : "",
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : 0,
+      unit: isSet(object.unit) ? Unit.fromJSON(object.unit) : undefined,
+      unitQuantity: isSet(object.unitQuantity) ? globalThis.Number(object.unitQuantity) : 0,
       projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      roleId: isSet(object.roleId) ? globalThis.Number(object.roleId) : 0,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.Number(object.resourceGroupId) : 0,
       resourceAllocation: globalThis.Array.isArray(object?.resourceAllocation)
         ? object.resourceAllocation.map((e: any) => ResourceAllocation.fromJSON(e))
         : [],
@@ -295,17 +507,26 @@ export const Resource = {
 
   toJSON(message: Resource): unknown {
     const obj: any = {};
-    if (message.id !== undefined) {
+    if (message.id !== 0) {
       obj.id = Math.round(message.id);
     }
     if (message.name !== "") {
       obj.name = message.name;
     }
-    if (message.unit !== 0) {
-      obj.unit = Math.round(message.unit);
+    if (message.unit !== undefined) {
+      obj.unit = Unit.toJSON(message.unit);
+    }
+    if (message.unitQuantity !== 0) {
+      obj.unitQuantity = Math.round(message.unitQuantity);
     }
     if (message.projectId !== "") {
       obj.projectId = message.projectId;
+    }
+    if (message.roleId !== 0) {
+      obj.roleId = Math.round(message.roleId);
+    }
+    if (message.resourceGroupId !== 0) {
+      obj.resourceGroupId = Math.round(message.resourceGroupId);
     }
     if (message.resourceAllocation?.length) {
       obj.resourceAllocation = message.resourceAllocation.map((e) => ResourceAllocation.toJSON(e));
@@ -318,56 +539,39 @@ export const Resource = {
   },
   fromPartial<I extends Exact<DeepPartial<Resource>, I>>(object: I): Resource {
     const message = createBaseResource();
-    message.id = object.id ?? undefined;
+    message.id = object.id ?? 0;
     message.name = object.name ?? "";
-    message.unit = object.unit ?? 0;
+    message.unit = (object.unit !== undefined && object.unit !== null) ? Unit.fromPartial(object.unit) : undefined;
+    message.unitQuantity = object.unitQuantity ?? 0;
     message.projectId = object.projectId ?? "";
+    message.roleId = object.roleId ?? 0;
+    message.resourceGroupId = object.resourceGroupId ?? 0;
     message.resourceAllocation = object.resourceAllocation?.map((e) => ResourceAllocation.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseResourcesResponse(): ResourcesResponse {
-  return { statusCode: undefined, message: undefined, data: [] };
+function createBaseResourcesList(): ResourcesList {
+  return { data: [] };
 }
 
-export const ResourcesResponse = {
-  encode(message: ResourcesResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.statusCode !== undefined) {
-      writer.uint32(8).int32(message.statusCode);
-    }
-    if (message.message !== undefined) {
-      writer.uint32(18).string(message.message);
-    }
+export const ResourcesList = {
+  encode(message: ResourcesList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.data) {
-      Resource.encode(v!, writer.uint32(26).fork()).ldelim();
+      Resource.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ResourcesResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ResourcesList {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseResourcesResponse();
+    const message = createBaseResourcesList();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 8) {
-            break;
-          }
-
-          message.statusCode = reader.int32();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        case 3:
-          if (tag !== 26) {
+          if (tag !== 10) {
             break;
           }
 
@@ -382,54 +586,113 @@ export const ResourcesResponse = {
     return message;
   },
 
-  fromJSON(object: any): ResourcesResponse {
-    return {
-      statusCode: isSet(object.statusCode) ? globalThis.Number(object.statusCode) : undefined,
-      message: isSet(object.message) ? globalThis.String(object.message) : undefined,
-      data: globalThis.Array.isArray(object?.data) ? object.data.map((e: any) => Resource.fromJSON(e)) : [],
-    };
+  fromJSON(object: any): ResourcesList {
+    return { data: globalThis.Array.isArray(object?.data) ? object.data.map((e: any) => Resource.fromJSON(e)) : [] };
   },
 
-  toJSON(message: ResourcesResponse): unknown {
+  toJSON(message: ResourcesList): unknown {
     const obj: any = {};
-    if (message.statusCode !== undefined) {
-      obj.statusCode = Math.round(message.statusCode);
-    }
-    if (message.message !== undefined) {
-      obj.message = message.message;
-    }
     if (message.data?.length) {
       obj.data = message.data.map((e) => Resource.toJSON(e));
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ResourcesResponse>, I>>(base?: I): ResourcesResponse {
-    return ResourcesResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ResourcesList>, I>>(base?: I): ResourcesList {
+    return ResourcesList.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ResourcesResponse>, I>>(object: I): ResourcesResponse {
-    const message = createBaseResourcesResponse();
-    message.statusCode = object.statusCode ?? undefined;
-    message.message = object.message ?? undefined;
+  fromPartial<I extends Exact<DeepPartial<ResourcesList>, I>>(object: I): ResourcesList {
+    const message = createBaseResourcesList();
     message.data = object.data?.map((e) => Resource.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseResourceResponse(): ResourceResponse {
-  return { statusCode: 0, message: "", data: undefined };
+function createBaseErrorResponse(): ErrorResponse {
+  return { statusCode: 0, message: "" };
 }
 
-export const ResourceResponse = {
-  encode(message: ResourceResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ErrorResponse = {
+  encode(message: ErrorResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.statusCode !== 0) {
-      writer.uint32(8).int32(message.statusCode);
+      writer.uint32(8).uint32(message.statusCode);
     }
     if (message.message !== "") {
       writer.uint32(18).string(message.message);
     }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ErrorResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseErrorResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.statusCode = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ErrorResponse {
+    return {
+      statusCode: isSet(object.statusCode) ? globalThis.Number(object.statusCode) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+    };
+  },
+
+  toJSON(message: ErrorResponse): unknown {
+    const obj: any = {};
+    if (message.statusCode !== 0) {
+      obj.statusCode = Math.round(message.statusCode);
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ErrorResponse>, I>>(base?: I): ErrorResponse {
+    return ErrorResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ErrorResponse>, I>>(object: I): ErrorResponse {
+    const message = createBaseErrorResponse();
+    message.statusCode = object.statusCode ?? 0;
+    message.message = object.message ?? "";
+    return message;
+  },
+};
+
+function createBaseResourceResponse(): ResourceResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const ResourceResponse = {
+  encode(message: ResourceResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.data !== undefined) {
-      Resource.encode(message.data, writer.uint32(26).fork()).ldelim();
+      ResourcesList.encode(message.data, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.error !== undefined) {
+      ErrorResponse.encode(message.error, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -442,25 +705,18 @@ export const ResourceResponse = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.statusCode = reader.int32();
+          message.data = ResourcesList.decode(reader, reader.uint32());
           continue;
         case 2:
           if (tag !== 18) {
             break;
           }
 
-          message.message = reader.string();
-          continue;
-        case 3:
-          if (tag !== 26) {
-            break;
-          }
-
-          message.data = Resource.decode(reader, reader.uint32());
+          message.error = ErrorResponse.decode(reader, reader.uint32());
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -473,22 +729,18 @@ export const ResourceResponse = {
 
   fromJSON(object: any): ResourceResponse {
     return {
-      statusCode: isSet(object.statusCode) ? globalThis.Number(object.statusCode) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-      data: isSet(object.data) ? Resource.fromJSON(object.data) : undefined,
+      data: isSet(object.data) ? ResourcesList.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? ErrorResponse.fromJSON(object.error) : undefined,
     };
   },
 
   toJSON(message: ResourceResponse): unknown {
     const obj: any = {};
-    if (message.statusCode !== 0) {
-      obj.statusCode = Math.round(message.statusCode);
-    }
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
     if (message.data !== undefined) {
-      obj.data = Resource.toJSON(message.data);
+      obj.data = ResourcesList.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = ErrorResponse.toJSON(message.error);
     }
     return obj;
   },
@@ -498,43 +750,56 @@ export const ResourceResponse = {
   },
   fromPartial<I extends Exact<DeepPartial<ResourceResponse>, I>>(object: I): ResourceResponse {
     const message = createBaseResourceResponse();
-    message.statusCode = object.statusCode ?? 0;
-    message.message = object.message ?? "";
-    message.data = (object.data !== undefined && object.data !== null) ? Resource.fromPartial(object.data) : undefined;
+    message.data = (object.data !== undefined && object.data !== null)
+      ? ResourcesList.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null)
+      ? ErrorResponse.fromPartial(object.error)
+      : undefined;
     return message;
   },
 };
 
-function createBaseFindAllResourcesRequest(): FindAllResourcesRequest {
-  return { id: undefined, name: undefined, unit: undefined, projectId: undefined, taskId: [] };
+function createBaseListResourcesRequest(): ListResourcesRequest {
+  return {
+    id: undefined,
+    resourceGroupId: undefined,
+    projectId: undefined,
+    taskId: [],
+    limit: undefined,
+    offset: undefined,
+  };
 }
 
-export const FindAllResourcesRequest = {
-  encode(message: FindAllResourcesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ListResourcesRequest = {
+  encode(message: ListResourcesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== undefined) {
-      writer.uint32(8).int32(message.id);
+      writer.uint32(8).uint32(message.id);
     }
-    if (message.name !== undefined) {
-      writer.uint32(18).string(message.name);
-    }
-    if (message.unit !== undefined) {
-      writer.uint32(24).int32(message.unit);
+    if (message.resourceGroupId !== undefined) {
+      writer.uint32(16).uint32(message.resourceGroupId);
     }
     if (message.projectId !== undefined) {
-      writer.uint32(34).string(message.projectId);
+      writer.uint32(24).uint32(message.projectId);
     }
-    writer.uint32(42).fork();
+    writer.uint32(34).fork();
     for (const v of message.taskId) {
-      writer.int32(v);
+      writer.uint32(v);
     }
     writer.ldelim();
+    if (message.limit !== undefined) {
+      writer.uint32(40).uint32(message.limit);
+    }
+    if (message.offset !== undefined) {
+      writer.uint32(48).uint32(message.offset);
+    }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): FindAllResourcesRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListResourcesRequest {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseFindAllResourcesRequest();
+    const message = createBaseListResourcesRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -543,124 +808,52 @@ export const FindAllResourcesRequest = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
         case 2:
-          if (tag !== 18) {
+          if (tag !== 16) {
             break;
           }
 
-          message.name = reader.string();
+          message.resourceGroupId = reader.uint32();
           continue;
         case 3:
           if (tag !== 24) {
             break;
           }
 
-          message.unit = reader.int32();
+          message.projectId = reader.uint32();
           continue;
         case 4:
-          if (tag !== 34) {
-            break;
-          }
-
-          message.projectId = reader.string();
-          continue;
-        case 5:
-          if (tag === 40) {
-            message.taskId.push(reader.int32());
+          if (tag === 32) {
+            message.taskId.push(reader.uint32());
 
             continue;
           }
 
-          if (tag === 42) {
+          if (tag === 34) {
             const end2 = reader.uint32() + reader.pos;
             while (reader.pos < end2) {
-              message.taskId.push(reader.int32());
+              message.taskId.push(reader.uint32());
             }
 
             continue;
           }
 
           break;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): FindAllResourcesRequest {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
-      name: isSet(object.name) ? globalThis.String(object.name) : undefined,
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
-      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.Number(e)) : [],
-    };
-  },
-
-  toJSON(message: FindAllResourcesRequest): unknown {
-    const obj: any = {};
-    if (message.id !== undefined) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.name !== undefined) {
-      obj.name = message.name;
-    }
-    if (message.unit !== undefined) {
-      obj.unit = Math.round(message.unit);
-    }
-    if (message.projectId !== undefined) {
-      obj.projectId = message.projectId;
-    }
-    if (message.taskId?.length) {
-      obj.taskId = message.taskId.map((e) => Math.round(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<FindAllResourcesRequest>, I>>(base?: I): FindAllResourcesRequest {
-    return FindAllResourcesRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<FindAllResourcesRequest>, I>>(object: I): FindAllResourcesRequest {
-    const message = createBaseFindAllResourcesRequest();
-    message.id = object.id ?? undefined;
-    message.name = object.name ?? undefined;
-    message.unit = object.unit ?? undefined;
-    message.projectId = object.projectId ?? undefined;
-    message.taskId = object.taskId?.map((e) => e) || [];
-    return message;
-  },
-};
-
-function createBaseFindOneResourceRequest(): FindOneResourceRequest {
-  return { id: 0 };
-}
-
-export const FindOneResourceRequest = {
-  encode(message: FindOneResourceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): FindOneResourceRequest {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseFindOneResourceRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 8) {
+        case 5:
+          if (tag !== 40) {
             break;
           }
 
-          message.id = reader.int32();
+          message.limit = reader.uint32();
+          continue;
+        case 6:
+          if (tag !== 48) {
+            break;
+          }
+
+          message.offset = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -671,30 +864,64 @@ export const FindOneResourceRequest = {
     return message;
   },
 
-  fromJSON(object: any): FindOneResourceRequest {
-    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
+  fromJSON(object: any): ListResourcesRequest {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.Number(object.resourceGroupId) : undefined,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : undefined,
+      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.Number(e)) : [],
+      limit: isSet(object.limit) ? globalThis.Number(object.limit) : undefined,
+      offset: isSet(object.offset) ? globalThis.Number(object.offset) : undefined,
+    };
   },
 
-  toJSON(message: FindOneResourceRequest): unknown {
+  toJSON(message: ListResourcesRequest): unknown {
     const obj: any = {};
-    if (message.id !== 0) {
+    if (message.id !== undefined) {
       obj.id = Math.round(message.id);
+    }
+    if (message.resourceGroupId !== undefined) {
+      obj.resourceGroupId = Math.round(message.resourceGroupId);
+    }
+    if (message.projectId !== undefined) {
+      obj.projectId = Math.round(message.projectId);
+    }
+    if (message.taskId?.length) {
+      obj.taskId = message.taskId.map((e) => Math.round(e));
+    }
+    if (message.limit !== undefined) {
+      obj.limit = Math.round(message.limit);
+    }
+    if (message.offset !== undefined) {
+      obj.offset = Math.round(message.offset);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FindOneResourceRequest>, I>>(base?: I): FindOneResourceRequest {
-    return FindOneResourceRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ListResourcesRequest>, I>>(base?: I): ListResourcesRequest {
+    return ListResourcesRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FindOneResourceRequest>, I>>(object: I): FindOneResourceRequest {
-    const message = createBaseFindOneResourceRequest();
-    message.id = object.id ?? 0;
+  fromPartial<I extends Exact<DeepPartial<ListResourcesRequest>, I>>(object: I): ListResourcesRequest {
+    const message = createBaseListResourcesRequest();
+    message.id = object.id ?? undefined;
+    message.resourceGroupId = object.resourceGroupId ?? undefined;
+    message.projectId = object.projectId ?? undefined;
+    message.taskId = object.taskId?.map((e) => e) || [];
+    message.limit = object.limit ?? undefined;
+    message.offset = object.offset ?? undefined;
     return message;
   },
 };
 
 function createBaseCreateResourceRequest(): CreateResourceRequest {
-  return { name: undefined, unit: undefined, projectId: undefined, resourceGroupId: undefined };
+  return {
+    name: undefined,
+    cost: undefined,
+    unitQuantity: undefined,
+    unit: undefined,
+    resourceGroupId: undefined,
+    projectId: undefined,
+  };
 }
 
 export const CreateResourceRequest = {
@@ -702,14 +929,20 @@ export const CreateResourceRequest = {
     if (message.name !== undefined) {
       writer.uint32(10).string(message.name);
     }
-    if (message.unit !== undefined) {
-      writer.uint32(16).int32(message.unit);
+    if (message.cost !== undefined) {
+      writer.uint32(16).uint32(message.cost);
     }
-    if (message.projectId !== undefined) {
-      writer.uint32(26).string(message.projectId);
+    if (message.unitQuantity !== undefined) {
+      writer.uint32(24).uint32(message.unitQuantity);
+    }
+    if (message.unit !== undefined) {
+      Unit.encode(message.unit, writer.uint32(34).fork()).ldelim();
     }
     if (message.resourceGroupId !== undefined) {
-      writer.uint32(34).string(message.resourceGroupId);
+      writer.uint32(40).uint32(message.resourceGroupId);
+    }
+    if (message.projectId !== undefined) {
+      writer.uint32(48).uint32(message.projectId);
     }
     return writer;
   },
@@ -733,21 +966,35 @@ export const CreateResourceRequest = {
             break;
           }
 
-          message.unit = reader.int32();
+          message.cost = reader.uint32();
           continue;
         case 3:
-          if (tag !== 26) {
+          if (tag !== 24) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.unitQuantity = reader.uint32();
           continue;
         case 4:
           if (tag !== 34) {
             break;
           }
 
-          message.resourceGroupId = reader.string();
+          message.unit = Unit.decode(reader, reader.uint32());
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.resourceGroupId = reader.uint32();
+          continue;
+        case 6:
+          if (tag !== 48) {
+            break;
+          }
+
+          message.projectId = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -761,9 +1008,11 @@ export const CreateResourceRequest = {
   fromJSON(object: any): CreateResourceRequest {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : undefined,
-      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.String(object.resourceGroupId) : undefined,
+      cost: isSet(object.cost) ? globalThis.Number(object.cost) : undefined,
+      unitQuantity: isSet(object.unitQuantity) ? globalThis.Number(object.unitQuantity) : undefined,
+      unit: isSet(object.unit) ? Unit.fromJSON(object.unit) : undefined,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.Number(object.resourceGroupId) : undefined,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : undefined,
     };
   },
 
@@ -772,14 +1021,20 @@ export const CreateResourceRequest = {
     if (message.name !== undefined) {
       obj.name = message.name;
     }
-    if (message.unit !== undefined) {
-      obj.unit = Math.round(message.unit);
+    if (message.cost !== undefined) {
+      obj.cost = Math.round(message.cost);
     }
-    if (message.projectId !== undefined) {
-      obj.projectId = message.projectId;
+    if (message.unitQuantity !== undefined) {
+      obj.unitQuantity = Math.round(message.unitQuantity);
+    }
+    if (message.unit !== undefined) {
+      obj.unit = Unit.toJSON(message.unit);
     }
     if (message.resourceGroupId !== undefined) {
-      obj.resourceGroupId = message.resourceGroupId;
+      obj.resourceGroupId = Math.round(message.resourceGroupId);
+    }
+    if (message.projectId !== undefined) {
+      obj.projectId = Math.round(message.projectId);
     }
     return obj;
   },
@@ -790,30 +1045,45 @@ export const CreateResourceRequest = {
   fromPartial<I extends Exact<DeepPartial<CreateResourceRequest>, I>>(object: I): CreateResourceRequest {
     const message = createBaseCreateResourceRequest();
     message.name = object.name ?? undefined;
-    message.unit = object.unit ?? undefined;
-    message.projectId = object.projectId ?? undefined;
+    message.cost = object.cost ?? undefined;
+    message.unitQuantity = object.unitQuantity ?? undefined;
+    message.unit = (object.unit !== undefined && object.unit !== null) ? Unit.fromPartial(object.unit) : undefined;
     message.resourceGroupId = object.resourceGroupId ?? undefined;
+    message.projectId = object.projectId ?? undefined;
     return message;
   },
 };
 
 function createBaseUpdateResourceRequest(): UpdateResourceRequest {
-  return { id: 0, name: undefined, unit: undefined, resourceGroupId: undefined };
+  return {
+    id: 0,
+    name: undefined,
+    cost: undefined,
+    unitQuantity: undefined,
+    unitId: undefined,
+    resourceGroupId: undefined,
+  };
 }
 
 export const UpdateResourceRequest = {
   encode(message: UpdateResourceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
+      writer.uint32(8).uint32(message.id);
     }
     if (message.name !== undefined) {
       writer.uint32(18).string(message.name);
     }
-    if (message.unit !== undefined) {
-      writer.uint32(24).int32(message.unit);
+    if (message.cost !== undefined) {
+      writer.uint32(24).uint32(message.cost);
+    }
+    if (message.unitQuantity !== undefined) {
+      writer.uint32(32).uint32(message.unitQuantity);
+    }
+    if (message.unitId !== undefined) {
+      writer.uint32(40).uint32(message.unitId);
     }
     if (message.resourceGroupId !== undefined) {
-      writer.uint32(34).string(message.resourceGroupId);
+      writer.uint32(48).uint32(message.resourceGroupId);
     }
     return writer;
   },
@@ -830,7 +1100,7 @@ export const UpdateResourceRequest = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -844,14 +1114,28 @@ export const UpdateResourceRequest = {
             break;
           }
 
-          message.unit = reader.int32();
+          message.cost = reader.uint32();
           continue;
         case 4:
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.resourceGroupId = reader.string();
+          message.unitQuantity = reader.uint32();
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.unitId = reader.uint32();
+          continue;
+        case 6:
+          if (tag !== 48) {
+            break;
+          }
+
+          message.resourceGroupId = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -866,8 +1150,10 @@ export const UpdateResourceRequest = {
     return {
       id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
-      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.String(object.resourceGroupId) : undefined,
+      cost: isSet(object.cost) ? globalThis.Number(object.cost) : undefined,
+      unitQuantity: isSet(object.unitQuantity) ? globalThis.Number(object.unitQuantity) : undefined,
+      unitId: isSet(object.unitId) ? globalThis.Number(object.unitId) : undefined,
+      resourceGroupId: isSet(object.resourceGroupId) ? globalThis.Number(object.resourceGroupId) : undefined,
     };
   },
 
@@ -879,11 +1165,17 @@ export const UpdateResourceRequest = {
     if (message.name !== undefined) {
       obj.name = message.name;
     }
-    if (message.unit !== undefined) {
-      obj.unit = Math.round(message.unit);
+    if (message.cost !== undefined) {
+      obj.cost = Math.round(message.cost);
+    }
+    if (message.unitQuantity !== undefined) {
+      obj.unitQuantity = Math.round(message.unitQuantity);
+    }
+    if (message.unitId !== undefined) {
+      obj.unitId = Math.round(message.unitId);
     }
     if (message.resourceGroupId !== undefined) {
-      obj.resourceGroupId = message.resourceGroupId;
+      obj.resourceGroupId = Math.round(message.resourceGroupId);
     }
     return obj;
   },
@@ -895,7 +1187,9 @@ export const UpdateResourceRequest = {
     const message = createBaseUpdateResourceRequest();
     message.id = object.id ?? 0;
     message.name = object.name ?? undefined;
-    message.unit = object.unit ?? undefined;
+    message.cost = object.cost ?? undefined;
+    message.unitQuantity = object.unitQuantity ?? undefined;
+    message.unitId = object.unitId ?? undefined;
     message.resourceGroupId = object.resourceGroupId ?? undefined;
     return message;
   },
@@ -908,7 +1202,7 @@ function createBaseDeleteResourceRequest(): DeleteResourceRequest {
 export const DeleteResourceRequest = {
   encode(message: DeleteResourceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
+      writer.uint32(8).uint32(message.id);
     }
     return writer;
   },
@@ -925,7 +1219,7 @@ export const DeleteResourceRequest = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -959,13 +1253,13 @@ export const DeleteResourceRequest = {
 };
 
 function createBaseResourceGroup(): ResourceGroup {
-  return { id: undefined, name: "", description: "", projectId: "", resource: [] };
+  return { id: 0, name: "", description: "", projectId: 0, resource: [] };
 }
 
 export const ResourceGroup = {
   encode(message: ResourceGroup, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== undefined) {
-      writer.uint32(8).int32(message.id);
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
     }
     if (message.name !== "") {
       writer.uint32(18).string(message.name);
@@ -973,8 +1267,8 @@ export const ResourceGroup = {
     if (message.description !== "") {
       writer.uint32(26).string(message.description);
     }
-    if (message.projectId !== "") {
-      writer.uint32(34).string(message.projectId);
+    if (message.projectId !== 0) {
+      writer.uint32(32).uint32(message.projectId);
     }
     for (const v of message.resource) {
       Resource.encode(v!, writer.uint32(42).fork()).ldelim();
@@ -994,7 +1288,7 @@ export const ResourceGroup = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1011,11 +1305,11 @@ export const ResourceGroup = {
           message.description = reader.string();
           continue;
         case 4:
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.uint32();
           continue;
         case 5:
           if (tag !== 42) {
@@ -1035,17 +1329,17 @@ export const ResourceGroup = {
 
   fromJSON(object: any): ResourceGroup {
     return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
       resource: globalThis.Array.isArray(object?.resource) ? object.resource.map((e: any) => Resource.fromJSON(e)) : [],
     };
   },
 
   toJSON(message: ResourceGroup): unknown {
     const obj: any = {};
-    if (message.id !== undefined) {
+    if (message.id !== 0) {
       obj.id = Math.round(message.id);
     }
     if (message.name !== "") {
@@ -1054,8 +1348,8 @@ export const ResourceGroup = {
     if (message.description !== "") {
       obj.description = message.description;
     }
-    if (message.projectId !== "") {
-      obj.projectId = message.projectId;
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
     }
     if (message.resource?.length) {
       obj.resource = message.resource.map((e) => Resource.toJSON(e));
@@ -1068,37 +1362,40 @@ export const ResourceGroup = {
   },
   fromPartial<I extends Exact<DeepPartial<ResourceGroup>, I>>(object: I): ResourceGroup {
     const message = createBaseResourceGroup();
-    message.id = object.id ?? undefined;
+    message.id = object.id ?? 0;
     message.name = object.name ?? "";
     message.description = object.description ?? "";
-    message.projectId = object.projectId ?? "";
+    message.projectId = object.projectId ?? 0;
     message.resource = object.resource?.map((e) => Resource.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseAssignResourceRequest(): AssignResourceRequest {
-  return { resourceId: undefined, taskId: undefined, unit: undefined };
+function createBaseUpdateTaskResourceAllocationRequest(): UpdateTaskResourceAllocationRequest {
+  return { taskId: 0, resourceId: 0, unit: 0, operation: 0 };
 }
 
-export const AssignResourceRequest = {
-  encode(message: AssignResourceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.resourceId !== undefined) {
-      writer.uint32(8).int32(message.resourceId);
+export const UpdateTaskResourceAllocationRequest = {
+  encode(message: UpdateTaskResourceAllocationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.taskId !== 0) {
+      writer.uint32(8).uint32(message.taskId);
     }
-    if (message.taskId !== undefined) {
-      writer.uint32(16).int32(message.taskId);
+    if (message.resourceId !== 0) {
+      writer.uint32(16).uint32(message.resourceId);
     }
-    if (message.unit !== undefined) {
-      writer.uint32(24).int32(message.unit);
+    if (message.unit !== 0) {
+      writer.uint32(24).uint32(message.unit);
+    }
+    if (message.operation !== 0) {
+      writer.uint32(32).int32(message.operation);
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): AssignResourceRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateTaskResourceAllocationRequest {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseAssignResourceRequest();
+    const message = createBaseUpdateTaskResourceAllocationRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1107,21 +1404,28 @@ export const AssignResourceRequest = {
             break;
           }
 
-          message.resourceId = reader.int32();
+          message.taskId = reader.uint32();
           continue;
         case 2:
           if (tag !== 16) {
             break;
           }
 
-          message.taskId = reader.int32();
+          message.resourceId = reader.uint32();
           continue;
         case 3:
           if (tag !== 24) {
             break;
           }
 
-          message.unit = reader.int32();
+          message.unit = reader.uint32();
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.operation = reader.int32() as any;
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1132,206 +1436,68 @@ export const AssignResourceRequest = {
     return message;
   },
 
-  fromJSON(object: any): AssignResourceRequest {
+  fromJSON(object: any): UpdateTaskResourceAllocationRequest {
     return {
-      resourceId: isSet(object.resourceId) ? globalThis.Number(object.resourceId) : undefined,
-      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : undefined,
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : undefined,
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
+      resourceId: isSet(object.resourceId) ? globalThis.Number(object.resourceId) : 0,
+      unit: isSet(object.unit) ? globalThis.Number(object.unit) : 0,
+      operation: isSet(object.operation) ? updateTaskResourceAllocationRequest_OperationFromJSON(object.operation) : 0,
     };
   },
 
-  toJSON(message: AssignResourceRequest): unknown {
+  toJSON(message: UpdateTaskResourceAllocationRequest): unknown {
     const obj: any = {};
-    if (message.resourceId !== undefined) {
-      obj.resourceId = Math.round(message.resourceId);
-    }
-    if (message.taskId !== undefined) {
+    if (message.taskId !== 0) {
       obj.taskId = Math.round(message.taskId);
     }
-    if (message.unit !== undefined) {
+    if (message.resourceId !== 0) {
+      obj.resourceId = Math.round(message.resourceId);
+    }
+    if (message.unit !== 0) {
       obj.unit = Math.round(message.unit);
     }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<AssignResourceRequest>, I>>(base?: I): AssignResourceRequest {
-    return AssignResourceRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<AssignResourceRequest>, I>>(object: I): AssignResourceRequest {
-    const message = createBaseAssignResourceRequest();
-    message.resourceId = object.resourceId ?? undefined;
-    message.taskId = object.taskId ?? undefined;
-    message.unit = object.unit ?? undefined;
-    return message;
-  },
-};
-
-function createBaseUnassignResourceRequest(): UnassignResourceRequest {
-  return { id: 0 };
-}
-
-export const UnassignResourceRequest = {
-  encode(message: UnassignResourceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UnassignResourceRequest {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUnassignResourceRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 8) {
-            break;
-          }
-
-          message.id = reader.int32();
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): UnassignResourceRequest {
-    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
-  },
-
-  toJSON(message: UnassignResourceRequest): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
+    if (message.operation !== 0) {
+      obj.operation = updateTaskResourceAllocationRequest_OperationToJSON(message.operation);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<UnassignResourceRequest>, I>>(base?: I): UnassignResourceRequest {
-    return UnassignResourceRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UnassignResourceRequest>, I>>(object: I): UnassignResourceRequest {
-    const message = createBaseUnassignResourceRequest();
-    message.id = object.id ?? 0;
-    return message;
-  },
-};
-
-function createBaseFindAllResourceAllocationByCriteriaRequest(): FindAllResourceAllocationByCriteriaRequest {
-  return { id: undefined, taskId: [] };
-}
-
-export const FindAllResourceAllocationByCriteriaRequest = {
-  encode(message: FindAllResourceAllocationByCriteriaRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== undefined) {
-      writer.uint32(8).int32(message.id);
-    }
-    writer.uint32(18).fork();
-    for (const v of message.taskId) {
-      writer.int32(v);
-    }
-    writer.ldelim();
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): FindAllResourceAllocationByCriteriaRequest {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseFindAllResourceAllocationByCriteriaRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 8) {
-            break;
-          }
-
-          message.id = reader.int32();
-          continue;
-        case 2:
-          if (tag === 16) {
-            message.taskId.push(reader.int32());
-
-            continue;
-          }
-
-          if (tag === 18) {
-            const end2 = reader.uint32() + reader.pos;
-            while (reader.pos < end2) {
-              message.taskId.push(reader.int32());
-            }
-
-            continue;
-          }
-
-          break;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): FindAllResourceAllocationByCriteriaRequest {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
-      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.Number(e)) : [],
-    };
-  },
-
-  toJSON(message: FindAllResourceAllocationByCriteriaRequest): unknown {
-    const obj: any = {};
-    if (message.id !== undefined) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.taskId?.length) {
-      obj.taskId = message.taskId.map((e) => Math.round(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<FindAllResourceAllocationByCriteriaRequest>, I>>(
+  create<I extends Exact<DeepPartial<UpdateTaskResourceAllocationRequest>, I>>(
     base?: I,
-  ): FindAllResourceAllocationByCriteriaRequest {
-    return FindAllResourceAllocationByCriteriaRequest.fromPartial(base ?? ({} as any));
+  ): UpdateTaskResourceAllocationRequest {
+    return UpdateTaskResourceAllocationRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FindAllResourceAllocationByCriteriaRequest>, I>>(
+  fromPartial<I extends Exact<DeepPartial<UpdateTaskResourceAllocationRequest>, I>>(
     object: I,
-  ): FindAllResourceAllocationByCriteriaRequest {
-    const message = createBaseFindAllResourceAllocationByCriteriaRequest();
-    message.id = object.id ?? undefined;
-    message.taskId = object.taskId?.map((e) => e) || [];
+  ): UpdateTaskResourceAllocationRequest {
+    const message = createBaseUpdateTaskResourceAllocationRequest();
+    message.taskId = object.taskId ?? 0;
+    message.resourceId = object.resourceId ?? 0;
+    message.unit = object.unit ?? 0;
+    message.operation = object.operation ?? 0;
     return message;
   },
 };
 
-function createBaseFindAllResourceGroupsByCriteriaRequest(): FindAllResourceGroupsByCriteriaRequest {
-  return { id: 0, projectId: "" };
+function createBaseListResourceGroupsRequest(): ListResourceGroupsRequest {
+  return { id: 0, projectId: 0 };
 }
 
-export const FindAllResourceGroupsByCriteriaRequest = {
-  encode(message: FindAllResourceGroupsByCriteriaRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ListResourceGroupsRequest = {
+  encode(message: ListResourceGroupsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
+      writer.uint32(8).uint32(message.id);
     }
-    if (message.projectId !== "") {
-      writer.uint32(18).string(message.projectId);
+    if (message.projectId !== 0) {
+      writer.uint32(16).uint32(message.projectId);
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): FindAllResourceGroupsByCriteriaRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListResourceGroupsRequest {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseFindAllResourceGroupsByCriteriaRequest();
+    const message = createBaseListResourceGroupsRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1340,14 +1506,14 @@ export const FindAllResourceGroupsByCriteriaRequest = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
         case 2:
-          if (tag !== 18) {
+          if (tag !== 16) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1358,41 +1524,37 @@ export const FindAllResourceGroupsByCriteriaRequest = {
     return message;
   },
 
-  fromJSON(object: any): FindAllResourceGroupsByCriteriaRequest {
+  fromJSON(object: any): ListResourceGroupsRequest {
     return {
       id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
   },
 
-  toJSON(message: FindAllResourceGroupsByCriteriaRequest): unknown {
+  toJSON(message: ListResourceGroupsRequest): unknown {
     const obj: any = {};
     if (message.id !== 0) {
       obj.id = Math.round(message.id);
     }
-    if (message.projectId !== "") {
-      obj.projectId = message.projectId;
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FindAllResourceGroupsByCriteriaRequest>, I>>(
-    base?: I,
-  ): FindAllResourceGroupsByCriteriaRequest {
-    return FindAllResourceGroupsByCriteriaRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ListResourceGroupsRequest>, I>>(base?: I): ListResourceGroupsRequest {
+    return ListResourceGroupsRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FindAllResourceGroupsByCriteriaRequest>, I>>(
-    object: I,
-  ): FindAllResourceGroupsByCriteriaRequest {
-    const message = createBaseFindAllResourceGroupsByCriteriaRequest();
+  fromPartial<I extends Exact<DeepPartial<ListResourceGroupsRequest>, I>>(object: I): ListResourceGroupsRequest {
+    const message = createBaseListResourceGroupsRequest();
     message.id = object.id ?? 0;
-    message.projectId = object.projectId ?? "";
+    message.projectId = object.projectId ?? 0;
     return message;
   },
 };
 
 function createBaseCreateResourceGroupRequest(): CreateResourceGroupRequest {
-  return { name: "", description: "", projectId: "" };
+  return { name: "", description: "", projectId: 0 };
 }
 
 export const CreateResourceGroupRequest = {
@@ -1403,8 +1565,8 @@ export const CreateResourceGroupRequest = {
     if (message.description !== "") {
       writer.uint32(18).string(message.description);
     }
-    if (message.projectId !== "") {
-      writer.uint32(26).string(message.projectId);
+    if (message.projectId !== 0) {
+      writer.uint32(24).uint32(message.projectId);
     }
     return writer;
   },
@@ -1431,11 +1593,11 @@ export const CreateResourceGroupRequest = {
           message.description = reader.string();
           continue;
         case 3:
-          if (tag !== 26) {
+          if (tag !== 24) {
             break;
           }
 
-          message.projectId = reader.string();
+          message.projectId = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1450,7 +1612,7 @@ export const CreateResourceGroupRequest = {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
-      projectId: isSet(object.projectId) ? globalThis.String(object.projectId) : "",
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
   },
 
@@ -1462,8 +1624,8 @@ export const CreateResourceGroupRequest = {
     if (message.description !== "") {
       obj.description = message.description;
     }
-    if (message.projectId !== "") {
-      obj.projectId = message.projectId;
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
     }
     return obj;
   },
@@ -1475,7 +1637,7 @@ export const CreateResourceGroupRequest = {
     const message = createBaseCreateResourceGroupRequest();
     message.name = object.name ?? "";
     message.description = object.description ?? "";
-    message.projectId = object.projectId ?? "";
+    message.projectId = object.projectId ?? 0;
     return message;
   },
 };
@@ -1487,7 +1649,7 @@ function createBaseUpdateResourceGroupRequest(): UpdateResourceGroupRequest {
 export const UpdateResourceGroupRequest = {
   encode(message: UpdateResourceGroupRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
+      writer.uint32(8).uint32(message.id);
     }
     if (message.name !== undefined) {
       writer.uint32(18).string(message.name);
@@ -1510,7 +1672,7 @@ export const UpdateResourceGroupRequest = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1576,7 +1738,7 @@ function createBaseDeleteResourceGroupRequest(): DeleteResourceGroupRequest {
 export const DeleteResourceGroupRequest = {
   encode(message: DeleteResourceGroupRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== 0) {
-      writer.uint32(8).int32(message.id);
+      writer.uint32(8).uint32(message.id);
     }
     return writer;
   },
@@ -1593,7 +1755,7 @@ export const DeleteResourceGroupRequest = {
             break;
           }
 
-          message.id = reader.int32();
+          message.id = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1626,47 +1788,27 @@ export const DeleteResourceGroupRequest = {
   },
 };
 
-function createBaseResourceGroupsResponse(): ResourceGroupsResponse {
-  return { statusCode: undefined, message: undefined, data: [] };
+function createBaseResourceGroupsList(): ResourceGroupsList {
+  return { data: [] };
 }
 
-export const ResourceGroupsResponse = {
-  encode(message: ResourceGroupsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.statusCode !== undefined) {
-      writer.uint32(8).int32(message.statusCode);
-    }
-    if (message.message !== undefined) {
-      writer.uint32(18).string(message.message);
-    }
+export const ResourceGroupsList = {
+  encode(message: ResourceGroupsList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.data) {
-      ResourceGroup.encode(v!, writer.uint32(26).fork()).ldelim();
+      ResourceGroup.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ResourceGroupsResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ResourceGroupsList {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseResourceGroupsResponse();
+    const message = createBaseResourceGroupsList();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 8) {
-            break;
-          }
-
-          message.statusCode = reader.int32();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        case 3:
-          if (tag !== 26) {
+          if (tag !== 10) {
             break;
           }
 
@@ -1681,54 +1823,41 @@ export const ResourceGroupsResponse = {
     return message;
   },
 
-  fromJSON(object: any): ResourceGroupsResponse {
+  fromJSON(object: any): ResourceGroupsList {
     return {
-      statusCode: isSet(object.statusCode) ? globalThis.Number(object.statusCode) : undefined,
-      message: isSet(object.message) ? globalThis.String(object.message) : undefined,
       data: globalThis.Array.isArray(object?.data) ? object.data.map((e: any) => ResourceGroup.fromJSON(e)) : [],
     };
   },
 
-  toJSON(message: ResourceGroupsResponse): unknown {
+  toJSON(message: ResourceGroupsList): unknown {
     const obj: any = {};
-    if (message.statusCode !== undefined) {
-      obj.statusCode = Math.round(message.statusCode);
-    }
-    if (message.message !== undefined) {
-      obj.message = message.message;
-    }
     if (message.data?.length) {
       obj.data = message.data.map((e) => ResourceGroup.toJSON(e));
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ResourceGroupsResponse>, I>>(base?: I): ResourceGroupsResponse {
-    return ResourceGroupsResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ResourceGroupsList>, I>>(base?: I): ResourceGroupsList {
+    return ResourceGroupsList.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ResourceGroupsResponse>, I>>(object: I): ResourceGroupsResponse {
-    const message = createBaseResourceGroupsResponse();
-    message.statusCode = object.statusCode ?? undefined;
-    message.message = object.message ?? undefined;
+  fromPartial<I extends Exact<DeepPartial<ResourceGroupsList>, I>>(object: I): ResourceGroupsList {
+    const message = createBaseResourceGroupsList();
     message.data = object.data?.map((e) => ResourceGroup.fromPartial(e)) || [];
     return message;
   },
 };
 
 function createBaseResourceGroupResponse(): ResourceGroupResponse {
-  return { statusCode: 0, message: "", data: undefined };
+  return { data: undefined, error: undefined };
 }
 
 export const ResourceGroupResponse = {
   encode(message: ResourceGroupResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.statusCode !== 0) {
-      writer.uint32(8).int32(message.statusCode);
-    }
-    if (message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
     if (message.data !== undefined) {
-      ResourceGroup.encode(message.data, writer.uint32(26).fork()).ldelim();
+      ResourceGroupsList.encode(message.data, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.error !== undefined) {
+      ErrorResponse.encode(message.error, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -1741,25 +1870,18 @@ export const ResourceGroupResponse = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.statusCode = reader.int32();
+          message.data = ResourceGroupsList.decode(reader, reader.uint32());
           continue;
         case 2:
           if (tag !== 18) {
             break;
           }
 
-          message.message = reader.string();
-          continue;
-        case 3:
-          if (tag !== 26) {
-            break;
-          }
-
-          message.data = ResourceGroup.decode(reader, reader.uint32());
+          message.error = ErrorResponse.decode(reader, reader.uint32());
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1772,22 +1894,18 @@ export const ResourceGroupResponse = {
 
   fromJSON(object: any): ResourceGroupResponse {
     return {
-      statusCode: isSet(object.statusCode) ? globalThis.Number(object.statusCode) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-      data: isSet(object.data) ? ResourceGroup.fromJSON(object.data) : undefined,
+      data: isSet(object.data) ? ResourceGroupsList.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? ErrorResponse.fromJSON(object.error) : undefined,
     };
   },
 
   toJSON(message: ResourceGroupResponse): unknown {
     const obj: any = {};
-    if (message.statusCode !== 0) {
-      obj.statusCode = Math.round(message.statusCode);
-    }
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
     if (message.data !== undefined) {
-      obj.data = ResourceGroup.toJSON(message.data);
+      obj.data = ResourceGroupsList.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = ErrorResponse.toJSON(message.error);
     }
     return obj;
   },
@@ -1797,59 +1915,48 @@ export const ResourceGroupResponse = {
   },
   fromPartial<I extends Exact<DeepPartial<ResourceGroupResponse>, I>>(object: I): ResourceGroupResponse {
     const message = createBaseResourceGroupResponse();
-    message.statusCode = object.statusCode ?? 0;
-    message.message = object.message ?? "";
     message.data = (object.data !== undefined && object.data !== null)
-      ? ResourceGroup.fromPartial(object.data)
+      ? ResourceGroupsList.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null)
+      ? ErrorResponse.fromPartial(object.error)
       : undefined;
     return message;
   },
 };
 
 export interface ResourcesService {
-  FindAllResources(request: FindAllResourcesRequest): Observable<ResourcesResponse>;
-  FindOneResource(request: FindOneResourceRequest): Promise<ResourceResponse>;
+  ListResources(request: ListResourcesRequest): Promise<ResourceResponse>;
   CreateResource(request: CreateResourceRequest): Promise<ResourceResponse>;
   UpdateResource(request: UpdateResourceRequest): Promise<ResourceResponse>;
-  DeleteResource(request: DeleteResourceRequest): Promise<ResourceResponse>;
-  AssignResource(request: AssignResourceRequest): Observable<ResourceResponse>;
-  UnassignResource(request: UnassignResourceRequest): Promise<ResourceResponse>;
-  FindAllResourceGroupsByCriteria(request: FindAllResourceGroupsByCriteriaRequest): Promise<ResourceGroupsResponse>;
+  DeleteResource(request: DeleteResourceRequest): Promise<Empty>;
+  UpdateTaskResourceAllocation(request: UpdateTaskResourceAllocationRequest): Promise<ResourceResponse>;
+  ListResourceGroups(request: ListResourceGroupsRequest): Promise<ResourceGroupResponse>;
   CreateResourceGroup(request: CreateResourceGroupRequest): Promise<ResourceGroupResponse>;
   UpdateResourceGroup(request: UpdateResourceGroupRequest): Promise<ResourceGroupResponse>;
-  DeleteResourceGroup(request: DeleteResourceGroupRequest): Promise<ResourceGroupResponse>;
-  FindAllResourceAllocationByCriteria(request: FindAllResourceAllocationByCriteriaRequest): Promise<ResourceResponse>;
+  DeleteResourceGroup(request: DeleteResourceGroupRequest): Promise<Empty>;
 }
 
-export const ResourcesServiceServiceName = "resource.ResourcesService";
+export const ResourcesServiceServiceName = "packages.resource.ResourcesService";
 export class ResourcesServiceClientImpl implements ResourcesService {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
     this.service = opts?.service || ResourcesServiceServiceName;
     this.rpc = rpc;
-    this.FindAllResources = this.FindAllResources.bind(this);
-    this.FindOneResource = this.FindOneResource.bind(this);
+    this.ListResources = this.ListResources.bind(this);
     this.CreateResource = this.CreateResource.bind(this);
     this.UpdateResource = this.UpdateResource.bind(this);
     this.DeleteResource = this.DeleteResource.bind(this);
-    this.AssignResource = this.AssignResource.bind(this);
-    this.UnassignResource = this.UnassignResource.bind(this);
-    this.FindAllResourceGroupsByCriteria = this.FindAllResourceGroupsByCriteria.bind(this);
+    this.UpdateTaskResourceAllocation = this.UpdateTaskResourceAllocation.bind(this);
+    this.ListResourceGroups = this.ListResourceGroups.bind(this);
     this.CreateResourceGroup = this.CreateResourceGroup.bind(this);
     this.UpdateResourceGroup = this.UpdateResourceGroup.bind(this);
     this.DeleteResourceGroup = this.DeleteResourceGroup.bind(this);
-    this.FindAllResourceAllocationByCriteria = this.FindAllResourceAllocationByCriteria.bind(this);
   }
-  FindAllResources(request: FindAllResourcesRequest): Observable<ResourcesResponse> {
-    const data = FindAllResourcesRequest.encode(request).finish();
-    const result = this.rpc.serverStreamingRequest(this.service, "FindAllResources", data);
-    return result.pipe(map((data) => ResourcesResponse.decode(_m0.Reader.create(data))));
-  }
-
-  FindOneResource(request: FindOneResourceRequest): Promise<ResourceResponse> {
-    const data = FindOneResourceRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FindOneResource", data);
+  ListResources(request: ListResourcesRequest): Promise<ResourceResponse> {
+    const data = ListResourcesRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "ListResources", data);
     return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
   }
 
@@ -1865,28 +1972,22 @@ export class ResourcesServiceClientImpl implements ResourcesService {
     return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
   }
 
-  DeleteResource(request: DeleteResourceRequest): Promise<ResourceResponse> {
+  DeleteResource(request: DeleteResourceRequest): Promise<Empty> {
     const data = DeleteResourceRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "DeleteResource", data);
+    return promise.then((data) => Empty.decode(_m0.Reader.create(data)));
+  }
+
+  UpdateTaskResourceAllocation(request: UpdateTaskResourceAllocationRequest): Promise<ResourceResponse> {
+    const data = UpdateTaskResourceAllocationRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "UpdateTaskResourceAllocation", data);
     return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
   }
 
-  AssignResource(request: AssignResourceRequest): Observable<ResourceResponse> {
-    const data = AssignResourceRequest.encode(request).finish();
-    const result = this.rpc.serverStreamingRequest(this.service, "AssignResource", data);
-    return result.pipe(map((data) => ResourceResponse.decode(_m0.Reader.create(data))));
-  }
-
-  UnassignResource(request: UnassignResourceRequest): Promise<ResourceResponse> {
-    const data = UnassignResourceRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "UnassignResource", data);
-    return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
-  }
-
-  FindAllResourceGroupsByCriteria(request: FindAllResourceGroupsByCriteriaRequest): Promise<ResourceGroupsResponse> {
-    const data = FindAllResourceGroupsByCriteriaRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FindAllResourceGroupsByCriteria", data);
-    return promise.then((data) => ResourceGroupsResponse.decode(_m0.Reader.create(data)));
+  ListResourceGroups(request: ListResourceGroupsRequest): Promise<ResourceGroupResponse> {
+    const data = ListResourceGroupsRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "ListResourceGroups", data);
+    return promise.then((data) => ResourceGroupResponse.decode(_m0.Reader.create(data)));
   }
 
   CreateResourceGroup(request: CreateResourceGroupRequest): Promise<ResourceGroupResponse> {
@@ -1901,24 +2002,15 @@ export class ResourcesServiceClientImpl implements ResourcesService {
     return promise.then((data) => ResourceGroupResponse.decode(_m0.Reader.create(data)));
   }
 
-  DeleteResourceGroup(request: DeleteResourceGroupRequest): Promise<ResourceGroupResponse> {
+  DeleteResourceGroup(request: DeleteResourceGroupRequest): Promise<Empty> {
     const data = DeleteResourceGroupRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "DeleteResourceGroup", data);
-    return promise.then((data) => ResourceGroupResponse.decode(_m0.Reader.create(data)));
-  }
-
-  FindAllResourceAllocationByCriteria(request: FindAllResourceAllocationByCriteriaRequest): Promise<ResourceResponse> {
-    const data = FindAllResourceAllocationByCriteriaRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FindAllResourceAllocationByCriteria", data);
-    return promise.then((data) => ResourceResponse.decode(_m0.Reader.create(data)));
+    return promise.then((data) => Empty.decode(_m0.Reader.create(data)));
   }
 }
 
 interface Rpc {
   request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
-  clientStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Promise<Uint8Array>;
-  serverStreamingRequest(service: string, method: string, data: Uint8Array): Observable<Uint8Array>;
-  bidirectionalStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Observable<Uint8Array>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

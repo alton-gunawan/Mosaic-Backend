@@ -1,93 +1,98 @@
 syntax = "proto3";
 
-package project;
+package packages.project;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 
 service ProjectsService {
-  rpc CreateProject(CreateProjectDto) returns (ProjectResponse);
-  rpc FindAllProjects(FindAllProjectsDto) returns (ProjectsResponse);
-  rpc FindOneProject(FindOneProjectDto) returns (ProjectResponse) {}
-  rpc UpdateProject(UpdateProjectDto) returns (ProjectResponse) {}
-  rpc RemoveProject(RemoveProjectDto) returns (Response) {}
-  rpc QueryProject(stream PaginationDto) returns (stream Project) {}
+  rpc ListProjects(ListProjectsRequest) returns (ProjectResponse);
+  rpc CreateProject(CreateProjectRequest) returns (ProjectResponse);
+  rpc UpdateProject(UpdateProjectRequest) returns (ProjectResponse);
+  rpc DeleteProject(DeleteProjectRequest) returns (google.protobuf.Empty);
+  rpc AddMember (AddMemberRequest) returns (ProjectResponse);
+  rpc RemoveMember (RemoveMemberRequest) returns (google.protobuf.Empty);
 }
 
-message PaginationDto {
-  int32 page = 1;
-  int32 skip = 2;
+message Datestamps {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp deleted_at = 3;
 }
-
-message Empty {}
 
 message Project {
-  oneof Project {
-    int32 id = 1;
-  }
+  uint32 id = 1;
   string name = 2;
   string description = 3;
-  int32 startDate = 4;
-  int32 endDate = 5;
-  string createdBy = 6;
-  string createdAt = 7;
-  string updatedAt = 8;
-  string deletedAt = 9;
+  string featured_image = 4;
+  google.protobuf.Timestamp start_date = 5;
+  google.protobuf.Timestamp end_date = 6;
+  google.protobuf.Duration project_buffer = 7;
+  optional google.protobuf.Duration feeding_buffer = 8;
+  string created_by = 9;
+  Datestamps datestamps = 10;
 }
 
-message FindAllProjectsDto {
-  oneof Project {
-    int32 id = 1;
+message ListProjectsRequest {
+  oneof project {
+    uint32 id = 1;
+    string created_by = 2;
+  }
+  oneof pagination {
+    uint32 limit = 3;
+    uint32 offset = 4;
+  }
+}
+
+message CreateProjectRequest {
+  string name = 1;
+  string description = 2;
+  string featured_image = 3;
+  google.protobuf.Timestamp start_date = 4;
+  google.protobuf.Timestamp end_date = 5;
+  google.protobuf.Duration project_buffer = 6;
+  optional google.protobuf.Duration feeding_buffer = 7;
+  string created_by = 8;
+}
+
+message UpdateProjectRequest {
+  uint32 id = 1;
+  oneof project {
     string name = 2;
     string description = 3;
-    int32 startDate = 4;
-    int32 endDate = 5;
-    string createdBy = 6;
-    string createdAt = 7;
-    string updatedAt = 8;
-    string deletedAt = 9;
+    string featured_image = 4;
+    google.protobuf.Timestamp start_date = 5;
+    google.protobuf.Timestamp end_date = 6;
+    google.protobuf.Duration project_buffer = 7;
+    google.protobuf.Duration feeding_buffer = 8;
   }
 }
 
-message Projects { repeated Project projects = 1; }
+message DeleteProjectRequest { uint32 id = 1; }
 
-message FindOneProjectDto { int32 id = 1; }
-
-message CreateProjectDto {
-  oneof Project {
-    string name = 1;
-    string description = 2;
-    int32 startDate = 3;
-    int32 endDate = 4;
-    string createdBy = 5;
-  }
+message AddMemberRequest {
+  uint32 project_id = 1;
+  string user_id = 2;
 }
 
-message UpdateProjectDto {
-  oneof Project {
-    int32 id = 1;
-    string name = 2;
-    string description = 3;
-    int32 startDate = 4;
-    int32 endDate = 5;
-    string createdBy = 6;
-  }
+message RemoveMemberRequest {
+  uint32 project_id = 1;
+  string user_id = 2;
 }
 
-message RemoveProjectDto { int32 id = 1; }
-
-message Response {
-  int32 statusCode = 1;
+message ProjectsList {
+  repeated Project data = 1;
+}
+  
+message ErrorResponse {
+  uint32 status_code = 1;
   string message = 2;
 }
 
 message ProjectResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  Project data = 3;
-}
-
-message ProjectsResponse {
-  oneof ProjectResponse {
-    int32 statusCode = 1;
-    string message = 2;
+  oneof response {
+    ProjectsList data = 1;
+    ErrorResponse error = 2;
   }
-  repeated Project data = 3;
 }

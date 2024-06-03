@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Inject,
   Logger,
   OnModuleInit,
@@ -11,16 +13,16 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import {
-  ResourcesService,
-  UpdateResourceGroupRequest,
-} from '../protos/resource';
+import { ResourcesService } from '../protos/resource';
 import { ClientGrpc } from '@nestjs/microservices';
 import {
   CreateTaskColumnRequest,
-  FindAllTaskColumnRequest,
   TasksService,
+  ListTaskColumnsRequest,
+  UpdateTaskColumnRequest,
+  TaskColumnResponse,
 } from '../protos/task';
+import { Observable, catchError, from, map, take } from 'rxjs';
 
 @Controller({
   version: '1',
@@ -28,7 +30,7 @@ import {
 })
 export class TaskGroupController implements OnModuleInit {
   private readonly logger = new Logger(TaskGroupController.name);
-  private tasksService: TasksService;
+  private taskService: TasksService;
   private resourcesService: ResourcesService;
 
   constructor(
@@ -39,35 +41,39 @@ export class TaskGroupController implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.tasksService = this.taskPackageClient.getService('TasksService');
+    this.taskService = this.taskPackageClient.getService('TasksService');
     this.resourcesService =
       this.resourcePackageClient.getService('ResourcesService');
   }
 
   @Get()
   public async listTaskGroup(
-    @Query() findAllTaskGroupDto?: FindAllTaskColumnRequest,
+    @Query() findAllTaskGroupDto?: ListTaskColumnsRequest,
   ): Promise<any> {
     return new Promise((resolve) => {
-      this.tasksService
-        .FindAllTaskColumn({
+      from(
+        this.taskService.ListTaskColumns({
           ...findAllTaskGroupDto,
-        })
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
         .subscribe((taskGroupResult) => {
-          if (taskGroupResult.data && taskGroupResult.data.length > 0) {
-            const taskIdArr = taskGroupResult?.data
-              ? taskGroupResult?.data?.flatMap((taskColumn) =>
+          if (taskGroupResult && taskGroupResult.length > 0) {
+            const taskIdArr = taskGroupResult
+              ? taskGroupResult?.flatMap((taskColumn) =>
                   taskColumn?.task?.map((item) => +item.id),
                 )
               : [];
 
             return new Promise((resourcesServiceResolve) => {
-              this.resourcesService
-                .FindAllResources({
-                  taskId: taskIdArr.filter((e) => e != null),
-                })
+              from(
+                this.resourcesService.ListResources({
+                  taskId: taskIdArr?.filter((e) => e != null),
+                }),
+              )
+                .pipe(map((result) => result?.data?.data))
                 .subscribe((resourceResult) => {
-                  const resourceAllocations = resourceResult?.data?.reduce(
+                  const resourceAllocations = resourceResult?.reduce(
                     (acc, resource) => {
                       if (resource.resourceAllocation) {
                         return acc.concat(resource.resourceAllocation);
@@ -77,11 +83,9 @@ export class TaskGroupController implements OnModuleInit {
                     },
                     [],
                   );
-
                   Logger.log('resourceAllocations');
                   Logger.log(resourceAllocations);
-
-                  const response = taskGroupResult?.data?.map((taskColumn) => ({
+                  const response = taskGroupResult?.map((taskColumn) => ({
                     ...taskColumn,
                     task:
                       taskColumn?.task?.map((task) => ({
@@ -93,7 +97,6 @@ export class TaskGroupController implements OnModuleInit {
                           ) || [],
                       })) || [],
                   }));
-
                   resourcesServiceResolve(taskGroupResult);
                   resolve({
                     ...taskGroupResult,
@@ -110,26 +113,71 @@ export class TaskGroupController implements OnModuleInit {
 
   @Post()
   public async create(@Body() createTaskGroupDto: CreateTaskColumnRequest) {
-    return await this.tasksService.CreateTaskColumn({
-      ...createTaskGroupDto,
+    return new Promise((resolve, reject) => {
+      from(
+        this.taskService.CreateTaskColumn({
+          ...createTaskGroupDto,
+        }),
+      )
+        .pipe(
+          take(1),
+          catchError((error: Error, caught: Observable<TaskColumnResponse>) => {
+            throw error;
+          }),
+        )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe({
+          next: (taskColumnResult) => {
+            resolve(
+              taskColumnResult instanceof Array && taskColumnResult.length > 0
+                ? taskColumnResult[0]
+                : taskColumnResult,
+            );
+          },
+          error: (error) => {
+            reject(error);
+          },
+        });
+    }).catch((error) => {
+      throw new HttpException(
+        error.message || 'Error creating task...',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     });
   }
 
   @Put(':id')
   public async update(
     @Param('id') id: number,
-    @Body() updateResourceGroupDto: UpdateResourceGroupRequest,
+    @Body() updateTaskColumnDto: UpdateTaskColumnRequest,
   ) {
-    return await this.tasksService.UpdateTaskColumn({
-      ...updateResourceGroupDto,
-      id: id,
+    const { id: taskId, ...data } = updateTaskColumnDto;
+
+    return new Promise((resolve) => {
+      from(
+        this.taskService.UpdateTaskColumn({
+          ...data,
+          id: +id,
+        }),
+      )
+        .pipe(take(1))
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((taskResult) => {
+          resolve(taskResult.length > 0 ? taskResult[0] : taskResult || []);
+        });
     });
   }
 
   @Delete(':id')
   public async remove(@Param('id') id: number) {
-    return await this.tasksService.RemoveTaskColumn({
-      id: id,
+    return new Promise((resolve) => {
+      from(
+        this.taskService.DeleteTaskColumn({
+          id: +id,
+        }),
+      ).subscribe((deleteTaskColumnResult) => {
+        resolve(deleteTaskColumnResult);
+      });
     });
   }
 }

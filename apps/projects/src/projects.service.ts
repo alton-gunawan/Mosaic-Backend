@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entity/project.entity';
-import { FindAllProjectsDto } from 'apps/gateway/src/protos/project';
 
 @Injectable()
 export class ProjectsService {
@@ -11,7 +10,7 @@ export class ProjectsService {
     private projectRepository: Repository<Project>,
   ) {}
 
-  async findAll(conditionalFilter?: FindAllProjectsDto) {
+  async findAll(conditionalFilter?: any) {
     return await this.projectRepository.find({
       where: { ...conditionalFilter },
     });

@@ -18,13 +18,22 @@ export class Project {
   @Column('text')
   description: string;
 
-  @Column()
-  startDate: number;
+  @Column({ name: 'featured_image', type: 'varchar' })
+  featuredImage: string;
 
-  @Column()
-  endDate: number;
+  @Column({ name: 'planned_start_date', type: 'date' })
+  plannedStartDate: Date | undefined;
 
-  @Column()
+  @Column({ name: 'planned_end_date', type: 'date' })
+  plannedEndDate: Date | undefined;
+
+  @Column({ name: 'start_date', type: 'date' })
+  actualStartDate: Date | undefined;
+
+  @Column({ name: 'end_date', type: 'date' })
+  actualEndDate: Date | undefined;
+
+  @Column({ name: 'created_by' })
   createdBy: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
@@ -33,6 +42,6 @@ export class Project {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: string;
 
-  @DeleteDateColumn({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
   deletedAt?: string;
 }

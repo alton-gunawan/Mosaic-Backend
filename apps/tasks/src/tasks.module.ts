@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
-import { FindAllTasksQueryHandler } from './application/queries/handlers/find-all-tasks.handler';
+import { ListTaskHandler } from './application/queries/handlers/find-all-tasks.handler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateTaskHandler } from './application/command/handlers/create-task.handler';
 import { UpdateTaskHandler } from './application/command/handlers/update-task.handler';
 import { DeleteTaskHandler } from './application/command/handlers/delete-task.handler';
 import { CreateTaskColumnHandler } from './application/command/handlers/create-task-column.handler';
-import { FindAllTaskColumnQueryHandler } from './application/queries/handlers/find-all-task-column.handler';
+import { ListTaskColumnHandler } from './application/queries/handlers/find-all-task-column.handler';
 import { DeleteTaskColumnHandler } from './application/command/handlers/delete-task-column.handler';
 import { databaseProviders } from './providers/database.providers';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -19,7 +18,7 @@ import { TaskUpdatedHandler } from './application/events/handlers/task-updated.h
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 
-const QueryHandlers = [FindAllTasksQueryHandler, FindAllTaskColumnQueryHandler];
+const QueryHandlers = [ListTaskHandler, ListTaskColumnHandler];
 const CommandHandlers = [
   CreateTaskHandler,
   UpdateTaskHandler,
@@ -37,7 +36,7 @@ const EventHandlers = [TaskUpdatedHandler];
         transport: Transport.GRPC,
         options: {
           url: '0.0.0.0:3004',
-          package: 'resource',
+          package: 'packages.resource',
           protoPath: join(__dirname, '/protos/resource.proto'),
         },
       },

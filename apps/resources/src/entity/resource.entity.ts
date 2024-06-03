@@ -7,12 +7,11 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
-  JoinTable,
   OneToMany,
 } from 'typeorm';
 import { ResourceGroup } from './resource-group.entity';
 import { ResourceAllocation } from './resource-allocation.entity';
+import { Unit } from './unit.entity';
 
 @Entity()
 export class Resource {
@@ -21,18 +20,28 @@ export class Resource {
 
   @Column({
     type: 'text',
+    nullable: false,
   })
   name: string | undefined;
 
   @Column({
+    name: 'unit_quantity',
     type: 'int',
+    nullable: true,
   })
-  unit: number | undefined;
+  unitQuantity?: number | undefined;
 
   @Column({
+    type: 'decimal',
+    nullable: true,
+  })
+  cost?: number | undefined;
+
+  @Column({
+    name: 'project_id',
     type: 'varchar',
   })
-  project_id: string | undefined;
+  projectId: number | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt!: string | undefined;
@@ -43,13 +52,16 @@ export class Resource {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt?: string | undefined;
 
+  @ManyToOne(() => Unit, (unit) => unit.resources)
+  unit?: Unit;
+
   @OneToMany(
     () => ResourceAllocation,
     (resourceAllocation) => resourceAllocation.resource,
   )
-  resource_allocation: ResourceAllocation[] | undefined;
+  resourceAllocation: ResourceAllocation[] | undefined;
 
   @ManyToOne(() => ResourceGroup, (resourceGroup) => resourceGroup.resource)
   @JoinColumn({ name: 'resource_group_id', referencedColumnName: 'id' })
-  resource_group: ResourceGroup | undefined;
+  resourceGroup: ResourceGroup | undefined;
 }

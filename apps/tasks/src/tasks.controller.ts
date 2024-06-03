@@ -3,24 +3,29 @@ import { GrpcMethod } from '@nestjs/microservices';
 import {
   CreateTaskColumnRequest,
   CreateTaskRequest,
+  DeleteTaskColumnRequest,
   DeleteTaskRequest,
-  FindAllTaskColumnRequest,
-  FindAllTasksRequest,
-  RemoveTaskColumnRequest,
-  TaskColumnsResponse,
+  ListTaskColumnsRequest,
+  ListTasksRequest,
+  TaskColumnResponse,
   TaskResponse,
-  TasksResponse,
   UpdateTaskRequest,
 } from './protos/task';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { FindAllTasksQuery } from './application/queries/impl/find-all-tasks.query';
-import { CreateTaskCommand } from './application/command/impl/create-task.command';
-import { UpdateTaskCommand } from './application/command/impl/update-task.command';
+import { ListTaskQuery } from './application/queries/impl/find-all-tasks.query';
 import { DeleteTaskCommand } from './application/command/impl/delete-task.command';
 import { CreateTaskColumnCommand } from './application/command/impl/create-task-column.command';
-import { FindAllTaskColumnQuery } from './application/queries/impl/find-all-task-column.query';
+import { ListTaskColumnQuery } from './application/queries/impl/find-all-task-column.query';
 import { DeleteTaskColumnCommand } from './application/command/impl/delete-task-column.command';
 import { Task } from './entity/task.entity';
+import { CreateTaskCommand } from './application/command/impl/create-task.command';
+import * as moment from 'moment';
+import { UpdateTaskCommand } from './application/command/impl/update-task.command';
+import { Timestamp } from './protos/google/protobuf/timestamp';
+import getSecondsAndNanos from './utils/get-seconds-nanos-time';
+import { Duration } from './protos/google/protobuf/duration';
+import numberToDuration from './utils/convert-second-to-duration';
+import { durationToMs, msToDuration } from '@grpc/grpc-js/build/src/duration';
 
 @Controller()
 export class TasksController {
@@ -31,154 +36,223 @@ export class TasksController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @GrpcMethod('TasksService', 'FindAllTasks')
-  async findAll(findAllTaskDto?: FindAllTasksRequest) {
-    const response = await this.queryBus.execute(
-      new FindAllTasksQuery(
-        +findAllTaskDto?.id,
-        findAllTaskDto?.createdBy,
-        findAllTaskDto?.projectId,
-        findAllTaskDto?.taskColumnId,
-      ),
-    );
+  @GrpcMethod('TasksService', 'ListTasks')
+  async findAll(findAllTaskDto?: ListTasksRequest) {
+    try {
+      const { id, createdBy, projectId, taskColumnId } = findAllTaskDto;
 
-    return TasksResponse.create({
-      message: 'func:FindAllTasks()',
-      statusCode: 200,
-      data: {
-        ...response.map((value: Task) => ({
+      const result = await this.queryBus.execute(
+        new ListTaskQuery(id, createdBy, projectId, taskColumnId),
+      );
+
+      const formattedResponse =
+        result?.map((value: Task) => ({
           ...value,
-          // startDate: new Date(value.startDate).getTime(),
-          // endDate: new Date(value.endDate).getTime(),
-        })),
-      },
-    });
+          startDate: value?.startDate
+            ? Timestamp.create({
+                seconds: getSecondsAndNanos(new Date(value?.startDate)).seconds,
+                nanos: getSecondsAndNanos(new Date(value?.startDate)).nanos,
+              }) || undefined
+            : undefined,
+          duration: value?.duration
+            ? Duration.create({
+                seconds: numberToDuration(value?.duration).seconds,
+                nanos: numberToDuration(value?.duration).nanos,
+              }) || undefined
+            : undefined,
+        })) || [];
+
+      return TaskResponse.create({
+        data: {
+          data: formattedResponse || undefined,
+        },
+      });
+    } catch (error) {
+      return TaskResponse.create({
+        error: {
+          statusCode: error.status || 500,
+          message: error.message || 'Error creating project data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('TasksService', 'CreateTask')
   async create(createTaskDto: CreateTaskRequest) {
-    this.logger.log('CreateTaskRequest:');
-    this.logger.log(createTaskDto);
-
     try {
-      const response = await this.commandBus.execute(
+      // const duration =
+      //   typeof createTaskDto.duration === 'number'
+      //     ? +createTaskDto.duration / (60 * 60 * 24)
+      //     : undefined;
+      Logger.log('createTaskDto:func()');
+      Logger.log(JSON.stringify(createTaskDto));
+      Logger.log(createTaskDto);
+
+      const startDate =
+        typeof createTaskDto.startDate === 'object'
+          ? moment.unix((createTaskDto?.startDate as any)?.seconds)?.toDate()
+          : undefined;
+
+      const result = await this.commandBus.execute(
         new CreateTaskCommand(
           createTaskDto?.name,
           createTaskDto?.featuredImage,
           createTaskDto?.description,
           createTaskDto?.status,
           createTaskDto?.priority,
-          createTaskDto?.startDate,
+          startDate,
           createTaskDto?.duration,
-          createTaskDto?.createdBy,
-          createTaskDto?.projectId,
-          createTaskDto?.taskColumnId,
           createTaskDto?.predecessor,
+          createTaskDto?.subtasks,
+          createTaskDto?.order,
+          createTaskDto?.createdBy,
+          createTaskDto?.assignedTo,
+          createTaskDto?.issueId,
+          createTaskDto?.taskColumnId,
+          createTaskDto?.projectId,
         ),
       );
 
-      Logger.log('CreateTask');
-      Logger.log(createTaskDto);
-
       return TaskResponse.create({
-        message: 'func:CreateTask()',
-        statusCode: 201,
-        data: response as any,
+        data: {
+          data: [result] || undefined,
+        },
       });
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      return TaskResponse.create({
+        error: {
+          statusCode: error.status || 500,
+          message: error.message || 'Error creating project data',
+        },
+      });
     }
   }
 
   @GrpcMethod('TasksService', 'UpdateTask')
   async update(updateTaskDto: UpdateTaskRequest) {
     try {
-      const response = await this.commandBus.execute(
+      const duration =
+        typeof updateTaskDto.duration === 'number'
+          ? +updateTaskDto.duration / (60 * 60 * 24)
+          : undefined;
+      const startDate =
+        typeof updateTaskDto.startDate === 'object'
+          ? moment.unix((updateTaskDto?.startDate as any)?.seconds)?.toDate()
+          : undefined;
+
+      const result = await this.commandBus.execute(
         new UpdateTaskCommand(
           +updateTaskDto.id,
           updateTaskDto?.name,
           updateTaskDto?.featuredImage,
           updateTaskDto?.description,
+          updateTaskDto?.status,
           updateTaskDto?.priority,
-          new Date(updateTaskDto?.startDate),
-          updateTaskDto?.duration,
+          startDate,
+          duration,
           updateTaskDto?.taskColumnId,
-          updateTaskDto?.resources,
           updateTaskDto?.predecessor,
+          updateTaskDto?.order,
         ),
       );
 
       return TaskResponse.create({
-        message: 'func:UpdateTask()',
-        statusCode: 200,
-        data: response,
+        data: {
+          data: [result] || undefined,
+        },
       });
     } catch (error) {
       return TaskResponse.create({
-        message: 'func:UpdateTask():error',
-        statusCode: 400,
-        data: error,
+        error: {
+          statusCode: error?.status || 500,
+          message: error?.message || 'Error creating project data',
+        },
       });
     }
   }
 
   @GrpcMethod('TasksService', 'DeleteTask')
   async remove(deleteTaskDto: DeleteTaskRequest) {
-    const response = await this.commandBus.execute(
-      new DeleteTaskCommand(deleteTaskDto.id),
-    );
+    try {
+      const { id } = deleteTaskDto;
 
-    return TaskResponse.create({
-      message: 'func:DeleteTask()',
-      statusCode: 200,
-      data: response,
-    });
+      await this.commandBus.execute(new DeleteTaskCommand(id));
+
+      return {};
+    } catch (error) {
+      return TaskResponse.create({
+        error: {
+          statusCode: error.status || 500,
+          message: error.message || 'Error creating project data',
+        },
+      });
+    }
   }
 
-  @GrpcMethod('TasksService', 'FindAllTaskColumn')
-  async findAllTaskColumn(findAllTaskColumnDto: FindAllTaskColumnRequest) {
-    const response = await this.queryBus.execute(
-      new FindAllTaskColumnQuery(findAllTaskColumnDto.projectId),
-    );
+  @GrpcMethod('TasksService', 'ListTaskColumns')
+  async findAllTaskColumn(findAllTaskColumnDto: ListTaskColumnsRequest) {
+    try {
+      const result = await this.queryBus.execute(
+        new ListTaskColumnQuery(findAllTaskColumnDto?.projectId),
+      );
 
-    return TaskColumnsResponse.create({
-      message: 'func:FindAllTaskColumn()',
-      statusCode: 200,
-      data: response,
-    });
+      return TaskColumnResponse.create({
+        data: {
+          data: result || [],
+        },
+      });
+    } catch (error) {
+      return TaskColumnResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error creating project data',
+        },
+      });
+    }
   }
 
   @GrpcMethod('TasksService', 'CreateTaskColumn')
   async createTaskColumn(createTaskColumnDto: CreateTaskColumnRequest) {
-    const response = await this.commandBus.execute(
-      new CreateTaskColumnCommand(
-        createTaskColumnDto.name,
-        createTaskColumnDto?.limit,
-        createTaskColumnDto?.order,
-        createTaskColumnDto.projectId,
-      ),
-    );
+    try {
+      const result = await this.commandBus.execute(
+        new CreateTaskColumnCommand(
+          createTaskColumnDto.name,
+          createTaskColumnDto?.limit,
+          createTaskColumnDto?.order,
+          createTaskColumnDto.projectId,
+        ),
+      );
 
-    Logger.log('CreateTaskColumn');
-    Logger.log(JSON.stringify(response));
-
-    return TaskResponse.create({
-      message: 'func:CreateTaskColumn()',
-      statusCode: 201,
-      data: response,
-    });
+      return TaskColumnResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
+      });
+    } catch (error) {
+      return TaskColumnResponse.create({
+        error: {
+          statusCode: error?.status || 500,
+          message: error?.message || 'Error creating task column',
+        },
+      });
+    }
   }
 
-  @GrpcMethod('TasksService', 'RemoveTaskColumn')
-  async deleteTaskColumn(deleteTaskColumnDto: RemoveTaskColumnRequest) {
-    const response = await this.commandBus.execute(
-      new DeleteTaskColumnCommand(deleteTaskColumnDto.id),
-    );
+  @GrpcMethod('TasksService', 'DeleteTaskColumn')
+  async deleteTaskColumn(deleteTaskColumnDto: DeleteTaskColumnRequest) {
+    try {
+      await this.commandBus.execute(
+        new DeleteTaskColumnCommand(deleteTaskColumnDto.id),
+      );
 
-    return TasksResponse.create({
-      message: 'func:RemoveTaskColumn()',
-      statusCode: 200,
-      data: [],
-    });
+      return {};
+    } catch (error) {
+      return TaskColumnResponse.create({
+        error: {
+          statusCode: error?.status || 500,
+          message: error?.message || 'Error creating task column',
+        },
+      });
+    }
   }
 }

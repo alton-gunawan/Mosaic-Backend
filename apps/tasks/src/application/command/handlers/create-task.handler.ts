@@ -3,6 +3,7 @@ import { CreateTaskCommand } from '../impl/create-task.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../../../entity/task.entity';
 import { Repository } from 'typeorm';
+import { durationToMs } from '@grpc/grpc-js/build/src/duration';
 
 @CommandHandler(CreateTaskCommand)
 export class CreateTaskHandler
@@ -14,10 +15,12 @@ export class CreateTaskHandler
   ) {}
 
   async execute(command: CreateTaskCommand): Promise<any> {
-    return await this.taskRepository.save({
+    const duration = durationToMs(command.duration);
+
+    return await this.taskRepository.save({  
       ...command,
-      startDate: command.startDate ? new Date(command?.startDate) : null,
-      task_group: command.taskColumnId ? { id: +command.taskColumnId } : null,
+      duration: duration,
+      taskGroup: { id: command?.taskColumnId },
     });
   }
 }

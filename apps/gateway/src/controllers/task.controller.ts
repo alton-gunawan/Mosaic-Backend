@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Inject,
   Logger,
   OnModuleInit,
@@ -13,24 +15,16 @@ import {
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import {
-  CreateTaskColumnRequest,
   CreateTaskRequest,
-  FindAllTaskColumnRequest,
-  FindAllTasksRequest,
   TasksService,
-  UpdateTaskColumnRequest,
   UpdateTaskRequest,
+  ListTasksRequest,
+  TaskResponse,
 } from '../protos/task';
 import { ResourcesService } from '../protos/resource';
-import {
-  combineLatest,
-  concat,
-  concatMap,
-  firstValueFrom,
-  from,
-  map,
-  of,
-} from 'rxjs';
+import { Observable, catchError, from, map, take } from 'rxjs';
+import { Timestamp } from '../protos/google/protobuf/timestamp';
+import { Duration } from '../protos/google/protobuf/duration';
 
 @Controller({
   version: '1',
@@ -56,22 +50,89 @@ export class TasksController implements OnModuleInit {
 
   @Get()
   public async listTask(
-    @Query() findAllTaskDto?: FindAllTasksRequest,
+    @Query() listTasksDto?: ListTasksRequest,
   ): Promise<any> {
-    const response = await this.taskService.FindAllTasks({
-      ...findAllTaskDto,
+    return new Promise((resolve) => {
+      from(
+        this.taskService.ListTasks({
+          ...listTasksDto,
+        }),
+      )
+        .pipe(
+          map((result) =>
+            result?.data?.data.map((task) => ({
+              ...task,
+              startDate:
+                (task?.startDate as any)?.seconds?.low !== 0
+                  ? new Date((task?.startDate as any)?.seconds?.low * 1000)
+                  : undefined,
+              duration:
+                (task?.duration as any)?.seconds?.low !== 0
+                  ? Math.abs((task?.duration as any)?.seconds.low ?? 0) /
+                    (60 * 60 * 24)
+                  : undefined,
+            })),
+          ),
+        )
+        .subscribe((taskResult) => {
+          resolve(taskResult);
+        });
     });
-
-    return response;
   }
 
   @Post()
   public async create(@Body() createTaskDto: CreateTaskRequest): Promise<any> {
-    const taskResponse$ = await this.taskService.CreateTask({
-      ...createTaskDto,
-    });
+    const { startDate, duration, ...data } = createTaskDto;
 
-    return taskResponse$;
+    const formattedDuration = createTaskDto?.duration
+      ? Duration.create({
+          seconds: (+createTaskDto.duration as number) * 60 * 60 * 24,
+          nanos: 0,
+        }) || undefined
+      : undefined;
+
+    const formattedStartDate = createTaskDto?.startDate
+      ? Timestamp.create({
+          seconds: Math.floor(
+            new Date(createTaskDto?.startDate).getTime() / 1000,
+          ),
+          nanos: (new Date(createTaskDto?.startDate).getTime() % 1000) * 1e6,
+        }) || undefined
+      : undefined;
+
+    return new Promise((resolve, reject) => {
+      from(
+        this.taskService.CreateTask({
+          ...data,
+          duration: formattedDuration || undefined,
+          startDate: (formattedStartDate as any) || undefined,
+        }),
+      )
+        .pipe(
+          take(1),
+          catchError((error: Error, caught: Observable<TaskResponse>) => {
+            throw error;
+          }),
+        )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe({
+          next: (taskResult) => {
+            resolve(
+              taskResult instanceof Array && taskResult.length > 0
+                ? taskResult[0]
+                : taskResult,
+            );
+          },
+          error: (error) => {
+            reject(error);
+          },
+        });
+    }).catch((error) => {
+      throw new HttpException(
+        error.message || 'Error creating task...',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    });
   }
 
   @Put(':id')
@@ -79,220 +140,33 @@ export class TasksController implements OnModuleInit {
     @Param('id') id: number,
     @Body() updateTaskDto: UpdateTaskRequest,
   ) {
-    const taskResponse$ = from(
-      this.taskService.UpdateTask({
-        ...updateTaskDto,
-        id: id,
-      }),
-    );
+    const { id: taskId, ...data } = updateTaskDto;
 
-    const resourceResponse$ = updateTaskDto?.resources
-      ? updateTaskDto?.resources.map((value) => {
-          return from(
-            this.resourcesService.AssignResource({
-              resourceId: value.id,
-              taskId: id,
-              unit: value.unit,
-            }),
-          );
-        })
-      : from([]);
-
-    // this works:
-    // const resourceResponse$ = updateTaskDto?.resources
-    //   ? from(
-    //       this.resourcesService.AssignResource({
-    //         resourceId: updateTaskDto.resources[0].id,
-    //         taskId: id,
-    //         unit: updateTaskDto.resources[0].unit,
-    //       }),
-    //     )
-    //   : from([]);
-
-    // const resourceResponse$ = updateTaskDto?.resources
-    //   ? from(
-    //       updateTaskDto?.resources?.map(async (resource) => {
-    //         const response = from(
-    //           this.resourcesService.AssignResource({
-    //             resourceId: resource.id,
-    //             taskId: id,
-    //             unit: resource.unit,
-    //           }),
-    //         );
-
-    //         return {
-    //           resourceId: resource.id,
-    //           taskId: id,
-    //         };
-    //       }),
-    //     )
-    //   : from([]);
-
-    return concat(taskResponse$, resourceResponse$).subscribe({
-      next(value) {
-        Logger.log('Combined response:', JSON.stringify(value)); // Log the response for each resource
-        value;
-      },
-    });
-
-    // const response =
-    //   updateTaskDto?.resources &&
-    //   from(
-    //     this.resourcesService.AssignResource({
-    //       resourceId: updateTaskDto.resources[0].id,
-    //       taskId: id,
-    //       unit: updateTaskDto.resources[0].unit,
-    //     }),
-    //   );
-
-    return updateTaskDto?.resources
-      ? concat(taskResponse$).subscribe({
-          next(value) {
-            Logger.log('Combined response:', JSON.stringify(value)); // Log the response for each resource
-            value;
-          },
-          error(err) {
-            Logger.error('Error taskResponse$ 1:', err);
-          },
-        })
-      : taskResponse$.subscribe({
-          next(value) {
-            Logger.log('Combined response no resource:', JSON.stringify(value)); // Log the response for each resource
-            value;
-          },
-          error(err) {
-            Logger.error('Error taskResponse$ 2:', err);
-          },
+    return new Promise((resolve) => {
+      from(
+        this.taskService.UpdateTask({
+          ...data,
+          id: +id,
+        }),
+      )
+        .pipe(take(1))
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((taskResult) => {
+          resolve(taskResult[0]);
         });
-
-    // const combinedResponse$ = from(updateTaskDto?.resources).pipe(
-    //   concatMap((resource) =>
-    //     concat(
-    //       from(
-    //         this.taskService.UpdateTask({ ...updateTaskDto, id: String(id) }),
-    //       ),
-    //       from(
-    //         this.resourcesService.AssignResource({
-    //           resourceId: resource.id,
-    //           taskId: id,
-    //           unit: resource.unit,
-    //         }),
-    //       ),
-    //     ),
-    //   ),
-    // );
-
-    // return combinedResponse$.subscribe({
-    //   next(value) {
-    //     Logger.log('Combined response:', value); // Log the response for each resource
-    //   },
-    //   error(error) {
-    //     // Handle errors from the subscription
-    //     console.error('Error in subscription:', error);
-    //   },
-    // });
-
-    // const taskResponse$ = from(
-    //   this.taskService.UpdateTask({
-    //     ...updateTaskDto,
-    //     id: String(id),
-    //   }),
-    // );
-
-    // const resourceResponse$ = from(updateTaskDto.resources).pipe(
-    //   map((resource) =>
-    //     from(
-    //       this.resourcesService.AssignResource({
-    //         resourceId: resource.id,
-    //         taskId: id,
-    //         unit: resource.unit,
-    //       }),
-    //     ),
-    //   ),
-    // );
-
-    // if (updateTaskDto?.resources?.length ?? 0 > 0) {
-    //   this.logger.log('updateTaskDto.resources');
-    //   const resourceResponse$ = from(updateTaskDto.resources).pipe(
-    //     map((resource) =>
-    //       from(
-    //         this.resourcesService.AssignResource({
-    //           resourceId: resource.id,
-    //           taskId: id,
-    //           unit: resource.unit,
-    //         }),
-    //       ),
-    //     ),
-    //   );
-
-    //   const result$ = concat(taskResponse$, resourceResponse$);
-
-    //   const combinedResponse$ = combineLatest(taskResponse$, resourceResponse$);
-
-    // return firstValueFrom(combinedResponse$).then(
-    //   ([taskData, resourcesData]) => ({
-    //     ...taskData,
-    //     resources: resourcesData,
-    //   }),
-    // );
-
-    // return result$.subscribe({
-    //   next(value) {
-    //     Logger.log('value');
-    //     Logger.log(value);
-    //     value;
-    //   },
-    // });
-    // } else {
-    //   this.logger.log('false updateTaskDto.resources');
-    //   return taskResponse$.subscribe({
-    //     next(value) {
-    //       return value;
-    //     },
-    //   });
-    // }
+    });
   }
 
   @Delete(':id')
   public async remove(@Param('id') id: number): Promise<any> {
-    return await this.taskService.DeleteTask({
-      id: id,
-    });
-  }
-
-  @Get('column')
-  public async listTaskColumn(
-    @Query() findAllTaskColumnDto?: FindAllTaskColumnRequest,
-  ): Promise<any> {
-    return await this.taskService.FindAllTaskColumn({
-      projectId: +findAllTaskColumnDto.projectId,
-    });
-  }
-
-  @Post('column')
-  public async createTaskColumn(
-    @Body() createTaskColumnDto: CreateTaskColumnRequest,
-  ): Promise<any> {
-    return await this.taskService.CreateTaskColumn({
-      ...createTaskColumnDto,
-    });
-  }
-
-  @Put('column/:id')
-  public async updateTaskColumn(
-    @Param('id') id: number,
-    @Body() updateTaskColumnDto: UpdateTaskColumnRequest,
-  ): Promise<any> {
-    return await this.taskService.UpdateTaskColumn({
-      ...updateTaskColumnDto,
-      id: id,
-    });
-  }
-
-  @Delete('column/:id')
-  public async removeTaskColumn(@Param('id') id: number): Promise<any> {
-    return await this.taskService.RemoveTaskColumn({
-      id: id,
+    return new Promise((resolve) => {
+      from(
+        this.taskService.DeleteTask({
+          id: +id,
+        }),
+      ).subscribe((deleteTaskResult) => {
+        resolve(deleteTaskResult);
+      });
     });
   }
 }

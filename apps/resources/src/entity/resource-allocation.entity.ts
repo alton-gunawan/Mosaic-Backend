@@ -20,7 +20,7 @@ export class ResourceAllocation {
   })
   unit: number | undefined;
 
-  @Column({ name: 'task_id', type: 'varchar' })
+  @Column({ name: 'task_id', type: 'int' })
   taskId: number | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
@@ -32,7 +32,7 @@ export class ResourceAllocation {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt?: string | undefined;
 
-  @ManyToOne(() => Resource, (resource) => resource.resource_allocation)
+  @ManyToOne(() => Resource, (resource) => resource.resourceAllocation)
   @JoinColumn({ name: 'resource_id', referencedColumnName: 'id' })
   resource: Resource | undefined;
 }

@@ -1,25 +1,115 @@
 syntax = "proto3";
 
-package risk;
+package packages.risk;
+
+import "google/protobuf/empty.proto";
 
 service RisksService {
-    rpc FindAllRisks(FindAllRisksRequest) returns (stream RisksResponse);
-    rpc FindOneRisk(FindOneRiskRequest) returns (RiskResponse);
+    rpc ListRisks(ListRisksRequest) returns (RiskResponse);
     rpc CreateRisk(CreateRiskRequest) returns (RiskResponse);
     rpc UpdateRisk(UpdateRiskRequest) returns (RiskResponse);
-    rpc DeleteRisk(DeleteRiskRequest) returns (RiskResponse);
+    rpc DeleteRisk(DeleteRiskRequest) returns (google.protobuf.Empty);
 }
 
-message FindAllRisksRequest {}
+message Risk {
+    uint32 id = 1;
+    string name = 2;
+    string description = 3;
+    RiskLikelihood likelihood = 4;
+    RiskCategory category = 5;
+    RiskStatus status = 6;
+    string mitigation = 7;
+    RiskPriority priority = 8;
+    string ownership = 9;
+    uint32 project_id = 10;
+}
 
-message FindOneRiskRequest {}
+message ListRisksRequest {
+    oneof risk {
+        uint32 id = 1;
+        uint32 task_id = 2;
+        uint32 project_id = 3;
+    }
+    oneof pagination {
+        uint32 limit = 4;
+        uint32 offset = 5;
+    }
+}
 
-message CreateRiskRequest {}
+message CreateRiskRequest {
+    string name = 1;
+    string description = 2;
+    RiskLikelihood likelihood = 3;
+    RiskCategory category = 4;
+    RiskStatus status = 5;
+    string mitigation = 6;
+    RiskPriority priority = 7;
+    string ownership = 8;
+    uint32 project_id = 9;
+}
 
-message UpdateRiskRequest {}
+message UpdateRiskRequest {
+    uint32 id = 1;
+    string name = 2;
+    string description = 3;
+    RiskLikelihood likelihood = 4;
+    RiskCategory category = 5;
+    RiskStatus status = 6;
+    string mitigation = 7;
+    RiskPriority priority = 8;
+    string ownership = 9;
+    uint32 project_id = 10;
+}
 
-message DeleteRiskRequest {}
+message DeleteRiskRequest {
+    uint32 id = 1;
+}
 
-message RisksResponse {}
+message RisksList {
+    repeated Risk data = 1;
+}
+  
+message ErrorResponse {
+    uint32 status_code = 1;
+    string message = 2;
+}
 
-message RiskResponse {}
+message RiskResponse {
+    oneof response {
+        RisksList data = 1;
+        ErrorResponse error = 2;
+    }
+}
+
+enum RiskImpact {
+    MINOR = 0;
+    MODERATE = 1;
+    SIGNIFICANT = 2;
+    SEVERE = 3;
+}
+
+enum RiskLikelihood {
+    NOT_LIKELY = 0;
+    LIKELY = 1;
+    VERY_LIKELY = 2;
+} 
+
+enum RiskCategory {
+    TECHNICAL = 0;
+    SCHEDULE = 1;
+    COST = 2;
+    RESOURCE = 3;
+    EXTERNAL = 4;
+}
+
+enum RiskStatus {
+    OPEN = 0;
+    IN_PROGRESS = 1;
+    CLOSED = 2;
+}
+
+enum RiskPriority {
+    LOW = 0;
+    MEDIUM = 1;
+    HIGH = 2;
+}

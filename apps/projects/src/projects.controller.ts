@@ -1,192 +1,165 @@
-import { Controller, Get, HttpStatus, HttpException } from '@nestjs/common';
-import { ProjectsService } from './projects.service';
+import { Controller, Logger } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
-  CreateProjectDto,
-  FindAllProjectsDto,
-  FindOneProjectDto,
+  CreateProjectRequest,
+  DeleteProjectRequest,
+  ListProjectsRequest,
+  Project,
   ProjectResponse,
-  ProjectsResponse,
-  RemoveProjectDto,
-  UpdateProjectDto,
-} from 'apps/gateway/src/protos/project';
-import { Project } from './entity/project.entity';
+  UpdateProjectRequest,
+} from './protos/project';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ListProjectQuery } from './application/queries/impl/list-project.query';
+import { Timestamp } from './protos/google/protobuf/timestamp';
+import * as moment from 'moment';
+import { CreateProjectCommand } from './application/command/impl/create-project.command';
+import { DeleteProjectCommand } from './application/command/impl/delete-project.command';
+import { UpdateProjectCommand } from './application/command/impl/update-project.command';
 
 @Controller()
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  private readonly logger = new Logger(ProjectsController.name);
 
-  @GrpcMethod('ProjectsService', 'FindOneProject')
-  async findOne(findOneProjectDto?: FindOneProjectDto) {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @GrpcMethod('ProjectsService', 'ListProjects')
+  async findAll(
+    listProjectsDto?: ListProjectsRequest,
+  ): Promise<ProjectResponse> {
     try {
-      const project: object = await this.projectsService.findOne(
-        findOneProjectDto.id,
+      const { createdBy, id, limit, offset } = listProjectsDto;
+
+      const result = await this.queryBus.execute(
+        new ListProjectQuery(id, createdBy, limit, offset),
       );
 
-      const response = ProjectResponse.create({
-        message: 'func:FindOneProject()',
-        statusCode: project ? HttpStatus.OK : HttpStatus.NOT_FOUND,
-        data: project as Project,
-      });
+      const formattedResponse =
+        result?.map((projectsData: Project) => {
+          const startDate = projectsData?.startDate
+            ? Timestamp.create({
+                seconds: moment(projectsData?.startDate).unix(),
+                nanos: moment(projectsData?.startDate).unix() * 1000000,
+              })
+            : undefined;
 
-      return response;
+          const endDate = projectsData?.endDate
+            ? Timestamp.create({
+                seconds: moment(projectsData?.endDate).unix(),
+                nanos: moment(projectsData?.endDate).unix() * 1000000,
+              })
+            : undefined;
+
+          return {
+            ...projectsData,
+            startDate: startDate,
+            endDate: endDate,
+          };
+        }) || null;
+
+      return ProjectResponse.create({
+        data: {
+          data: formattedResponse || undefined,
+        },
+      });
     } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
+      return ProjectResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error retrieving project data',
+        },
       });
-
-      return response;
-    }
-  }
-
-  @GrpcMethod('ProjectsService', 'FindAllProjects')
-  async findAll(findAllProjectDto?: FindAllProjectsDto) {
-    try {
-      const projects: Array<object> = await this.projectsService.findAll({
-        ...findAllProjectDto,
-      });
-
-      const response = ProjectsResponse.create({
-        message: 'func:FindAllProjects()',
-        statusCode: projects.length > 0 ? HttpStatus.OK : HttpStatus.NOT_FOUND,
-        data: projects as Project[],
-      });
-
-      return response;
-    } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
-      });
-
-      return response;
-    }
-  }
-
-  @GrpcMethod('ProjectsService', 'ListProjectByUser')
-  async listProjectByUser(userId: string) {
-    try {
-      const projects: any = await this.projectsService.findByUser(userId);
-
-      const response = ProjectsResponse.create({
-        message: 'func:ListProjectByUser()',
-        statusCode: HttpStatus.OK,
-        data: projects as Project[],
-      });
-
-      return response;
-    } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
-      });
-
-      return response;
     }
   }
 
   @GrpcMethod('ProjectsService', 'CreateProject')
-  async create(createProjectDto: CreateProjectDto) {
+  async create(createProjectDto: CreateProjectRequest) {
     try {
-      const projects: any = await this.projectsService.create(createProjectDto);
+      const { name, featuredImage, createdBy, description } = createProjectDto;
 
-      const response = ProjectsResponse.create({
-        message: 'func:CreateProject()',
-        statusCode: HttpStatus.OK,
-        data: projects as Project[],
+      const result = await this.commandBus.execute(
+        new CreateProjectCommand(
+          name,
+          description,
+          featuredImage,
+          createdBy,
+          createProjectDto?.startDate &&
+          typeof createProjectDto.startDate === 'object'
+            ? moment
+                .unix((createProjectDto?.startDate as any)?.seconds)
+                ?.toDate()
+            : undefined,
+          createProjectDto?.endDate &&
+          typeof createProjectDto.endDate === 'object'
+            ? moment.unix((createProjectDto?.endDate as any)?.seconds)?.toDate()
+            : undefined,
+        ),
+      );
+
+      return ProjectResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
       });
-
-      return response;
     } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
+      return ProjectResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error creating project data',
+        },
       });
-
-      return response;
     }
   }
 
   @GrpcMethod('ProjectsService', 'UpdateProject')
-  async update(updateProjectDto: UpdateProjectDto) {
+  async update(updateProjectDto: UpdateProjectRequest) {
     try {
-      const project: any = await this.projectsService.update(
-        updateProjectDto.id,
-        updateProjectDto,
+      const { id, name, featuredImage, description, startDate, endDate } =
+        updateProjectDto;
+
+      const result = await this.commandBus.execute(
+        new UpdateProjectCommand(
+          id,
+          name || undefined,
+          description || undefined,
+          featuredImage || undefined,
+          startDate || undefined,
+          endDate || undefined,
+        ),
       );
 
-      const response = ProjectResponse.create({
-        message: 'func:UpdateProject()',
-        statusCode: HttpStatus.OK,
-        data: project as Project,
+      return ProjectResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
       });
-
-      return response;
     } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
+      return ProjectResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error creating project data',
+        },
       });
-
-      return response;
     }
   }
 
-  @GrpcMethod('ProjectsService', 'RemoveProject')
-  public async remove(removeProjectDto: RemoveProjectDto): Promise<any> {
+  @GrpcMethod('ProjectsService', 'DeleteProject')
+  public async remove(removeProjectDto: DeleteProjectRequest): Promise<any> {
     try {
-      const result: any = await this.projectsService.remove(
-        removeProjectDto.id,
-      );
+      const { id } = removeProjectDto;
 
-      if (!result)
-        throw new HttpException('Project Not Found', HttpStatus.NOT_FOUND);
+      await this.commandBus.execute(new DeleteProjectCommand(id));
 
-      const response = ProjectResponse.create({
-        message: 'func:RemoveProject()',
-        statusCode: HttpStatus.OK,
-      });
-
-      return response;
+      return {};
     } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
+      return ProjectResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error creating project data',
+        },
       });
-
-      return response;
     }
-  }
-
-  @GrpcMethod('ProjectsService', 'GetMember')
-  async listMember(findOneProjectDto?: FindOneProjectDto) {
-    try {
-      const project: object = await this.projectsService.findOne(
-        findOneProjectDto.id,
-      );
-
-      const response = ProjectResponse.create({
-        message: 'func:FindOneProject()',
-        statusCode: project ? HttpStatus.OK : HttpStatus.NOT_FOUND,
-        data: project as Project,
-      });
-
-      return response;
-    } catch (error: any) {
-      const response = ProjectResponse.create({
-        message: error.message,
-        statusCode: error.status,
-      });
-
-      return response;
-    }
-  }
-
-  @Get('/health')
-  healthCheck(): string {
-    return JSON.stringify({
-      status: 'up',
-    });
   }
 }

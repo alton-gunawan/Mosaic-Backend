@@ -1,13 +1,26 @@
 import { IQuery } from '@nestjs/cqrs';
 
-export class GetResourceByCriteriaQuery implements IQuery {
+export class ListResourceQuery implements IQuery {
   public readonly id: number;
-  public readonly projectId: string;
-  public readonly taskId: number | number[];
+  public readonly resourceGroupId: number;
+  public readonly taskId: number[];
+  public readonly projectId: number;
+  public readonly limit: number;
+  public readonly offset: number;
 
-  constructor(id: number, projectId: string, taskId: number | number[]) {
+  constructor(
+    id: number,
+    resourceGroupId: number,
+    taskId: number[],
+    projectId: number,
+    limit: number,
+    offset: number,
+  ) {
     this.id = id;
-    this.projectId = projectId;
+    this.resourceGroupId = resourceGroupId;
     this.taskId = taskId;
+    this.projectId = projectId;
+    this.limit = limit;
+    this.offset = offset;
   }
 }

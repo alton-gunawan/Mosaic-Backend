@@ -1,29 +1,36 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetResourceByCriteriaQuery } from '../impl/get-resource-by-criteria.query';
+import { ListResourceQuery } from '../impl/get-resource-by-criteria.query';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Resource } from '../../../entity/resource.entity';
+import { Logger } from '@nestjs/common';
 
-@QueryHandler(GetResourceByCriteriaQuery)
+@QueryHandler(ListResourceQuery)
 export class GetResourceByCriteriaHandler
-  implements IQueryHandler<GetResourceByCriteriaQuery, any | object>
+  implements IQueryHandler<ListResourceQuery, any | object>
 {
   constructor(
     @InjectRepository(Resource)
     private readonly resourceRepository: Repository<Resource>,
   ) {}
 
-  async execute(command: GetResourceByCriteriaQuery): Promise<Resource[]> {
-    return await this.resourceRepository.find({
-      relations: ['resource_allocation'],
-      // where: {
-      //   resource_allocation: {
-      //     taskId:
-      //       typeof command.taskId == 'number'
-      //         ? command.taskId
-      //         : In(command.taskId),
-      //   },
-      // },
+  async execute(command: ListResourceQuery): Promise<Resource[]> {
+    const response = await this.resourceRepository.find({
+      relations: ['resourceAllocation'],
+      where: {
+        ...command,
+        resourceAllocation: {
+          taskId: command?.taskId
+            ? In(
+                Array.isArray(command.taskId)
+                  ? command.taskId
+                  : [command.taskId],
+              )
+            : undefined,
+        },
+      },
     });
+
+    return response;
   }
 }

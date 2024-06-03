@@ -1,0 +1,177 @@
+syntax = "proto3";
+
+package packages.risk;
+
+import "google/protobuf/empty.proto";
+
+service RisksService {
+    rpc ListRisks(ListRisksRequest) returns (RiskResponse);
+    rpc CreateRisk(CreateRiskRequest) returns (RiskResponse);
+    rpc UpdateRisk(UpdateRiskRequest) returns (RiskResponse);
+    rpc DeleteRisk(DeleteRiskRequest) returns (google.protobuf.Empty);
+    rpc ListIssues(ListIssuesRequest) returns (IssueResponse);
+    rpc CreateIssues(CreateIssuesRequest) returns (IssueResponse);
+    rpc UpdateIssues(UpdateIssuesRequest) returns (IssueResponse);
+    rpc DeleteIssues(DeleteIssuesRequest) returns (google.protobuf.Empty);
+}
+
+message Risk {
+    uint32 id = 1;
+    string name = 2;
+    string description = 3;
+    RiskLikelihood likelihood = 4;
+    RiskCategory category = 5;
+    string mitigation = 6;
+    RiskImpact impact = 7;
+    string ownership = 8;
+    uint32 project_id = 9;
+}
+
+message ListRisksRequest {
+    oneof risk {
+        uint32 id = 1;
+        uint32 task_id = 2;
+        uint32 project_id = 3;
+    }
+    oneof pagination {
+        uint32 limit = 4;
+        uint32 offset = 5;
+    }
+}
+
+message CreateRiskRequest {
+    string name = 1;
+    string description = 2;
+    RiskLikelihood likelihood = 3;
+    RiskCategory category = 4;
+    string mitigation = 5;
+    RiskImpact impact = 6;
+    string ownership = 7;
+    uint32 project_id = 8;
+}
+
+message UpdateRiskRequest {
+    uint32 id = 1;
+    string name = 2;
+    string description = 3;
+    RiskLikelihood likelihood = 4;
+    RiskCategory category = 5;
+    string mitigation = 6;
+    RiskImpact impact = 7;
+    string ownership = 8;
+}
+
+message DeleteRiskRequest {
+    uint32 id = 1;
+}
+
+message RisksList {
+    repeated Risk data = 1;
+}
+  
+message ErrorResponse {
+    uint32 status_code = 1;
+    string message = 2;
+}
+
+message RiskResponse {
+    oneof response {
+        RisksList data = 1;
+        ErrorResponse error = 2;
+    }
+}
+
+enum RiskImpact {
+    MINOR = 0;
+    MODERATE = 1;
+    SIGNIFICANT = 2;
+    SEVERE = 3;
+}
+
+enum RiskLikelihood {
+    NOT_LIKELY = 0;
+    LIKELY = 1;
+    VERY_LIKELY = 2;
+} 
+
+enum RiskCategory {
+    TECHNICAL = 0;
+    SCHEDULE = 1;
+    COST = 2;
+    RESOURCE = 3;
+    EXTERNAL = 4;
+}
+
+enum IssuePriority {
+    LOW = 0;
+    MEDIUM = 1;
+    HIGH = 2;
+}
+
+message Issue {
+    uint32 id = 1;
+    string summary = 2;
+    string description = 3;
+    IssueStatus status = 4;
+    IssuePriority priority = 5;
+    string reported_by = 6;
+    string ownership = 7;
+    repeated string task_id = 8;
+    uint32 project_id = 9;
+}
+
+message ListIssuesRequest {
+    oneof risk {
+        uint32 id = 1;
+        uint32 task_id = 2;
+        uint32 project_id = 3;
+    }
+    oneof pagination {
+        uint32 limit = 4;
+        uint32 offset = 5;
+    }
+}
+
+message CreateIssuesRequest {
+    string summary = 1;
+    string description = 2;
+    IssueStatus status = 3;
+    IssuePriority priority = 4;
+    string reported_by = 5;
+    string ownership = 6;
+    repeated string task_id = 7;
+    uint32 project_id = 8;
+}
+
+message UpdateIssuesRequest {
+    uint32 id = 1;
+    string summary = 2;
+    string description = 3;
+    IssueStatus status = 4;
+    IssuePriority priority = 5;
+    string reported_by = 6;
+    string ownership = 7;
+    repeated string task_id = 8;
+}
+
+message DeleteIssuesRequest {
+    uint32 id = 1;
+}
+
+message IssuesList {
+    repeated Issue data = 1;
+}
+
+message IssueResponse {
+    oneof response {
+        IssuesList data = 1;
+        ErrorResponse error = 2;
+    }
+}
+
+enum IssueStatus {
+    OPEN = 0;
+    IN_PROGRESS = 1;
+    RESOLVED = 2;
+    CLOSED = 3;
+}

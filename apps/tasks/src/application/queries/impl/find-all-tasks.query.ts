@@ -1,6 +1,6 @@
 import { IQuery } from '@nestjs/cqrs';
 
-export class FindAllTasksQuery implements IQuery {
+export class ListTaskQuery implements IQuery {
   constructor(
     public readonly id: number,
     public createdBy: string,

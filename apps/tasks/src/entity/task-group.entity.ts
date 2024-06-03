@@ -34,6 +34,6 @@ export class TaskGroup {
   @DeleteDateColumn({ name: 'deleted_at' })
   deleted_at: string | undefined;
 
-  @OneToMany(() => Task, (task) => task.task_group)
+  @OneToMany(() => Task, (task) => task.taskGroup)
   task: Task[] | undefined;
 }

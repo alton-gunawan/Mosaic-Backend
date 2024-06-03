@@ -12,12 +12,15 @@ import {
   Query,
 } from '@nestjs/common';
 import {
-  FindAllProjectsDto,
+  ListProjectsRequest,
+  UpdateProjectRequest,
   ProjectsService,
-  UpdateProjectDto,
+  CreateProjectRequest,
 } from '../protos/project';
 import { ClientGrpc } from '@nestjs/microservices';
-import { CreateProjectDto } from '../interfaces/create-project.dto';
+import { from, map, take } from 'rxjs';
+import { Timestamp } from 'google/protobuf/timestamp';
+import * as moment from 'moment';
 
 @Controller({
   version: '1',
@@ -39,46 +42,117 @@ export class ProjectsController implements OnModuleInit {
 
   @Get()
   public async listProject(
-    @Query() findAllProjectDto?: FindAllProjectsDto,
+    @Query() listProjectsDto?: ListProjectsRequest,
   ): Promise<any> {
-    return await this.projectsService.FindAllProjects({
-      ...findAllProjectDto,
-    });
-  }
+    return new Promise((resolve) => {
+      from(
+        this.projectsService.ListProjects({
+          ...listProjectsDto,
+        }),
+      )
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((projectResult) => {
+          const formattedResponse = projectResult?.map((projectsData) => ({
+            ...projectsData,
+            startDate: projectsData?.startDate
+              ? moment.unix((projectsData?.startDate as any)?.seconds).toDate()
+              : undefined,
+            endDate: projectsData?.endDate
+              ? moment.unix((projectsData?.endDate as any)?.seconds).toDate()
+              : undefined,
+          }));
 
-  @Get(':id')
-  public async findProject(@Param('id') id?: string): Promise<any> {
-    return await this.projectsService.FindOneProject({
-      id: +id,
+          resolve(formattedResponse);
+        });
     });
   }
 
   @Post()
   public async create(
-    @Body() createProjectDto: CreateProjectDto,
+    @Body() createProjectDto: CreateProjectRequest,
   ): Promise<any> {
-    const response = await this.projectsService.CreateProject({
-      ...createProjectDto,
+    const startDate = Timestamp.create({
+      seconds: Math.floor(
+        new Date(createProjectDto?.startDate).getTime() / 1000,
+      ),
+      nanos: (new Date(createProjectDto?.startDate).getTime() % 1000) * 1e6,
+    });
+    const endDate = Timestamp.create({
+      seconds: Math.floor(new Date(createProjectDto?.endDate).getTime() / 1000),
+      nanos: (new Date(createProjectDto?.endDate).getTime() % 1000) * 1e6,
     });
 
-    return response;
+    return new Promise((resolve) => {
+      from(
+        this.projectsService.CreateProject({
+          ...createProjectDto,
+          startDate:
+            (createProjectDto?.startDate && (startDate as any)) || undefined,
+          endDate: (createProjectDto?.endDate && (endDate as any)) || undefined,
+        }),
+      )
+        .pipe(take(1))
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((projectResult) => {
+          Logger.log('projectResult: ');
+          Logger.log(projectResult);
+
+          resolve(projectResult[0]);
+        });
+    });
   }
 
   @Put(':id')
   public async update(
     @Param('id') id: string,
-    @Body() updateProjectDto: UpdateProjectDto,
+    @Body() updateProjectDto: UpdateProjectRequest,
   ) {
     const { id: projectId, ...data } = updateProjectDto;
 
-    return await this.projectsService.UpdateProject({
-      id: +id,
-      ...data,
+    return new Promise((resolve) => {
+      from(
+        this.projectsService.UpdateProject({
+          id: +id,
+          ...data,
+        }),
+      )
+        .pipe(take(1))
+        .pipe(map((result) => result?.data?.data))
+        .subscribe((projectResult) => {
+          Logger.log('update:projectResult()');
+          Logger.log(projectResult);
+
+          resolve(projectResult[0]);
+        });
     });
   }
 
   @Delete(':id')
   public async remove(@Param('id') id: string): Promise<any> {
-    return await this.projectsService.RemoveProject({ id: +id });
+    return new Promise((resolve) => {
+      from(this.projectsService.DeleteProject({ id: +id })).subscribe(
+        (deleteProjectResult) => {
+          resolve(deleteProjectResult);
+        },
+      );
+    });
   }
+
+  @Post(':id/members')
+  public async addMember(
+    @Param('id') id: number,
+    // @Body() addMemberDto: AddMemberRequest,
+  ) {}
+
+  @Put(':id/members')
+  public async updateMember(
+    @Param('id') id: number,
+    // @Body() addMemberDto: UpdateMemberRequest,
+  ) {}
+
+  @Delete(':id/members')
+  public async removeMember(
+    @Param('id') id: number,
+    // @Body() deleteProjectDto: RemoveMemberRequest,
+  ) {}
 }

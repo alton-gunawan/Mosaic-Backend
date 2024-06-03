@@ -10,8 +10,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { TaskAssignees } from './task-assignees.entity';
-import { TaskDependency } from './task-dependency.entity';
 import { TaskGroup } from './task-group.entity';
+import { TaskPriority, TaskStatus } from '../protos/task';
 
 @Entity()
 export class Task {
@@ -41,19 +41,33 @@ export class Task {
   startDate: Date | undefined;
 
   @Column({
-    type: 'tinyint',
+    type: 'int',
   })
   duration: number | undefined;
 
   @Column({
-    type: 'varchar',
+    type: 'text',
   })
   predecessor: string | undefined;
 
   @Column({
-    type: 'varchar',
+    type: 'enum',
+    enum: TaskPriority,
+    default: TaskPriority.UNRECOGNIZED,
   })
-  priority: string | undefined;
+  priority: TaskPriority | undefined;
+
+  @Column({
+    type: 'enum',
+    enum: TaskStatus,
+    default: TaskStatus.UNRECOGNIZED,
+  })
+  status: TaskStatus | undefined;
+
+  @Column({
+    type: 'tinyint',
+  })
+  order: number | undefined;
 
   @Column({
     type: 'varchar',
@@ -62,21 +76,18 @@ export class Task {
   projectId: number | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  created_at: string | undefined;
+  createdAt: string | undefined;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updated_at: string | undefined;
+  updatedAt: string | undefined;
 
   @DeleteDateColumn({ name: 'deleted_at' })
-  deleted_at: string | undefined;
+  deletedAt: string | undefined;
 
   @OneToMany(() => TaskAssignees, (task_assignees) => task_assignees.task)
-  task_assignees: TaskAssignees[] | undefined;
-
-  @OneToMany(() => TaskDependency, (task_dependency) => task_dependency.task)
-  task_dependency: TaskDependency[] | undefined;
+  taskAssignees: TaskAssignees[] | undefined;
 
   @ManyToOne(() => TaskGroup, (task_group) => task_group.task)
   @JoinColumn({ name: 'task_group_id', referencedColumnName: 'id' })
-  task_group: TaskGroup | undefined;
+  taskGroup: TaskGroup | undefined;
 }
