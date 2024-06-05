@@ -58,12 +58,17 @@ export class TaskGroupController implements OnModuleInit {
       )
         .pipe(map((result) => result?.data?.data))
         .subscribe((taskGroupResult) => {
+          Logger.log('taskGroupResult data:');
+          Logger.log(taskGroupResult);
           if (taskGroupResult && taskGroupResult.length > 0) {
             const taskIdArr = taskGroupResult
               ? taskGroupResult?.flatMap((taskColumn) =>
                   taskColumn?.task?.map((item) => +item.id),
                 )
               : [];
+
+            Logger.log('taskIdArr data:');
+            Logger.log(taskIdArr);
 
             return new Promise((resourcesServiceResolve) => {
               from(
@@ -73,6 +78,9 @@ export class TaskGroupController implements OnModuleInit {
               )
                 .pipe(map((result) => result?.data?.data))
                 .subscribe((resourceResult) => {
+                  Logger.log('resourceResult data:');
+                  Logger.log(resourceResult);
+
                   const resourceAllocations = resourceResult?.reduce(
                     (acc, resource) => {
                       if (resource.resourceAllocation) {
@@ -91,17 +99,14 @@ export class TaskGroupController implements OnModuleInit {
                       taskColumn?.task?.map((task) => ({
                         ...task,
                         resources:
-                          resourceAllocations.filter(
+                          resourceAllocations?.filter(
                             (resourceAllocationItem) =>
                               resourceAllocationItem.taskId === task.id,
                           ) || [],
                       })) || [],
                   }));
                   resourcesServiceResolve(taskGroupResult);
-                  resolve({
-                    ...taskGroupResult,
-                    data: response,
-                  });
+                  resolve(response);
                 });
             });
           } else {

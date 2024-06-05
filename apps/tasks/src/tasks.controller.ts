@@ -7,6 +7,7 @@ import {
   DeleteTaskRequest,
   ListTaskColumnsRequest,
   ListTasksRequest,
+  TaskColumn,
   TaskColumnResponse,
   TaskResponse,
   UpdateTaskRequest,
@@ -192,13 +193,41 @@ export class TasksController {
   @GrpcMethod('TasksService', 'ListTaskColumns')
   async findAllTaskColumn(findAllTaskColumnDto: ListTaskColumnsRequest) {
     try {
-      const result = await this.queryBus.execute(
+      const result: TaskColumn[] = await this.queryBus.execute(
         new ListTaskColumnQuery(findAllTaskColumnDto?.projectId),
       );
 
+      Logger.log('ListTaskColumns:result()');
+      Logger.log(result);
+
       return TaskColumnResponse.create({
         data: {
-          data: result || [],
+          data:
+            result?.map((value: TaskColumn) => ({
+              ...value,
+              task:
+                value?.task?.map((task) => ({
+                  ...task,
+                  startDate: task?.startDate
+                    ? (Timestamp.create({
+                        seconds: getSecondsAndNanos(new Date(task?.startDate))
+                          .seconds,
+                        nanos: getSecondsAndNanos(new Date(task?.startDate))
+                          .nanos,
+                      }) as any) || undefined
+                    : undefined,
+                  duration: task?.duration
+                    ? (Duration.create({
+                        seconds: numberToDuration(
+                          task?.duration as unknown as number,
+                        ).seconds,
+                        nanos: numberToDuration(
+                          task?.duration as unknown as number,
+                        ).nanos,
+                      }) as any) || undefined
+                    : undefined,
+                })) || [],
+            })) || [],
         },
       });
     } catch (error) {
