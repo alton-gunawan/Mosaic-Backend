@@ -12,6 +12,14 @@ import {
 import { DeleteRiskCommand } from './application/command/impl/delete-risk.command';
 import { UpdateRiskCommand } from './application/command/impl/update-risk.command';
 import { CreateRiskCommand } from './application/command/impl/create-risk.command';
+import {
+  CreateIssuesRequest,
+  DeleteIssuesRequest,
+  IssueResponse,
+  ListIssuesRequest,
+  UpdateIssuesRequest,
+} from 'apps/gateway/src/protos/risk';
+import { ListIssuesQuery } from './application/queries/impl/list-issues.query';
 
 @Controller()
 export class RisksController {
@@ -31,6 +39,9 @@ export class RisksController {
         new ListRisksQuery(id, taskId, projectId, limit, offset),
       );
 
+      Logger.log('RisksService:ListRisks()');
+      Logger.log(result);
+
       return RiskResponse.create({
         data: {
           data: result || undefined,
@@ -48,6 +59,9 @@ export class RisksController {
 
   @GrpcMethod('RisksService', 'CreateRisk')
   async create(createRiskDto: CreateRiskRequest) {
+    Logger.log('CreateRiskRequest');
+    Logger.log(createRiskDto);
+
     try {
       const {
         category,
@@ -153,6 +167,70 @@ export class RisksController {
         error: {
           statusCode: 500,
           message: error || 'Error retrieving project data',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('RisksService', 'ListIssues')
+  async listIssues(listIssueDto: ListIssuesRequest) {
+    const { id, projectId, taskId, limit, offset } = listIssueDto;
+
+    try {
+      const result = await this.queryBus.execute(
+        new ListIssuesQuery(id, projectId, taskId, limit, offset),
+      );
+      Logger.log(result);
+
+      return RiskResponse.create({
+        data: {
+          data: result || [],
+        },
+      });
+    } catch (error) {
+      IssueResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error retrieving issue data',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('RisksService', 'CreateIssues')
+  async createIssues(createIssueDto: CreateIssuesRequest) {
+    try {
+    } catch (error) {
+      IssueResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error creating issue data',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('RisksService', 'UpdateIssues')
+  async updateIssues(updateIssueDto: UpdateIssuesRequest) {
+    try {
+    } catch (error) {
+      IssueResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error updating issue data',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('RisksService', 'DeleteIssues')
+  async deleteIssues(deleteIssueDto: DeleteIssuesRequest) {
+    try {
+    } catch (error) {
+      IssueResponse.create({
+        error: {
+          statusCode: 500,
+          message: error || 'Error deleting issue data',
         },
       });
     }

@@ -21,8 +21,11 @@ import {
   ListTaskColumnsRequest,
   UpdateTaskColumnRequest,
   TaskColumnResponse,
+  TaskColumn,
+  Task,
 } from '../protos/task';
 import { Observable, catchError, from, map, take } from 'rxjs';
+import { Timestamp } from 'google/protobuf/timestamp';
 
 @Controller({
   version: '1',
@@ -58,17 +61,30 @@ export class TaskGroupController implements OnModuleInit {
       )
         .pipe(map((result) => result?.data?.data))
         .subscribe((taskGroupResult) => {
-          Logger.log('taskGroupResult data:');
-          Logger.log(taskGroupResult);
+          // const formattedTaskGroup = taskGroupResult.map(
+          //   (taskGroupItem: TaskColumn) => ({
+          //     ...taskGroupItem,
+          //     task: taskGroupItem.task.map((taskItem: Task) => ({
+          //       ...taskItem,
+          //       startDate:
+          //         Timestamp.create({ 
+          //           seconds: Math.floor(
+          //             new Date(taskItem?.startDate).getTime() / 1000,
+          //           ),
+          //           nanos:
+          //             (new Date(taskItem?.startDate).getTime() % 1000) * 1e6,
+          //         }) || undefined,
+          //       resources: [],
+          //     })),
+          //   }),
+          // );
+
           if (taskGroupResult && taskGroupResult.length > 0) {
             const taskIdArr = taskGroupResult
               ? taskGroupResult?.flatMap((taskColumn) =>
                   taskColumn?.task?.map((item) => +item.id),
                 )
               : [];
-
-            Logger.log('taskIdArr data:');
-            Logger.log(taskIdArr);
 
             return new Promise((resourcesServiceResolve) => {
               from(
@@ -78,9 +94,6 @@ export class TaskGroupController implements OnModuleInit {
               )
                 .pipe(map((result) => result?.data?.data))
                 .subscribe((resourceResult) => {
-                  Logger.log('resourceResult data:');
-                  Logger.log(resourceResult);
-
                   const resourceAllocations = resourceResult?.reduce(
                     (acc, resource) => {
                       if (resource.resourceAllocation) {
@@ -91,8 +104,7 @@ export class TaskGroupController implements OnModuleInit {
                     },
                     [],
                   );
-                  Logger.log('resourceAllocations');
-                  Logger.log(resourceAllocations);
+
                   const response = taskGroupResult?.map((taskColumn) => ({
                     ...taskColumn,
                     task:
@@ -105,6 +117,7 @@ export class TaskGroupController implements OnModuleInit {
                           ) || [],
                       })) || [],
                   }));
+
                   resourcesServiceResolve(taskGroupResult);
                   resolve(response);
                 });

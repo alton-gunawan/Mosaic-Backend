@@ -20,6 +20,11 @@ export class TaskGroup {
   name: string | undefined;
 
   @Column({
+    type: 'tinyint',
+  })
+  order: number | undefined;
+
+  @Column({
     name: 'project_id',
     type: 'varchar',
   })

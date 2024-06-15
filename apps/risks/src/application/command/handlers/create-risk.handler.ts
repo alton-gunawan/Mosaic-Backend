@@ -15,6 +15,9 @@ export class CreateRiskHandler
   ) {}
 
   async execute(command: CreateRiskCommand): Promise<any> {
+    Logger.log('CreateRiskCommand:execute()');
+    Logger.log(JSON.stringify(command));
+
     const response = await this.riskRepository.save({
       ...command,
     });

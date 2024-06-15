@@ -13,19 +13,19 @@ import {
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import {
-  CreateRiskRequest,
-  ListRisksRequest,
+  CreateIssuesRequest,
+  ListIssuesRequest,
   RisksService,
-  UpdateRiskRequest,
+  UpdateIssuesRequest,
 } from '../protos/risk';
 import { from, map, take } from 'rxjs';
 
 @Controller({
   version: '1',
-  path: 'risks',
+  path: 'issues',
 })
-export class RisksController implements OnModuleInit {
-  private readonly logger = new Logger(RisksController.name);
+export class IssuesController implements OnModuleInit {
+  private readonly logger = new Logger(IssuesController.name);
   private riskService: RisksService;
 
   constructor(
@@ -39,47 +39,46 @@ export class RisksController implements OnModuleInit {
 
   @Get()
   public async listRisk(
-    @Query() listRisksDto?: ListRisksRequest,
+    @Query() listIssuesDto?: ListIssuesRequest,
   ): Promise<any> {
+    Logger.log('listIssuesDto:func()');
+    Logger.log(listIssuesDto);
+
     return new Promise((resolve) => {
       from(
-        this.riskService.ListRisks({
-          ...listRisksDto,
+        this.riskService.ListIssues({
+          ...listIssuesDto,
         }),
       )
         .pipe(map((result) => result?.data?.data))
-        .subscribe((riskResult) => {
-          Logger.log('riskResult:func()');
-          Logger.log(riskResult);
-          resolve(riskResult);
+        .subscribe((issueResult) => {
+          Logger.log('issueResult:func()');
+          Logger.log(issueResult);
+          resolve(issueResult);
         });
     });
   }
 
   @Post()
-  public async create(@Body() createRiskDto: CreateRiskRequest): Promise<any> {
-    Logger.log('CreateRiskRequest');
-    Logger.log(JSON.stringify(createRiskDto));
+  public async create(
+    @Body() createIssueDto: CreateIssuesRequest,
+  ): Promise<any> {
+    Logger.log('CreateIssuesRequest');
+    Logger.log(JSON.stringify(createIssueDto));
 
     return new Promise((resolve) => {
       from(
-        this.riskService.CreateRisk({
-          ...createRiskDto,
-          ownership: createRiskDto?.ownership || undefined,
-          category: +createRiskDto?.category || undefined,
-          likelihood: +createRiskDto?.likelihood || undefined,
-          projectId: +createRiskDto?.projectId || undefined,
-          impact: +createRiskDto?.impact || undefined,
-          mitigation: createRiskDto?.mitigation || undefined,
+        this.riskService.CreateIssues({
+          ...createIssueDto,
         }),
       )
         .pipe(take(1))
         .pipe(map((result) => result?.data?.data))
-        .subscribe((projectResult) => {
-          Logger.log('projectResult: ');
-          Logger.log(projectResult);
+        .subscribe((issueResult) => {
+          Logger.log('issueResult: ');
+          Logger.log(issueResult);
 
-          resolve(projectResult[0]);
+          resolve(issueResult[0]);
         });
     });
   }
@@ -87,13 +86,13 @@ export class RisksController implements OnModuleInit {
   @Put(':id')
   public async update(
     @Param('id') id: number,
-    @Body() updateRiskDto: UpdateRiskRequest,
+    @Body() updateIssueDto: UpdateIssuesRequest,
   ) {
-    const { id: riskId, ...data } = updateRiskDto;
+    const { id: riskId, ...data } = updateIssueDto;
 
     return new Promise((resolve) => {
       from(
-        this.riskService.UpdateRisk({
+        this.riskService.UpdateIssues({
           ...data,
           id: +id,
         }),
@@ -112,9 +111,9 @@ export class RisksController implements OnModuleInit {
   @Delete(':id')
   public async remove(@Param('id') id: number): Promise<any> {
     return new Promise((resolve) => {
-      from(this.riskService.DeleteRisk({ id: +id })).subscribe(
-        (deleteRiskResult) => {
-          resolve(deleteRiskResult);
+      from(this.riskService.DeleteIssues({ id: +id })).subscribe(
+        (deleteIssueResult) => {
+          resolve(deleteIssueResult);
         },
       );
     });

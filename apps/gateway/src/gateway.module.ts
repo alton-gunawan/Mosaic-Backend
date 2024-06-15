@@ -7,6 +7,7 @@ import { ResourcesController } from './controllers/resource.controller';
 import { ResourceGroupsController } from './controllers/resource-group.controller';
 import { TaskGroupController } from './controllers/task-group.controller';
 import { RisksController } from './controllers/risk.controller';
+import { IssuesController } from './controllers/issue.controller';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { RisksController } from './controllers/risk.controller';
     ResourceGroupsController,
     TaskGroupController,
     RisksController,
+    IssuesController,
   ],
   providers: [],
 })

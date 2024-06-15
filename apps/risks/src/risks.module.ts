@@ -8,17 +8,29 @@ import { UpdateRiskHandler } from './application/command/handlers/update-risk.ha
 import { DeleteRiskHandler } from './application/command/handlers/delete-risk.handler';
 import { ListRiskHandler } from './application/queries/handlers/list-risks.handler';
 import { CqrsModule } from '@nestjs/cqrs';
+import { Issue } from './entity/issue.entity';
+import { CreateIssueHandler } from './application/command/handlers/create-issue.handler';
+import { UpdateIssueHandler } from './application/command/handlers/update-issue.handler';
+import { DeleteIssueHandler } from './application/command/handlers/delete-issue.handler';
+import { ListIssueHandler } from './application/queries/handlers/list-issues.handler';
 
-const QueryHandlers = [ListRiskHandler];
+const QueryHandlers = [ListRiskHandler, ListIssueHandler];
 const CommandHandlers = [
   CreateRiskHandler,
   UpdateRiskHandler,
   DeleteRiskHandler,
+  CreateIssueHandler,
+  UpdateIssueHandler,
+  DeleteIssueHandler,
 ];
 const EventHandlers = [];
 
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([Risk]), databaseProviders],
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([Risk, Issue]),
+    databaseProviders,
+  ],
   controllers: [RisksController],
   providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers],
 })
