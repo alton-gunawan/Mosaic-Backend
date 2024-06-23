@@ -71,6 +71,12 @@ export class Task {
 
   @Column({
     type: 'varchar',
+    name: 'created_by',
+  })
+  createdBy: string | undefined;
+
+  @Column({
+    type: 'varchar',
     name: 'project_id',
   })
   projectId: number | undefined;

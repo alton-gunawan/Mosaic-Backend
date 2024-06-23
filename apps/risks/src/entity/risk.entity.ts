@@ -6,12 +6,7 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
 } from 'typeorm';
-import {
-  RiskCategory,
-  RiskLikelihood,
-  RiskPriority,
-  RiskStatus,
-} from '../protos/risk';
+import { RiskCategory, RiskLikelihood } from '../protos/risk';
 
 @Entity()
 export class Risk {
@@ -43,23 +38,9 @@ export class Risk {
   category: RiskCategory | undefined;
 
   @Column({
-    type: 'enum',
-    enum: RiskStatus,
-    default: RiskStatus.UNRECOGNIZED,
-  })
-  status: RiskStatus | undefined;
-
-  @Column({
     type: 'text',
   })
   mitigation: string | undefined;
-
-  @Column({
-    type: 'enum',
-    enum: RiskPriority,
-    default: RiskPriority.UNRECOGNIZED,
-  })
-  priority: RiskPriority | undefined;
 
   @Column({
     type: 'varchar',

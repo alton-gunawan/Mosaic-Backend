@@ -116,7 +116,7 @@ message Issue {
     IssuePriority priority = 5;
     string reported_by = 6;
     string ownership = 7;
-    repeated string task_id = 8;
+    uint32 task_id = 8;
     uint32 project_id = 9;
 }
 
@@ -139,7 +139,7 @@ message CreateIssuesRequest {
     IssuePriority priority = 4;
     string reported_by = 5;
     string ownership = 6;
-    repeated string task_id = 7;
+    uint32 task_id = 7;
     uint32 project_id = 8;
 }
 
@@ -151,7 +151,7 @@ message UpdateIssuesRequest {
     IssuePriority priority = 5;
     string reported_by = 6;
     string ownership = 7;
-    repeated string task_id = 8;
+    uint32 task_id = 8;
 }
 
 message DeleteIssuesRequest {

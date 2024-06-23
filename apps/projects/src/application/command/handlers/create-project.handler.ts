@@ -15,6 +15,9 @@ export class CreateProjectHandler
   ) {}
 
   async execute(command: CreateProjectCommand): Promise<any> {
+    Logger.log('Received command:');
+    Logger.log(command);
+
     const createdProject = await this.projectRepository.save({
       ...command,
     });

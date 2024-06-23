@@ -18,7 +18,7 @@ import {
   RisksService,
   UpdateIssuesRequest,
 } from '../protos/risk';
-import { from, map, take } from 'rxjs';
+import { catchError, from, map, of, take, throwError } from 'rxjs';
 
 @Controller({
   version: '1',
@@ -63,22 +63,26 @@ export class IssuesController implements OnModuleInit {
   public async create(
     @Body() createIssueDto: CreateIssuesRequest,
   ): Promise<any> {
-    Logger.log('CreateIssuesRequest');
-    Logger.log(JSON.stringify(createIssueDto));
-
     return new Promise((resolve) => {
       from(
         this.riskService.CreateIssues({
           ...createIssueDto,
+          status: +createIssueDto.status || undefined,
+          priority: +createIssueDto.priority || undefined,
         }),
       )
-        .pipe(take(1))
-        .pipe(map((result) => result?.data?.data))
-        .subscribe((issueResult) => {
-          Logger.log('issueResult: ');
-          Logger.log(issueResult);
-
-          resolve(issueResult[0]);
+        .pipe(catchError((error) => throwError(error)))
+        .pipe(
+          take(1),
+          map((result) => result?.data?.data),
+        )
+        .subscribe({
+          next: (issueResult) => {
+            resolve(issueResult[0]);
+          },
+          error: (err) => {
+            resolve(err);
+          },
         });
     });
   }

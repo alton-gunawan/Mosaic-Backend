@@ -50,6 +50,9 @@ export class ResourcesController {
         ),
       );
 
+      Logger.log('ResourcesService:ListResources()');
+      Logger.log(result);
+
       return ResourceResponse.create({
         data: {
           data: result || undefined,

@@ -71,6 +71,9 @@ export class ProjectsController implements OnModuleInit {
   public async create(
     @Body() createProjectDto: CreateProjectRequest,
   ): Promise<any> {
+    Logger.log('createProjectDto:func()');
+    Logger.log(createProjectDto);
+
     const startDate = Timestamp.create({
       seconds: Math.floor(
         new Date(createProjectDto?.startDate).getTime() / 1000,

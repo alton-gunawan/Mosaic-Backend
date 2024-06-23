@@ -50,7 +50,7 @@ export class ResourceGroupsController implements OnModuleInit {
       )
         .pipe(map((result) => result?.data?.data))
         .subscribe((resourceGroupResult) => {
-          resolve(resourceGroupResult);
+          resolve(resourceGroupResult || []);
         });
     });
   }

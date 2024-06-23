@@ -76,6 +76,9 @@ export class ProjectsController {
 
   @GrpcMethod('ProjectsService', 'CreateProject')
   async create(createProjectDto: CreateProjectRequest) {
+    Logger.log('createProjectDto:func()');
+    Logger.log(createProjectDto);
+
     try {
       const { name, featuredImage, createdBy, description } = createProjectDto;
 
@@ -85,15 +88,21 @@ export class ProjectsController {
           description,
           featuredImage,
           createdBy,
-          createProjectDto?.startDate &&
-          typeof createProjectDto.startDate === 'object'
-            ? moment
-                .unix((createProjectDto?.startDate as any)?.seconds)
-                ?.toDate()
+          createProjectDto?.startDate
+            ? new Date(
+                (createProjectDto.startDate as unknown as Timestamp).seconds *
+                  1000 +
+                  (createProjectDto.startDate as unknown as Timestamp).nanos /
+                    1000,
+              )
             : undefined,
-          createProjectDto?.endDate &&
-          typeof createProjectDto.endDate === 'object'
-            ? moment.unix((createProjectDto?.endDate as any)?.seconds)?.toDate()
+          createProjectDto?.endDate
+            ? new Date(
+                (createProjectDto.endDate as unknown as Timestamp).seconds *
+                  1000 +
+                  (createProjectDto.endDate as unknown as Timestamp).nanos /
+                    1000,
+              )
             : undefined,
         ),
       );

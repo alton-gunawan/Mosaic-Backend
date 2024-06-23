@@ -18,7 +18,7 @@ export class TaskAssignees {
   @Column({
     type: 'varchar',
   })
-  name: string | undefined;
+  userId: string | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at: string | undefined;

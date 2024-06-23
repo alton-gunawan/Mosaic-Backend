@@ -14,5 +14,6 @@ export class UpdateTaskCommand implements ICommand {
     public taskColumnId: number,
     public predecessor: string,
     public order: number,
+    public assignees: string[],
   ) {}
 }

@@ -139,79 +139,85 @@ export function riskCategoryToJSON(object: RiskCategory): string {
   }
 }
 
-export enum RiskStatus {
-  OPEN = 0,
-  IN_PROGRESS = 1,
-  CLOSED = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function riskStatusFromJSON(object: any): RiskStatus {
-  switch (object) {
-    case 0:
-    case "OPEN":
-      return RiskStatus.OPEN;
-    case 1:
-    case "IN_PROGRESS":
-      return RiskStatus.IN_PROGRESS;
-    case 2:
-    case "CLOSED":
-      return RiskStatus.CLOSED;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return RiskStatus.UNRECOGNIZED;
-  }
-}
-
-export function riskStatusToJSON(object: RiskStatus): string {
-  switch (object) {
-    case RiskStatus.OPEN:
-      return "OPEN";
-    case RiskStatus.IN_PROGRESS:
-      return "IN_PROGRESS";
-    case RiskStatus.CLOSED:
-      return "CLOSED";
-    case RiskStatus.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
-export enum RiskPriority {
+export enum IssuePriority {
   LOW = 0,
   MEDIUM = 1,
   HIGH = 2,
   UNRECOGNIZED = -1,
 }
 
-export function riskPriorityFromJSON(object: any): RiskPriority {
+export function issuePriorityFromJSON(object: any): IssuePriority {
   switch (object) {
     case 0:
     case "LOW":
-      return RiskPriority.LOW;
+      return IssuePriority.LOW;
     case 1:
     case "MEDIUM":
-      return RiskPriority.MEDIUM;
+      return IssuePriority.MEDIUM;
     case 2:
     case "HIGH":
-      return RiskPriority.HIGH;
+      return IssuePriority.HIGH;
     case -1:
     case "UNRECOGNIZED":
     default:
-      return RiskPriority.UNRECOGNIZED;
+      return IssuePriority.UNRECOGNIZED;
   }
 }
 
-export function riskPriorityToJSON(object: RiskPriority): string {
+export function issuePriorityToJSON(object: IssuePriority): string {
   switch (object) {
-    case RiskPriority.LOW:
+    case IssuePriority.LOW:
       return "LOW";
-    case RiskPriority.MEDIUM:
+    case IssuePriority.MEDIUM:
       return "MEDIUM";
-    case RiskPriority.HIGH:
+    case IssuePriority.HIGH:
       return "HIGH";
-    case RiskPriority.UNRECOGNIZED:
+    case IssuePriority.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum IssueStatus {
+  OPEN = 0,
+  IN_PROGRESS = 1,
+  RESOLVED = 2,
+  CLOSED = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function issueStatusFromJSON(object: any): IssueStatus {
+  switch (object) {
+    case 0:
+    case "OPEN":
+      return IssueStatus.OPEN;
+    case 1:
+    case "IN_PROGRESS":
+      return IssueStatus.IN_PROGRESS;
+    case 2:
+    case "RESOLVED":
+      return IssueStatus.RESOLVED;
+    case 3:
+    case "CLOSED":
+      return IssueStatus.CLOSED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return IssueStatus.UNRECOGNIZED;
+  }
+}
+
+export function issueStatusToJSON(object: IssueStatus): string {
+  switch (object) {
+    case IssueStatus.OPEN:
+      return "OPEN";
+    case IssueStatus.IN_PROGRESS:
+      return "IN_PROGRESS";
+    case IssueStatus.RESOLVED:
+      return "RESOLVED";
+    case IssueStatus.CLOSED:
+      return "CLOSED";
+    case IssueStatus.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
   }
@@ -223,9 +229,8 @@ export interface Risk {
   description: string;
   likelihood: RiskLikelihood;
   category: RiskCategory;
-  status: RiskStatus;
   mitigation: string;
-  priority: RiskPriority;
+  impact: RiskImpact;
   ownership: string;
   projectId: number;
 }
@@ -243,9 +248,8 @@ export interface CreateRiskRequest {
   description: string;
   likelihood: RiskLikelihood;
   category: RiskCategory;
-  status: RiskStatus;
   mitigation: string;
-  priority: RiskPriority;
+  impact: RiskImpact;
   ownership: string;
   projectId: number;
 }
@@ -256,11 +260,9 @@ export interface UpdateRiskRequest {
   description: string;
   likelihood: RiskLikelihood;
   category: RiskCategory;
-  status: RiskStatus;
   mitigation: string;
-  priority: RiskPriority;
+  impact: RiskImpact;
   ownership: string;
-  projectId: number;
 }
 
 export interface DeleteRiskRequest {
@@ -281,6 +283,61 @@ export interface RiskResponse {
   error?: ErrorResponse | undefined;
 }
 
+export interface Issue {
+  id: number;
+  summary: string;
+  description: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+  reportedBy: string;
+  ownership: string;
+  taskId: number;
+  projectId: number;
+}
+
+export interface ListIssuesRequest {
+  id?: number | undefined;
+  taskId?: number | undefined;
+  projectId?: number | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
+}
+
+export interface CreateIssuesRequest {
+  summary: string;
+  description: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+  reportedBy: string;
+  ownership: string;
+  taskId: number;
+  projectId: number;
+}
+
+export interface UpdateIssuesRequest {
+  id: number;
+  summary: string;
+  description: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+  reportedBy: string;
+  ownership: string;
+  taskId: number;
+}
+
+export interface DeleteIssuesRequest {
+  id: number;
+}
+
+export interface IssuesList {
+  data: Issue[];
+}
+
+export interface IssueResponse {
+  data?: IssuesList | undefined;
+  error?: ErrorResponse | undefined;
+}
+
 function createBaseRisk(): Risk {
   return {
     id: 0,
@@ -288,9 +345,8 @@ function createBaseRisk(): Risk {
     description: "",
     likelihood: 0,
     category: 0,
-    status: 0,
     mitigation: "",
-    priority: 0,
+    impact: 0,
     ownership: "",
     projectId: 0,
   };
@@ -313,20 +369,17 @@ export const Risk = {
     if (message.category !== 0) {
       writer.uint32(40).int32(message.category);
     }
-    if (message.status !== 0) {
-      writer.uint32(48).int32(message.status);
-    }
     if (message.mitigation !== "") {
-      writer.uint32(58).string(message.mitigation);
+      writer.uint32(50).string(message.mitigation);
     }
-    if (message.priority !== 0) {
-      writer.uint32(64).int32(message.priority);
+    if (message.impact !== 0) {
+      writer.uint32(56).int32(message.impact);
     }
     if (message.ownership !== "") {
-      writer.uint32(74).string(message.ownership);
+      writer.uint32(66).string(message.ownership);
     }
     if (message.projectId !== 0) {
-      writer.uint32(80).uint32(message.projectId);
+      writer.uint32(72).uint32(message.projectId);
     }
     return writer;
   },
@@ -374,35 +427,28 @@ export const Risk = {
           message.category = reader.int32() as any;
           continue;
         case 6:
-          if (tag !== 48) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        case 7:
-          if (tag !== 58) {
+          if (tag !== 50) {
             break;
           }
 
           message.mitigation = reader.string();
           continue;
-        case 8:
-          if (tag !== 64) {
+        case 7:
+          if (tag !== 56) {
             break;
           }
 
-          message.priority = reader.int32() as any;
+          message.impact = reader.int32() as any;
           continue;
-        case 9:
-          if (tag !== 74) {
+        case 8:
+          if (tag !== 66) {
             break;
           }
 
           message.ownership = reader.string();
           continue;
-        case 10:
-          if (tag !== 80) {
+        case 9:
+          if (tag !== 72) {
             break;
           }
 
@@ -424,9 +470,8 @@ export const Risk = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       likelihood: isSet(object.likelihood) ? riskLikelihoodFromJSON(object.likelihood) : 0,
       category: isSet(object.category) ? riskCategoryFromJSON(object.category) : 0,
-      status: isSet(object.status) ? riskStatusFromJSON(object.status) : 0,
       mitigation: isSet(object.mitigation) ? globalThis.String(object.mitigation) : "",
-      priority: isSet(object.priority) ? riskPriorityFromJSON(object.priority) : 0,
+      impact: isSet(object.impact) ? riskImpactFromJSON(object.impact) : 0,
       ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
       projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
@@ -449,14 +494,11 @@ export const Risk = {
     if (message.category !== 0) {
       obj.category = riskCategoryToJSON(message.category);
     }
-    if (message.status !== 0) {
-      obj.status = riskStatusToJSON(message.status);
-    }
     if (message.mitigation !== "") {
       obj.mitigation = message.mitigation;
     }
-    if (message.priority !== 0) {
-      obj.priority = riskPriorityToJSON(message.priority);
+    if (message.impact !== 0) {
+      obj.impact = riskImpactToJSON(message.impact);
     }
     if (message.ownership !== "") {
       obj.ownership = message.ownership;
@@ -477,9 +519,8 @@ export const Risk = {
     message.description = object.description ?? "";
     message.likelihood = object.likelihood ?? 0;
     message.category = object.category ?? 0;
-    message.status = object.status ?? 0;
     message.mitigation = object.mitigation ?? "";
-    message.priority = object.priority ?? 0;
+    message.impact = object.impact ?? 0;
     message.ownership = object.ownership ?? "";
     message.projectId = object.projectId ?? 0;
     return message;
@@ -611,9 +652,8 @@ function createBaseCreateRiskRequest(): CreateRiskRequest {
     description: "",
     likelihood: 0,
     category: 0,
-    status: 0,
     mitigation: "",
-    priority: 0,
+    impact: 0,
     ownership: "",
     projectId: 0,
   };
@@ -633,20 +673,17 @@ export const CreateRiskRequest = {
     if (message.category !== 0) {
       writer.uint32(32).int32(message.category);
     }
-    if (message.status !== 0) {
-      writer.uint32(40).int32(message.status);
-    }
     if (message.mitigation !== "") {
-      writer.uint32(50).string(message.mitigation);
+      writer.uint32(42).string(message.mitigation);
     }
-    if (message.priority !== 0) {
-      writer.uint32(56).int32(message.priority);
+    if (message.impact !== 0) {
+      writer.uint32(48).int32(message.impact);
     }
     if (message.ownership !== "") {
-      writer.uint32(66).string(message.ownership);
+      writer.uint32(58).string(message.ownership);
     }
     if (message.projectId !== 0) {
-      writer.uint32(72).uint32(message.projectId);
+      writer.uint32(64).uint32(message.projectId);
     }
     return writer;
   },
@@ -687,35 +724,28 @@ export const CreateRiskRequest = {
           message.category = reader.int32() as any;
           continue;
         case 5:
-          if (tag !== 40) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        case 6:
-          if (tag !== 50) {
+          if (tag !== 42) {
             break;
           }
 
           message.mitigation = reader.string();
           continue;
-        case 7:
-          if (tag !== 56) {
+        case 6:
+          if (tag !== 48) {
             break;
           }
 
-          message.priority = reader.int32() as any;
+          message.impact = reader.int32() as any;
           continue;
-        case 8:
-          if (tag !== 66) {
+        case 7:
+          if (tag !== 58) {
             break;
           }
 
           message.ownership = reader.string();
           continue;
-        case 9:
-          if (tag !== 72) {
+        case 8:
+          if (tag !== 64) {
             break;
           }
 
@@ -736,9 +766,8 @@ export const CreateRiskRequest = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       likelihood: isSet(object.likelihood) ? riskLikelihoodFromJSON(object.likelihood) : 0,
       category: isSet(object.category) ? riskCategoryFromJSON(object.category) : 0,
-      status: isSet(object.status) ? riskStatusFromJSON(object.status) : 0,
       mitigation: isSet(object.mitigation) ? globalThis.String(object.mitigation) : "",
-      priority: isSet(object.priority) ? riskPriorityFromJSON(object.priority) : 0,
+      impact: isSet(object.impact) ? riskImpactFromJSON(object.impact) : 0,
       ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
       projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
@@ -758,14 +787,11 @@ export const CreateRiskRequest = {
     if (message.category !== 0) {
       obj.category = riskCategoryToJSON(message.category);
     }
-    if (message.status !== 0) {
-      obj.status = riskStatusToJSON(message.status);
-    }
     if (message.mitigation !== "") {
       obj.mitigation = message.mitigation;
     }
-    if (message.priority !== 0) {
-      obj.priority = riskPriorityToJSON(message.priority);
+    if (message.impact !== 0) {
+      obj.impact = riskImpactToJSON(message.impact);
     }
     if (message.ownership !== "") {
       obj.ownership = message.ownership;
@@ -785,9 +811,8 @@ export const CreateRiskRequest = {
     message.description = object.description ?? "";
     message.likelihood = object.likelihood ?? 0;
     message.category = object.category ?? 0;
-    message.status = object.status ?? 0;
     message.mitigation = object.mitigation ?? "";
-    message.priority = object.priority ?? 0;
+    message.impact = object.impact ?? 0;
     message.ownership = object.ownership ?? "";
     message.projectId = object.projectId ?? 0;
     return message;
@@ -795,18 +820,7 @@ export const CreateRiskRequest = {
 };
 
 function createBaseUpdateRiskRequest(): UpdateRiskRequest {
-  return {
-    id: 0,
-    name: "",
-    description: "",
-    likelihood: 0,
-    category: 0,
-    status: 0,
-    mitigation: "",
-    priority: 0,
-    ownership: "",
-    projectId: 0,
-  };
+  return { id: 0, name: "", description: "", likelihood: 0, category: 0, mitigation: "", impact: 0, ownership: "" };
 }
 
 export const UpdateRiskRequest = {
@@ -826,20 +840,14 @@ export const UpdateRiskRequest = {
     if (message.category !== 0) {
       writer.uint32(40).int32(message.category);
     }
-    if (message.status !== 0) {
-      writer.uint32(48).int32(message.status);
-    }
     if (message.mitigation !== "") {
-      writer.uint32(58).string(message.mitigation);
+      writer.uint32(50).string(message.mitigation);
     }
-    if (message.priority !== 0) {
-      writer.uint32(64).int32(message.priority);
+    if (message.impact !== 0) {
+      writer.uint32(56).int32(message.impact);
     }
     if (message.ownership !== "") {
-      writer.uint32(74).string(message.ownership);
-    }
-    if (message.projectId !== 0) {
-      writer.uint32(80).uint32(message.projectId);
+      writer.uint32(66).string(message.ownership);
     }
     return writer;
   },
@@ -887,39 +895,25 @@ export const UpdateRiskRequest = {
           message.category = reader.int32() as any;
           continue;
         case 6:
-          if (tag !== 48) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        case 7:
-          if (tag !== 58) {
+          if (tag !== 50) {
             break;
           }
 
           message.mitigation = reader.string();
           continue;
-        case 8:
-          if (tag !== 64) {
+        case 7:
+          if (tag !== 56) {
             break;
           }
 
-          message.priority = reader.int32() as any;
+          message.impact = reader.int32() as any;
           continue;
-        case 9:
-          if (tag !== 74) {
+        case 8:
+          if (tag !== 66) {
             break;
           }
 
           message.ownership = reader.string();
-          continue;
-        case 10:
-          if (tag !== 80) {
-            break;
-          }
-
-          message.projectId = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -937,11 +931,9 @@ export const UpdateRiskRequest = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       likelihood: isSet(object.likelihood) ? riskLikelihoodFromJSON(object.likelihood) : 0,
       category: isSet(object.category) ? riskCategoryFromJSON(object.category) : 0,
-      status: isSet(object.status) ? riskStatusFromJSON(object.status) : 0,
       mitigation: isSet(object.mitigation) ? globalThis.String(object.mitigation) : "",
-      priority: isSet(object.priority) ? riskPriorityFromJSON(object.priority) : 0,
+      impact: isSet(object.impact) ? riskImpactFromJSON(object.impact) : 0,
       ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
-      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
   },
 
@@ -962,20 +954,14 @@ export const UpdateRiskRequest = {
     if (message.category !== 0) {
       obj.category = riskCategoryToJSON(message.category);
     }
-    if (message.status !== 0) {
-      obj.status = riskStatusToJSON(message.status);
-    }
     if (message.mitigation !== "") {
       obj.mitigation = message.mitigation;
     }
-    if (message.priority !== 0) {
-      obj.priority = riskPriorityToJSON(message.priority);
+    if (message.impact !== 0) {
+      obj.impact = riskImpactToJSON(message.impact);
     }
     if (message.ownership !== "") {
       obj.ownership = message.ownership;
-    }
-    if (message.projectId !== 0) {
-      obj.projectId = Math.round(message.projectId);
     }
     return obj;
   },
@@ -990,11 +976,9 @@ export const UpdateRiskRequest = {
     message.description = object.description ?? "";
     message.likelihood = object.likelihood ?? 0;
     message.category = object.category ?? 0;
-    message.status = object.status ?? 0;
     message.mitigation = object.mitigation ?? "";
-    message.priority = object.priority ?? 0;
+    message.impact = object.impact ?? 0;
     message.ownership = object.ownership ?? "";
-    message.projectId = object.projectId ?? 0;
     return message;
   },
 };
@@ -1263,11 +1247,852 @@ export const RiskResponse = {
   },
 };
 
+function createBaseIssue(): Issue {
+  return {
+    id: 0,
+    summary: "",
+    description: "",
+    status: 0,
+    priority: 0,
+    reportedBy: "",
+    ownership: "",
+    taskId: 0,
+    projectId: 0,
+  };
+}
+
+export const Issue = {
+  encode(message: Issue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
+    }
+    if (message.summary !== "") {
+      writer.uint32(18).string(message.summary);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.status !== 0) {
+      writer.uint32(32).int32(message.status);
+    }
+    if (message.priority !== 0) {
+      writer.uint32(40).int32(message.priority);
+    }
+    if (message.reportedBy !== "") {
+      writer.uint32(50).string(message.reportedBy);
+    }
+    if (message.ownership !== "") {
+      writer.uint32(58).string(message.ownership);
+    }
+    if (message.taskId !== 0) {
+      writer.uint32(64).uint32(message.taskId);
+    }
+    if (message.projectId !== 0) {
+      writer.uint32(72).uint32(message.projectId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Issue {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseIssue();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.summary = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.priority = reader.int32() as any;
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.reportedBy = reader.string();
+          continue;
+        case 7:
+          if (tag !== 58) {
+            break;
+          }
+
+          message.ownership = reader.string();
+          continue;
+        case 8:
+          if (tag !== 64) {
+            break;
+          }
+
+          message.taskId = reader.uint32();
+          continue;
+        case 9:
+          if (tag !== 72) {
+            break;
+          }
+
+          message.projectId = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Issue {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      summary: isSet(object.summary) ? globalThis.String(object.summary) : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      status: isSet(object.status) ? issueStatusFromJSON(object.status) : 0,
+      priority: isSet(object.priority) ? issuePriorityFromJSON(object.priority) : 0,
+      reportedBy: isSet(object.reportedBy) ? globalThis.String(object.reportedBy) : "",
+      ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
+    };
+  },
+
+  toJSON(message: Issue): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.summary !== "") {
+      obj.summary = message.summary;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.status !== 0) {
+      obj.status = issueStatusToJSON(message.status);
+    }
+    if (message.priority !== 0) {
+      obj.priority = issuePriorityToJSON(message.priority);
+    }
+    if (message.reportedBy !== "") {
+      obj.reportedBy = message.reportedBy;
+    }
+    if (message.ownership !== "") {
+      obj.ownership = message.ownership;
+    }
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
+    }
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Issue>, I>>(base?: I): Issue {
+    return Issue.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Issue>, I>>(object: I): Issue {
+    const message = createBaseIssue();
+    message.id = object.id ?? 0;
+    message.summary = object.summary ?? "";
+    message.description = object.description ?? "";
+    message.status = object.status ?? 0;
+    message.priority = object.priority ?? 0;
+    message.reportedBy = object.reportedBy ?? "";
+    message.ownership = object.ownership ?? "";
+    message.taskId = object.taskId ?? 0;
+    message.projectId = object.projectId ?? 0;
+    return message;
+  },
+};
+
+function createBaseListIssuesRequest(): ListIssuesRequest {
+  return { id: undefined, taskId: undefined, projectId: undefined, limit: undefined, offset: undefined };
+}
+
+export const ListIssuesRequest = {
+  encode(message: ListIssuesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== undefined) {
+      writer.uint32(8).uint32(message.id);
+    }
+    if (message.taskId !== undefined) {
+      writer.uint32(16).uint32(message.taskId);
+    }
+    if (message.projectId !== undefined) {
+      writer.uint32(24).uint32(message.projectId);
+    }
+    if (message.limit !== undefined) {
+      writer.uint32(32).uint32(message.limit);
+    }
+    if (message.offset !== undefined) {
+      writer.uint32(40).uint32(message.offset);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListIssuesRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListIssuesRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.taskId = reader.uint32();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.projectId = reader.uint32();
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.limit = reader.uint32();
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.offset = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListIssuesRequest {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : undefined,
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : undefined,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : undefined,
+      limit: isSet(object.limit) ? globalThis.Number(object.limit) : undefined,
+      offset: isSet(object.offset) ? globalThis.Number(object.offset) : undefined,
+    };
+  },
+
+  toJSON(message: ListIssuesRequest): unknown {
+    const obj: any = {};
+    if (message.id !== undefined) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.taskId !== undefined) {
+      obj.taskId = Math.round(message.taskId);
+    }
+    if (message.projectId !== undefined) {
+      obj.projectId = Math.round(message.projectId);
+    }
+    if (message.limit !== undefined) {
+      obj.limit = Math.round(message.limit);
+    }
+    if (message.offset !== undefined) {
+      obj.offset = Math.round(message.offset);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ListIssuesRequest>, I>>(base?: I): ListIssuesRequest {
+    return ListIssuesRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ListIssuesRequest>, I>>(object: I): ListIssuesRequest {
+    const message = createBaseListIssuesRequest();
+    message.id = object.id ?? undefined;
+    message.taskId = object.taskId ?? undefined;
+    message.projectId = object.projectId ?? undefined;
+    message.limit = object.limit ?? undefined;
+    message.offset = object.offset ?? undefined;
+    return message;
+  },
+};
+
+function createBaseCreateIssuesRequest(): CreateIssuesRequest {
+  return {
+    summary: "",
+    description: "",
+    status: 0,
+    priority: 0,
+    reportedBy: "",
+    ownership: "",
+    taskId: 0,
+    projectId: 0,
+  };
+}
+
+export const CreateIssuesRequest = {
+  encode(message: CreateIssuesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.summary !== "") {
+      writer.uint32(10).string(message.summary);
+    }
+    if (message.description !== "") {
+      writer.uint32(18).string(message.description);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
+    }
+    if (message.priority !== 0) {
+      writer.uint32(32).int32(message.priority);
+    }
+    if (message.reportedBy !== "") {
+      writer.uint32(42).string(message.reportedBy);
+    }
+    if (message.ownership !== "") {
+      writer.uint32(50).string(message.ownership);
+    }
+    if (message.taskId !== 0) {
+      writer.uint32(56).uint32(message.taskId);
+    }
+    if (message.projectId !== 0) {
+      writer.uint32(64).uint32(message.projectId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateIssuesRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateIssuesRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.summary = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.priority = reader.int32() as any;
+          continue;
+        case 5:
+          if (tag !== 42) {
+            break;
+          }
+
+          message.reportedBy = reader.string();
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.ownership = reader.string();
+          continue;
+        case 7:
+          if (tag !== 56) {
+            break;
+          }
+
+          message.taskId = reader.uint32();
+          continue;
+        case 8:
+          if (tag !== 64) {
+            break;
+          }
+
+          message.projectId = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CreateIssuesRequest {
+    return {
+      summary: isSet(object.summary) ? globalThis.String(object.summary) : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      status: isSet(object.status) ? issueStatusFromJSON(object.status) : 0,
+      priority: isSet(object.priority) ? issuePriorityFromJSON(object.priority) : 0,
+      reportedBy: isSet(object.reportedBy) ? globalThis.String(object.reportedBy) : "",
+      ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
+      projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
+    };
+  },
+
+  toJSON(message: CreateIssuesRequest): unknown {
+    const obj: any = {};
+    if (message.summary !== "") {
+      obj.summary = message.summary;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.status !== 0) {
+      obj.status = issueStatusToJSON(message.status);
+    }
+    if (message.priority !== 0) {
+      obj.priority = issuePriorityToJSON(message.priority);
+    }
+    if (message.reportedBy !== "") {
+      obj.reportedBy = message.reportedBy;
+    }
+    if (message.ownership !== "") {
+      obj.ownership = message.ownership;
+    }
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
+    }
+    if (message.projectId !== 0) {
+      obj.projectId = Math.round(message.projectId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CreateIssuesRequest>, I>>(base?: I): CreateIssuesRequest {
+    return CreateIssuesRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CreateIssuesRequest>, I>>(object: I): CreateIssuesRequest {
+    const message = createBaseCreateIssuesRequest();
+    message.summary = object.summary ?? "";
+    message.description = object.description ?? "";
+    message.status = object.status ?? 0;
+    message.priority = object.priority ?? 0;
+    message.reportedBy = object.reportedBy ?? "";
+    message.ownership = object.ownership ?? "";
+    message.taskId = object.taskId ?? 0;
+    message.projectId = object.projectId ?? 0;
+    return message;
+  },
+};
+
+function createBaseUpdateIssuesRequest(): UpdateIssuesRequest {
+  return { id: 0, summary: "", description: "", status: 0, priority: 0, reportedBy: "", ownership: "", taskId: 0 };
+}
+
+export const UpdateIssuesRequest = {
+  encode(message: UpdateIssuesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
+    }
+    if (message.summary !== "") {
+      writer.uint32(18).string(message.summary);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.status !== 0) {
+      writer.uint32(32).int32(message.status);
+    }
+    if (message.priority !== 0) {
+      writer.uint32(40).int32(message.priority);
+    }
+    if (message.reportedBy !== "") {
+      writer.uint32(50).string(message.reportedBy);
+    }
+    if (message.ownership !== "") {
+      writer.uint32(58).string(message.ownership);
+    }
+    if (message.taskId !== 0) {
+      writer.uint32(64).uint32(message.taskId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateIssuesRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateIssuesRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.summary = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        case 4:
+          if (tag !== 32) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.priority = reader.int32() as any;
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.reportedBy = reader.string();
+          continue;
+        case 7:
+          if (tag !== 58) {
+            break;
+          }
+
+          message.ownership = reader.string();
+          continue;
+        case 8:
+          if (tag !== 64) {
+            break;
+          }
+
+          message.taskId = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UpdateIssuesRequest {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      summary: isSet(object.summary) ? globalThis.String(object.summary) : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      status: isSet(object.status) ? issueStatusFromJSON(object.status) : 0,
+      priority: isSet(object.priority) ? issuePriorityFromJSON(object.priority) : 0,
+      reportedBy: isSet(object.reportedBy) ? globalThis.String(object.reportedBy) : "",
+      ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
+    };
+  },
+
+  toJSON(message: UpdateIssuesRequest): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.summary !== "") {
+      obj.summary = message.summary;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.status !== 0) {
+      obj.status = issueStatusToJSON(message.status);
+    }
+    if (message.priority !== 0) {
+      obj.priority = issuePriorityToJSON(message.priority);
+    }
+    if (message.reportedBy !== "") {
+      obj.reportedBy = message.reportedBy;
+    }
+    if (message.ownership !== "") {
+      obj.ownership = message.ownership;
+    }
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UpdateIssuesRequest>, I>>(base?: I): UpdateIssuesRequest {
+    return UpdateIssuesRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UpdateIssuesRequest>, I>>(object: I): UpdateIssuesRequest {
+    const message = createBaseUpdateIssuesRequest();
+    message.id = object.id ?? 0;
+    message.summary = object.summary ?? "";
+    message.description = object.description ?? "";
+    message.status = object.status ?? 0;
+    message.priority = object.priority ?? 0;
+    message.reportedBy = object.reportedBy ?? "";
+    message.ownership = object.ownership ?? "";
+    message.taskId = object.taskId ?? 0;
+    return message;
+  },
+};
+
+function createBaseDeleteIssuesRequest(): DeleteIssuesRequest {
+  return { id: 0 };
+}
+
+export const DeleteIssuesRequest = {
+  encode(message: DeleteIssuesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeleteIssuesRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeleteIssuesRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DeleteIssuesRequest {
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
+  },
+
+  toJSON(message: DeleteIssuesRequest): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DeleteIssuesRequest>, I>>(base?: I): DeleteIssuesRequest {
+    return DeleteIssuesRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DeleteIssuesRequest>, I>>(object: I): DeleteIssuesRequest {
+    const message = createBaseDeleteIssuesRequest();
+    message.id = object.id ?? 0;
+    return message;
+  },
+};
+
+function createBaseIssuesList(): IssuesList {
+  return { data: [] };
+}
+
+export const IssuesList = {
+  encode(message: IssuesList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      Issue.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): IssuesList {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseIssuesList();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data.push(Issue.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): IssuesList {
+    return { data: globalThis.Array.isArray(object?.data) ? object.data.map((e: any) => Issue.fromJSON(e)) : [] };
+  },
+
+  toJSON(message: IssuesList): unknown {
+    const obj: any = {};
+    if (message.data?.length) {
+      obj.data = message.data.map((e) => Issue.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<IssuesList>, I>>(base?: I): IssuesList {
+    return IssuesList.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<IssuesList>, I>>(object: I): IssuesList {
+    const message = createBaseIssuesList();
+    message.data = object.data?.map((e) => Issue.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseIssueResponse(): IssueResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const IssueResponse = {
+  encode(message: IssueResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.data !== undefined) {
+      IssuesList.encode(message.data, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.error !== undefined) {
+      ErrorResponse.encode(message.error, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): IssueResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseIssueResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = IssuesList.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.error = ErrorResponse.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): IssueResponse {
+    return {
+      data: isSet(object.data) ? IssuesList.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? ErrorResponse.fromJSON(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: IssueResponse): unknown {
+    const obj: any = {};
+    if (message.data !== undefined) {
+      obj.data = IssuesList.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = ErrorResponse.toJSON(message.error);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<IssueResponse>, I>>(base?: I): IssueResponse {
+    return IssueResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<IssueResponse>, I>>(object: I): IssueResponse {
+    const message = createBaseIssueResponse();
+    message.data = (object.data !== undefined && object.data !== null)
+      ? IssuesList.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null)
+      ? ErrorResponse.fromPartial(object.error)
+      : undefined;
+    return message;
+  },
+};
+
 export interface RisksService {
   ListRisks(request: ListRisksRequest): Promise<RiskResponse>;
   CreateRisk(request: CreateRiskRequest): Promise<RiskResponse>;
   UpdateRisk(request: UpdateRiskRequest): Promise<RiskResponse>;
   DeleteRisk(request: DeleteRiskRequest): Promise<Empty>;
+  ListIssues(request: ListIssuesRequest): Promise<IssueResponse>;
+  CreateIssues(request: CreateIssuesRequest): Promise<IssueResponse>;
+  UpdateIssues(request: UpdateIssuesRequest): Promise<IssueResponse>;
+  DeleteIssues(request: DeleteIssuesRequest): Promise<Empty>;
 }
 
 export const RisksServiceServiceName = "packages.risk.RisksService";
@@ -1281,6 +2106,10 @@ export class RisksServiceClientImpl implements RisksService {
     this.CreateRisk = this.CreateRisk.bind(this);
     this.UpdateRisk = this.UpdateRisk.bind(this);
     this.DeleteRisk = this.DeleteRisk.bind(this);
+    this.ListIssues = this.ListIssues.bind(this);
+    this.CreateIssues = this.CreateIssues.bind(this);
+    this.UpdateIssues = this.UpdateIssues.bind(this);
+    this.DeleteIssues = this.DeleteIssues.bind(this);
   }
   ListRisks(request: ListRisksRequest): Promise<RiskResponse> {
     const data = ListRisksRequest.encode(request).finish();
@@ -1303,6 +2132,30 @@ export class RisksServiceClientImpl implements RisksService {
   DeleteRisk(request: DeleteRiskRequest): Promise<Empty> {
     const data = DeleteRiskRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "DeleteRisk", data);
+    return promise.then((data) => Empty.decode(_m0.Reader.create(data)));
+  }
+
+  ListIssues(request: ListIssuesRequest): Promise<IssueResponse> {
+    const data = ListIssuesRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "ListIssues", data);
+    return promise.then((data) => IssueResponse.decode(_m0.Reader.create(data)));
+  }
+
+  CreateIssues(request: CreateIssuesRequest): Promise<IssueResponse> {
+    const data = CreateIssuesRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "CreateIssues", data);
+    return promise.then((data) => IssueResponse.decode(_m0.Reader.create(data)));
+  }
+
+  UpdateIssues(request: UpdateIssuesRequest): Promise<IssueResponse> {
+    const data = UpdateIssuesRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "UpdateIssues", data);
+    return promise.then((data) => IssueResponse.decode(_m0.Reader.create(data)));
+  }
+
+  DeleteIssues(request: DeleteIssuesRequest): Promise<Empty> {
+    const data = DeleteIssuesRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "DeleteIssues", data);
     return promise.then((data) => Empty.decode(_m0.Reader.create(data)));
   }
 }

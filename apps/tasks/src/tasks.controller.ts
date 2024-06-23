@@ -25,8 +25,11 @@ import { UpdateTaskCommand } from './application/command/impl/update-task.comman
 import { Timestamp } from './protos/google/protobuf/timestamp';
 import getSecondsAndNanos from './utils/get-seconds-nanos-time';
 import { Duration } from './protos/google/protobuf/duration';
-import numberToDuration from './utils/convert-second-to-duration';
-import { durationToMs, msToDuration } from '@grpc/grpc-js/build/src/duration';
+import {
+  durationToNumber,
+  numberToDuration,
+} from './utils/convert-second-to-duration';
+import { TaskAssignees } from './entity/task-assignees.entity';
 
 @Controller()
 export class TasksController {
@@ -85,9 +88,6 @@ export class TasksController {
       //   typeof createTaskDto.duration === 'number'
       //     ? +createTaskDto.duration / (60 * 60 * 24)
       //     : undefined;
-      Logger.log('createTaskDto:func()');
-      Logger.log(JSON.stringify(createTaskDto));
-      Logger.log(createTaskDto);
 
       const startDate =
         typeof createTaskDto.startDate === 'object'
@@ -114,9 +114,14 @@ export class TasksController {
         ),
       );
 
+      const formattedStartDate = Timestamp.create({
+        seconds: Math.floor(new Date(result?.startDate).getTime() / 1000),
+        nanos: (new Date(result?.startDate).getTime() % 1000) * 1e6,
+      });
+
       return TaskResponse.create({
         data: {
-          data: [result] || undefined,
+          data: [{ ...result, startDate: formattedStartDate }] || undefined,
         },
       });
     } catch (error) {
@@ -131,11 +136,14 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'UpdateTask')
   async update(updateTaskDto: UpdateTaskRequest) {
+    Logger.log('UpdateTaskCommand:func()');
+    Logger.log(JSON.stringify(updateTaskDto));
+
     try {
-      const duration =
-        typeof updateTaskDto.duration === 'number'
-          ? +updateTaskDto.duration / (60 * 60 * 24)
-          : undefined;
+      const duration = updateTaskDto?.duration
+        ? durationToNumber(updateTaskDto?.duration)
+        : undefined;
+
       const startDate =
         typeof updateTaskDto.startDate === 'object'
           ? moment.unix((updateTaskDto?.startDate as any)?.seconds)?.toDate()
@@ -154,12 +162,33 @@ export class TasksController {
           updateTaskDto?.taskColumnId,
           updateTaskDto?.predecessor,
           updateTaskDto?.order,
+          updateTaskDto?.assignedTo,
         ),
       );
 
+      const formattedStartDate = Timestamp.create({
+        seconds: Math.floor(new Date(result?.startDate).getTime() / 1000),
+        nanos: (new Date(result?.startDate).getTime() % 1000) * 1e6,
+      });
+
+      const formattedDuration = Duration.create({
+        seconds: numberToDuration(result?.duration as number).seconds,
+        nanos: numberToDuration(result?.duration as number).nanos,
+      });
+
+      Logger.log('UpdateTaskCommand:func()');
+      Logger.log(JSON.stringify(result));
+
       return TaskResponse.create({
         data: {
-          data: [result] || undefined,
+          data:
+            [
+              {
+                ...result,
+                startDate: result?.startDate ? formattedStartDate : undefined,
+                duration: result?.duration ? formattedDuration : undefined,
+              },
+            ] || [],
         },
       });
     } catch (error) {

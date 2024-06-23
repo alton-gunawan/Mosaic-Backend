@@ -140,19 +140,44 @@ export class TasksController implements OnModuleInit {
     @Param('id') id: number,
     @Body() updateTaskDto: UpdateTaskRequest,
   ) {
-    const { id: taskId, ...data } = updateTaskDto;
+    const { id: taskId, startDate, ...data } = updateTaskDto;
+
+    const dtoKeys = Object.keys(updateTaskDto).filter(
+      (value) => value !== 'id',
+    );
+
+    const formattedStartDate =
+      (Timestamp.create({
+        seconds: Math.floor(new Date(startDate).getTime() / 1000),
+        nanos: (new Date(startDate).getTime() % 1000) * 1e6,
+      }) as any) || undefined;
+
+    const updateTaskParams = {
+      ...data,
+      ...(typeof startDate !== 'undefined'
+        ? { startDate: formattedStartDate }
+        : {}),
+      id: +id,
+    };
 
     return new Promise((resolve) => {
-      from(
-        this.taskService.UpdateTask({
-          ...data,
-          id: +id,
-        }),
-      )
+      from(this.taskService.UpdateTask(updateTaskParams as any))
         .pipe(take(1))
         .pipe(map((result) => result?.data?.data))
-        .subscribe((taskResult) => {
-          resolve(taskResult[0]);
+        .subscribe({
+          next: (taskResult) => {
+            const filteredTaskResult =
+              Object.fromEntries(
+                Object.entries(taskResult[0]).filter(([key]) =>
+                  dtoKeys.includes(key),
+                ),
+              ) || [];
+
+            resolve(filteredTaskResult || []);
+          },
+          error: (err) => {
+            resolve(err);
+          },
         });
     });
   }

@@ -20,6 +20,7 @@ import {
   UpdateIssuesRequest,
 } from 'apps/gateway/src/protos/risk';
 import { ListIssuesQuery } from './application/queries/impl/list-issues.query';
+import { CreateIssueCommand } from './application/command/impl/create-issue.command';
 
 @Controller()
 export class RisksController {
@@ -70,8 +71,6 @@ export class RisksController {
         mitigation,
         name,
         ownership,
-        priority,
-        status,
         projectId,
       } = createRiskDto;
 
@@ -81,9 +80,7 @@ export class RisksController {
           description,
           likelihood,
           category,
-          status,
           mitigation,
-          priority,
           ownership,
           projectId,
         ),
@@ -115,9 +112,6 @@ export class RisksController {
         mitigation,
         name,
         ownership,
-        priority,
-        projectId,
-        status,
       } = updateRiskDto;
 
       const result = await this.commandBus.execute(
@@ -129,9 +123,6 @@ export class RisksController {
           likelihood,
           mitigation,
           ownership,
-          priority,
-          status,
-          projectId,
         ),
       );
 
@@ -199,12 +190,41 @@ export class RisksController {
 
   @GrpcMethod('RisksService', 'CreateIssues')
   async createIssues(createIssueDto: CreateIssuesRequest) {
+    const {
+      summary,
+      description,
+      ownership,
+      priority,
+      projectId,
+      reportedBy,
+      status,
+      taskId,
+    } = createIssueDto;
+
     try {
+      const result = await this.commandBus.execute(
+        new CreateIssueCommand(
+          summary,
+          description,
+          status,
+          priority,
+          reportedBy,
+          ownership,
+          taskId,
+          projectId,
+        ),
+      );
+
+      return IssueResponse.create({
+        data: {
+          data: [await result] || [],
+        },
+      });
     } catch (error) {
-      IssueResponse.create({
+      throw IssueResponse.create({
         error: {
           statusCode: 500,
-          message: error || 'Error creating issue data',
+          message: 'Error creating issue data',
         },
       });
     }
@@ -214,7 +234,7 @@ export class RisksController {
   async updateIssues(updateIssueDto: UpdateIssuesRequest) {
     try {
     } catch (error) {
-      IssueResponse.create({
+      return IssueResponse.create({
         error: {
           statusCode: 500,
           message: error || 'Error updating issue data',
@@ -227,7 +247,7 @@ export class RisksController {
   async deleteIssues(deleteIssueDto: DeleteIssuesRequest) {
     try {
     } catch (error) {
-      IssueResponse.create({
+      return IssueResponse.create({
         error: {
           statusCode: 500,
           message: error || 'Error deleting issue data',

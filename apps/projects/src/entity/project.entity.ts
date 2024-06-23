@@ -21,17 +21,11 @@ export class Project {
   @Column({ name: 'featured_image', type: 'varchar' })
   featuredImage: string;
 
-  @Column({ name: 'planned_start_date', type: 'date' })
-  plannedStartDate: Date | undefined;
-
-  @Column({ name: 'planned_end_date', type: 'date' })
-  plannedEndDate: Date | undefined;
-
   @Column({ name: 'start_date', type: 'date' })
-  actualStartDate: Date | undefined;
+  startDate: Date | undefined;
 
   @Column({ name: 'end_date', type: 'date' })
-  actualEndDate: Date | undefined;
+  endDate: Date | undefined;
 
   @Column({ name: 'created_by' })
   createdBy: string;

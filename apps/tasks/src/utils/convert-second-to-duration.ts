@@ -1,6 +1,6 @@
 import { Duration } from '../protos/google/protobuf/duration';
 
-export default function numberToDuration(number: number): Duration {
+function numberToDuration(number: number): Duration {
   // Extract integer part (seconds)
   let seconds = Math.floor(number);
 
@@ -15,3 +15,9 @@ export default function numberToDuration(number: number): Duration {
 
   return { seconds, nanos };
 }
+
+function durationToNumber(duration: Duration): number {
+  return duration.seconds + duration.nanos / 1e9;
+}
+
+export { numberToDuration, durationToNumber };

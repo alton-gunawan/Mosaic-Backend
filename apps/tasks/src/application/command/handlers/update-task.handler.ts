@@ -2,8 +2,9 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateTaskCommand } from '../impl/update-task.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../../../entity/task.entity';
-import { Repository, UpdateResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { TaskUpdatedEvent } from '../../events/impl/task-updated.event';
+import { TaskAssignees } from 'apps/tasks/src/entity/task-assignees.entity';
 
 @CommandHandler(UpdateTaskCommand)
 export class UpdateTaskHandler
@@ -15,10 +16,16 @@ export class UpdateTaskHandler
     private readonly eventBus: EventBus,
   ) {}
 
-  async execute(command: UpdateTaskCommand): Promise<UpdateResult> {
-    const { id, taskColumnId, ...data } = command;
+  async execute(command: UpdateTaskCommand): Promise<Task> {
+    const { id, taskColumnId, assignees, ...data } = command;
 
-    const taskResponse = await this.taskRepository.update(id, {
+    const taskResponse = await this.taskRepository.save({
+      id: id,
+      taskAssignees: [
+        ...assignees.map((assigneeDto) => ({
+          userId: assigneeDto,
+        })),
+      ],
       ...data,
     });
 

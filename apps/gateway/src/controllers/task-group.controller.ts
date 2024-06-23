@@ -61,24 +61,6 @@ export class TaskGroupController implements OnModuleInit {
       )
         .pipe(map((result) => result?.data?.data))
         .subscribe((taskGroupResult) => {
-          // const formattedTaskGroup = taskGroupResult.map(
-          //   (taskGroupItem: TaskColumn) => ({
-          //     ...taskGroupItem,
-          //     task: taskGroupItem.task.map((taskItem: Task) => ({
-          //       ...taskItem,
-          //       startDate:
-          //         Timestamp.create({ 
-          //           seconds: Math.floor(
-          //             new Date(taskItem?.startDate).getTime() / 1000,
-          //           ),
-          //           nanos:
-          //             (new Date(taskItem?.startDate).getTime() % 1000) * 1e6,
-          //         }) || undefined,
-          //       resources: [],
-          //     })),
-          //   }),
-          // );
-
           if (taskGroupResult && taskGroupResult.length > 0) {
             const taskIdArr = taskGroupResult
               ? taskGroupResult?.flatMap((taskColumn) =>
@@ -118,12 +100,12 @@ export class TaskGroupController implements OnModuleInit {
                       })) || [],
                   }));
 
-                  resourcesServiceResolve(taskGroupResult);
-                  resolve(response);
+                  resourcesServiceResolve(taskGroupResult || []);
+                  resolve(response || []);
                 });
             });
           } else {
-            resolve(taskGroupResult);
+            resolve(taskGroupResult || []);
           }
         });
     });

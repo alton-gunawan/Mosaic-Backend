@@ -16,7 +16,7 @@ export class GetResourceByCriteriaHandler
 
   async execute(command: ListResourceQuery): Promise<Resource[]> {
     const response = await this.resourceRepository.find({
-      relations: ['resourceAllocation'],
+      relations: ['resourceAllocation', 'unit'],
       where: {
         ...command,
         resourceAllocation: {

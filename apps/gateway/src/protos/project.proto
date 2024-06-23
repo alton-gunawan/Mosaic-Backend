@@ -11,7 +11,8 @@ service ProjectsService {
   rpc CreateProject(CreateProjectRequest) returns (ProjectResponse);
   rpc UpdateProject(UpdateProjectRequest) returns (ProjectResponse);
   rpc DeleteProject(DeleteProjectRequest) returns (google.protobuf.Empty);
-  rpc AddMember(AddMemberRequest) returns (ProjectResponse);
+  rpc ListMembers(ListMembersRequest) returns (MemberResponse);
+  rpc AddMember(AddMemberRequest) returns (MemberResponse);
   rpc RemoveMember(RemoveMemberRequest) returns (google.protobuf.Empty);
 }
 
@@ -71,6 +72,20 @@ message UpdateProjectRequest {
 
 message DeleteProjectRequest { uint32 id = 1; }
 
+message Member {
+  string user_id = 1;
+  string role = 2;
+  Datestamps datestamps = 3;
+}
+
+message MembersList {
+  repeated Member data = 1;
+}
+
+message ListMembersRequest {
+  uint32 project_id = 1;
+}
+
 message AddMemberRequest {
   uint32 project_id = 1;
   string user_id = 2;
@@ -91,6 +106,13 @@ message ErrorResponse {
 }
 
 message ProjectResponse {
+  oneof response {
+    ProjectsList data = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+message MemberResponse {
   oneof response {
     ProjectsList data = 1;
     ErrorResponse error = 2;

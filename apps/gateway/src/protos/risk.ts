@@ -291,7 +291,7 @@ export interface Issue {
   priority: IssuePriority;
   reportedBy: string;
   ownership: string;
-  taskId: string[];
+  taskId: number;
   projectId: number;
 }
 
@@ -310,7 +310,7 @@ export interface CreateIssuesRequest {
   priority: IssuePriority;
   reportedBy: string;
   ownership: string;
-  taskId: string[];
+  taskId: number;
   projectId: number;
 }
 
@@ -322,7 +322,7 @@ export interface UpdateIssuesRequest {
   priority: IssuePriority;
   reportedBy: string;
   ownership: string;
-  taskId: string[];
+  taskId: number;
 }
 
 export interface DeleteIssuesRequest {
@@ -1256,7 +1256,7 @@ function createBaseIssue(): Issue {
     priority: 0,
     reportedBy: "",
     ownership: "",
-    taskId: [],
+    taskId: 0,
     projectId: 0,
   };
 }
@@ -1284,8 +1284,8 @@ export const Issue = {
     if (message.ownership !== "") {
       writer.uint32(58).string(message.ownership);
     }
-    for (const v of message.taskId) {
-      writer.uint32(66).string(v!);
+    if (message.taskId !== 0) {
+      writer.uint32(64).uint32(message.taskId);
     }
     if (message.projectId !== 0) {
       writer.uint32(72).uint32(message.projectId);
@@ -1350,11 +1350,11 @@ export const Issue = {
           message.ownership = reader.string();
           continue;
         case 8:
-          if (tag !== 66) {
+          if (tag !== 64) {
             break;
           }
 
-          message.taskId.push(reader.string());
+          message.taskId = reader.uint32();
           continue;
         case 9:
           if (tag !== 72) {
@@ -1381,7 +1381,7 @@ export const Issue = {
       priority: isSet(object.priority) ? issuePriorityFromJSON(object.priority) : 0,
       reportedBy: isSet(object.reportedBy) ? globalThis.String(object.reportedBy) : "",
       ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
-      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.String(e)) : [],
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
       projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
   },
@@ -1409,8 +1409,8 @@ export const Issue = {
     if (message.ownership !== "") {
       obj.ownership = message.ownership;
     }
-    if (message.taskId?.length) {
-      obj.taskId = message.taskId;
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
     }
     if (message.projectId !== 0) {
       obj.projectId = Math.round(message.projectId);
@@ -1430,7 +1430,7 @@ export const Issue = {
     message.priority = object.priority ?? 0;
     message.reportedBy = object.reportedBy ?? "";
     message.ownership = object.ownership ?? "";
-    message.taskId = object.taskId?.map((e) => e) || [];
+    message.taskId = object.taskId ?? 0;
     message.projectId = object.projectId ?? 0;
     return message;
   },
@@ -1563,7 +1563,7 @@ function createBaseCreateIssuesRequest(): CreateIssuesRequest {
     priority: 0,
     reportedBy: "",
     ownership: "",
-    taskId: [],
+    taskId: 0,
     projectId: 0,
   };
 }
@@ -1588,8 +1588,8 @@ export const CreateIssuesRequest = {
     if (message.ownership !== "") {
       writer.uint32(50).string(message.ownership);
     }
-    for (const v of message.taskId) {
-      writer.uint32(58).string(v!);
+    if (message.taskId !== 0) {
+      writer.uint32(56).uint32(message.taskId);
     }
     if (message.projectId !== 0) {
       writer.uint32(64).uint32(message.projectId);
@@ -1647,11 +1647,11 @@ export const CreateIssuesRequest = {
           message.ownership = reader.string();
           continue;
         case 7:
-          if (tag !== 58) {
+          if (tag !== 56) {
             break;
           }
 
-          message.taskId.push(reader.string());
+          message.taskId = reader.uint32();
           continue;
         case 8:
           if (tag !== 64) {
@@ -1677,7 +1677,7 @@ export const CreateIssuesRequest = {
       priority: isSet(object.priority) ? issuePriorityFromJSON(object.priority) : 0,
       reportedBy: isSet(object.reportedBy) ? globalThis.String(object.reportedBy) : "",
       ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
-      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.String(e)) : [],
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
       projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
     };
   },
@@ -1702,8 +1702,8 @@ export const CreateIssuesRequest = {
     if (message.ownership !== "") {
       obj.ownership = message.ownership;
     }
-    if (message.taskId?.length) {
-      obj.taskId = message.taskId;
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
     }
     if (message.projectId !== 0) {
       obj.projectId = Math.round(message.projectId);
@@ -1722,14 +1722,14 @@ export const CreateIssuesRequest = {
     message.priority = object.priority ?? 0;
     message.reportedBy = object.reportedBy ?? "";
     message.ownership = object.ownership ?? "";
-    message.taskId = object.taskId?.map((e) => e) || [];
+    message.taskId = object.taskId ?? 0;
     message.projectId = object.projectId ?? 0;
     return message;
   },
 };
 
 function createBaseUpdateIssuesRequest(): UpdateIssuesRequest {
-  return { id: 0, summary: "", description: "", status: 0, priority: 0, reportedBy: "", ownership: "", taskId: [] };
+  return { id: 0, summary: "", description: "", status: 0, priority: 0, reportedBy: "", ownership: "", taskId: 0 };
 }
 
 export const UpdateIssuesRequest = {
@@ -1755,8 +1755,8 @@ export const UpdateIssuesRequest = {
     if (message.ownership !== "") {
       writer.uint32(58).string(message.ownership);
     }
-    for (const v of message.taskId) {
-      writer.uint32(66).string(v!);
+    if (message.taskId !== 0) {
+      writer.uint32(64).uint32(message.taskId);
     }
     return writer;
   },
@@ -1818,11 +1818,11 @@ export const UpdateIssuesRequest = {
           message.ownership = reader.string();
           continue;
         case 8:
-          if (tag !== 66) {
+          if (tag !== 64) {
             break;
           }
 
-          message.taskId.push(reader.string());
+          message.taskId = reader.uint32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1842,7 +1842,7 @@ export const UpdateIssuesRequest = {
       priority: isSet(object.priority) ? issuePriorityFromJSON(object.priority) : 0,
       reportedBy: isSet(object.reportedBy) ? globalThis.String(object.reportedBy) : "",
       ownership: isSet(object.ownership) ? globalThis.String(object.ownership) : "",
-      taskId: globalThis.Array.isArray(object?.taskId) ? object.taskId.map((e: any) => globalThis.String(e)) : [],
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
     };
   },
 
@@ -1869,8 +1869,8 @@ export const UpdateIssuesRequest = {
     if (message.ownership !== "") {
       obj.ownership = message.ownership;
     }
-    if (message.taskId?.length) {
-      obj.taskId = message.taskId;
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
     }
     return obj;
   },
@@ -1887,7 +1887,7 @@ export const UpdateIssuesRequest = {
     message.priority = object.priority ?? 0;
     message.reportedBy = object.reportedBy ?? "";
     message.ownership = object.ownership ?? "";
-    message.taskId = object.taskId?.map((e) => e) || [];
+    message.taskId = object.taskId ?? 0;
     return message;
   },
 };
