@@ -21,6 +21,64 @@
         "systemControls": []
       },
       {
+        "name": "projects",
+        "image": "public.ecr.aws/k5q5d1v1/mosaic-backend-projects",
+        "cpu": 256,
+        "memory": 256,
+        "portMappings": [
+          {
+            "name": "gateway-tcp-3002",
+            "containerPort": 3000,
+            "hostPort": 3002,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "environment": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      },
+      {
+        "name": "resources",
+        "image": "public.ecr.aws/k5q5d1v1/mosaic-backend-resources",
+        "cpu": 256,
+        "memory": 256,
+        "portMappings": [
+          {
+            "name": "gateway-tcp-3004",
+            "containerPort": 3000,
+            "hostPort": 3004,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "environment": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      },
+      
+      {
+        "name": "risks",
+        "image": "public.ecr.aws/k5q5d1v1/mosaic-backend-risks",
+        "cpu": 256,
+        "memory": 256,
+        "portMappings": [
+          {
+            "name": "gateway-tcp-3005",
+            "containerPort": 3000,
+            "hostPort": 3005,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "environment": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      },
+      {
         "name": "tasks",
         "image": "public.ecr.aws/k5q5d1v1/mosaic-backend-tasks",
         "cpu": 256,
