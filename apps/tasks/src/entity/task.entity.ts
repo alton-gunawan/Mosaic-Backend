@@ -93,7 +93,9 @@ export class Task {
   @OneToMany(() => TaskAssignees, (task_assignees) => task_assignees.task)
   taskAssignees: TaskAssignees[] | undefined;
 
-  @ManyToOne(() => TaskGroup, (task_group) => task_group.task)
+  @ManyToOne(() => TaskGroup, (task_group) => task_group.task, {
+    cascade: true,
+  })
   @JoinColumn({ name: 'task_group_id', referencedColumnName: 'id' })
   taskGroup: TaskGroup | undefined;
 }

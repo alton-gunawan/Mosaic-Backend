@@ -71,10 +71,15 @@ export class TasksController implements OnModuleInit {
                   ? Math.abs((task?.duration as any)?.seconds.low ?? 0) /
                     (60 * 60 * 24)
                   : undefined,
+              taskDuration: task.duration,
             })),
           ),
         )
         .subscribe((taskResult) => {
+          Logger.log('List Task Result:');
+          Logger.log(JSON.stringify(taskResult));
+
+          // resolve([]);
           resolve(taskResult);
         });
     });
@@ -86,10 +91,18 @@ export class TasksController implements OnModuleInit {
 
     const formattedDuration = createTaskDto?.duration
       ? Duration.create({
-          seconds: (+createTaskDto.duration as number) * 60 * 60 * 24,
-          nanos: 0,
+          seconds: createTaskDto?.duration?.seconds || 0,
+          nanos: createTaskDto?.duration?.nanos || 0,
         }) || undefined
       : undefined;
+
+    Logger.log('Duration Data:');
+    Logger.log(duration);
+    Logger.log(JSON.stringify(duration));
+
+    Logger.log('formattedDuration data:');
+    Logger.log(formattedDuration);
+    Logger.log(JSON.stringify(formattedDuration));
 
     const formattedStartDate = createTaskDto?.startDate
       ? Timestamp.create({
@@ -140,6 +153,9 @@ export class TasksController implements OnModuleInit {
     @Param('id') id: number,
     @Body() updateTaskDto: UpdateTaskRequest,
   ) {
+    Logger.log('updateTaskDto:put()');
+    Logger.log(JSON.stringify(updateTaskDto));
+
     const { id: taskId, startDate, ...data } = updateTaskDto;
 
     const dtoKeys = Object.keys(updateTaskDto).filter(
@@ -157,6 +173,7 @@ export class TasksController implements OnModuleInit {
       ...(typeof startDate !== 'undefined'
         ? { startDate: formattedStartDate }
         : {}),
+      assignedTo: (updateTaskDto as any)?.assignees,
       id: +id,
     };
 

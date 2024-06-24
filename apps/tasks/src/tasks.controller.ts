@@ -136,7 +136,7 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'UpdateTask')
   async update(updateTaskDto: UpdateTaskRequest) {
-    Logger.log('UpdateTaskCommand:func()');
+    Logger.log('UpdateTaskCommand:grpc()');
     Logger.log(JSON.stringify(updateTaskDto));
 
     try {

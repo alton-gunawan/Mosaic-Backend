@@ -21,11 +21,15 @@ export class UpdateTaskHandler
 
     const taskResponse = await this.taskRepository.save({
       id: id,
-      taskAssignees: [
-        ...assignees.map((assigneeDto) => ({
-          userId: assigneeDto,
-        })),
-      ],
+      ...(typeof assignees !== 'undefined'
+        ? {
+            taskAssignees: [
+              ...assignees.map((assigneeDto) => ({
+                userId: assigneeDto,
+              })),
+            ],
+          }
+        : {}),
       ...data,
     });
 

@@ -16,6 +16,7 @@ export class TaskAssignees {
   id: number | undefined;
 
   @Column({
+    name: 'user_id',
     type: 'varchar',
   })
   userId: string | undefined;
@@ -29,7 +30,9 @@ export class TaskAssignees {
   @DeleteDateColumn({ name: 'deleted_at' })
   deleted_at: string | undefined;
 
-  @ManyToOne(() => Task, (task) => task.taskAssignees)
+  @ManyToOne(() => Task, (task) => task.taskAssignees, {
+    cascade: true,
+  })
   @JoinColumn({ name: 'task_assignees_id', referencedColumnName: 'id' })
   task: Task[] | undefined;
 }
