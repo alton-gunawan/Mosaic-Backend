@@ -17,12 +17,16 @@ import { TaskAssignees } from './entity/task-assignees.entity';
 import { TaskUpdatedHandler } from './application/events/handlers/task-updated.handler';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { RemoveAssigneeHandler } from './application/command/handlers/remove-assignee.handler';
+import { AssignTaskHandler } from './application/command/handlers/assign-task.handler';
 
 const QueryHandlers = [ListTaskHandler, ListTaskColumnHandler];
 const CommandHandlers = [
   CreateTaskHandler,
   UpdateTaskHandler,
   DeleteTaskHandler,
+  AssignTaskHandler,
+  RemoveAssigneeHandler,
   CreateTaskColumnHandler,
   DeleteTaskColumnHandler,
 ];

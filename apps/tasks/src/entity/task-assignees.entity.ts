@@ -33,6 +33,6 @@ export class TaskAssignees {
   @ManyToOne(() => Task, (task) => task.taskAssignees, {
     cascade: true,
   })
-  @JoinColumn({ name: 'task_assignees_id', referencedColumnName: 'id' })
-  task: Task[] | undefined;
+  @JoinColumn({ name: 'task_id', referencedColumnName: 'id' })
+  task: Task | undefined;
 }

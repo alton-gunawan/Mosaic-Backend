@@ -38,7 +38,7 @@ export class IssuesController implements OnModuleInit {
   }
 
   @Get()
-  public async listRisk(
+  public async listIssue(
     @Query() listIssuesDto?: ListIssuesRequest,
   ): Promise<any> {
     Logger.log('listIssuesDto:func()');
@@ -54,7 +54,7 @@ export class IssuesController implements OnModuleInit {
         .subscribe((issueResult) => {
           Logger.log('issueResult:func()');
           Logger.log(issueResult);
-          resolve(issueResult);
+          resolve(issueResult || []);
         });
     });
   }

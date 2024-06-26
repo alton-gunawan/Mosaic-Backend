@@ -16,9 +16,10 @@ export class ResourceAllocation {
   id: number | undefined;
 
   @Column({
+    name: 'allocated_unit',
     type: 'int',
   })
-  unit: number | undefined;
+  allocatedUnit: number | undefined;
 
   @Column({ name: 'task_id', type: 'int' })
   taskId: number | undefined;

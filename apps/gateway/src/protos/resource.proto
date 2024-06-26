@@ -118,7 +118,7 @@ message ResourceGroup {
 message UpdateTaskResourceAllocationRequest {
   uint32 task_id = 1;
   uint32 resource_id = 2;
-  uint32 unit = 3;
+  uint32 allocated_unit = 3;
   enum Operation {
     ALLOCATE = 0;
     UNALLOCATE = 1;

@@ -153,15 +153,15 @@ export class ResourcesController {
     updateTaskResourceAllocationDto: UpdateTaskResourceAllocationRequest,
   ) {
     try {
-      const { resourceId, taskId, unit } = updateTaskResourceAllocationDto;
+      const { resourceId, taskId, allocatedUnit } = updateTaskResourceAllocationDto;
 
       const result = await this.commandBus.execute(
-        new AssignResourceCommand(resourceId, taskId, unit),
+        new AssignResourceCommand(resourceId, taskId, allocatedUnit),
       );
 
       return ResourceResponse.create({
         data: {
-          data: result || undefined,
+          data: [result] || undefined,
         },
       });
     } catch (error) {

@@ -167,13 +167,15 @@ export class RisksController {
   async listIssues(listIssueDto: ListIssuesRequest) {
     const { id, projectId, taskId, limit, offset } = listIssueDto;
 
+    Logger.log('listIssueDto:func()');
+    Logger.log(listIssueDto);
+
     try {
       const result = await this.queryBus.execute(
-        new ListIssuesQuery(id, projectId, taskId, limit, offset),
+        new ListIssuesQuery(id, taskId, projectId, limit, offset),
       );
-      Logger.log(result);
 
-      return RiskResponse.create({
+      return IssueResponse.create({
         data: {
           data: result || [],
         },

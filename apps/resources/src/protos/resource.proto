@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package packages.resource;
 
+import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 service ResourcesService {
@@ -18,6 +19,12 @@ service ResourcesService {
       returns (ResourceGroupResponse);
   rpc DeleteResourceGroup(DeleteResourceGroupRequest)
       returns (google.protobuf.Empty);
+}
+
+message Datestamps {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp deleted_at = 3;
 }
 
 message Unit {
@@ -43,6 +50,7 @@ message Resource {
   uint32 role_id = 6;
   uint32 resource_group_id = 7;
   repeated ResourceAllocation resource_allocation = 8;
+  Datestamps datestamps = 9;
 }
 
 message ResourcesList {
@@ -104,12 +112,13 @@ message ResourceGroup {
   string description = 3;
   uint32 project_id = 4;
   repeated Resource resource = 5;
+  Datestamps datestamps = 6;
 }
 
 message UpdateTaskResourceAllocationRequest {
   uint32 task_id = 1;
   uint32 resource_id = 2;
-  uint32 unit = 3;
+  uint32 allocated_unit = 3;
   enum Operation {
     ALLOCATE = 0;
     UNALLOCATE = 1;

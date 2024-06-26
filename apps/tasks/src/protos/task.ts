@@ -233,6 +233,15 @@ export interface DeleteTaskColumnRequest {
   id: number;
 }
 
+export interface AssignTaskRequest {
+  taskId: number;
+  userId: string[];
+}
+
+export interface RemoveAssigneeRequest {
+  taskAssigneeId: number;
+}
+
 function createBaseDatestamps(): Datestamps {
   return { createdAt: undefined, updatedAt: undefined, deletedAt: undefined };
 }
@@ -2418,6 +2427,137 @@ export const DeleteTaskColumnRequest = {
   },
 };
 
+function createBaseAssignTaskRequest(): AssignTaskRequest {
+  return { taskId: 0, userId: [] };
+}
+
+export const AssignTaskRequest = {
+  encode(message: AssignTaskRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.taskId !== 0) {
+      writer.uint32(8).uint32(message.taskId);
+    }
+    for (const v of message.userId) {
+      writer.uint32(18).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): AssignTaskRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAssignTaskRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.taskId = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId.push(reader.string());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AssignTaskRequest {
+    return {
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
+      userId: globalThis.Array.isArray(object?.userId) ? object.userId.map((e: any) => globalThis.String(e)) : [],
+    };
+  },
+
+  toJSON(message: AssignTaskRequest): unknown {
+    const obj: any = {};
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
+    }
+    if (message.userId?.length) {
+      obj.userId = message.userId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<AssignTaskRequest>, I>>(base?: I): AssignTaskRequest {
+    return AssignTaskRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<AssignTaskRequest>, I>>(object: I): AssignTaskRequest {
+    const message = createBaseAssignTaskRequest();
+    message.taskId = object.taskId ?? 0;
+    message.userId = object.userId?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseRemoveAssigneeRequest(): RemoveAssigneeRequest {
+  return { taskAssigneeId: 0 };
+}
+
+export const RemoveAssigneeRequest = {
+  encode(message: RemoveAssigneeRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.taskAssigneeId !== 0) {
+      writer.uint32(8).uint32(message.taskAssigneeId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): RemoveAssigneeRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRemoveAssigneeRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.taskAssigneeId = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RemoveAssigneeRequest {
+    return { taskAssigneeId: isSet(object.taskAssigneeId) ? globalThis.Number(object.taskAssigneeId) : 0 };
+  },
+
+  toJSON(message: RemoveAssigneeRequest): unknown {
+    const obj: any = {};
+    if (message.taskAssigneeId !== 0) {
+      obj.taskAssigneeId = Math.round(message.taskAssigneeId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RemoveAssigneeRequest>, I>>(base?: I): RemoveAssigneeRequest {
+    return RemoveAssigneeRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RemoveAssigneeRequest>, I>>(object: I): RemoveAssigneeRequest {
+    const message = createBaseRemoveAssigneeRequest();
+    message.taskAssigneeId = object.taskAssigneeId ?? 0;
+    return message;
+  },
+};
+
 export interface TasksService {
   ListTasks(request: ListTasksRequest): Promise<TaskResponse>;
   CreateTask(request: CreateTaskRequest): Promise<TaskResponse>;
@@ -2427,6 +2567,8 @@ export interface TasksService {
   CreateTaskColumn(request: CreateTaskColumnRequest): Promise<TaskColumnResponse>;
   UpdateTaskColumn(request: UpdateTaskColumnRequest): Promise<TaskColumnResponse>;
   DeleteTaskColumn(request: DeleteTaskColumnRequest): Promise<TaskColumnResponse>;
+  AssignTask(request: AssignTaskRequest): Promise<TaskResponse>;
+  RemoveAssignee(request: RemoveAssigneeRequest): Promise<Empty>;
 }
 
 export const TasksServiceServiceName = "packages.task.TasksService";
@@ -2444,6 +2586,8 @@ export class TasksServiceClientImpl implements TasksService {
     this.CreateTaskColumn = this.CreateTaskColumn.bind(this);
     this.UpdateTaskColumn = this.UpdateTaskColumn.bind(this);
     this.DeleteTaskColumn = this.DeleteTaskColumn.bind(this);
+    this.AssignTask = this.AssignTask.bind(this);
+    this.RemoveAssignee = this.RemoveAssignee.bind(this);
   }
   ListTasks(request: ListTasksRequest): Promise<TaskResponse> {
     const data = ListTasksRequest.encode(request).finish();
@@ -2491,6 +2635,18 @@ export class TasksServiceClientImpl implements TasksService {
     const data = DeleteTaskColumnRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "DeleteTaskColumn", data);
     return promise.then((data) => TaskColumnResponse.decode(_m0.Reader.create(data)));
+  }
+
+  AssignTask(request: AssignTaskRequest): Promise<TaskResponse> {
+    const data = AssignTaskRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "AssignTask", data);
+    return promise.then((data) => TaskResponse.decode(_m0.Reader.create(data)));
+  }
+
+  RemoveAssignee(request: RemoveAssigneeRequest): Promise<Empty> {
+    const data = RemoveAssigneeRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "RemoveAssignee", data);
+    return promise.then((data) => Empty.decode(_m0.Reader.create(data)));
   }
 }
 

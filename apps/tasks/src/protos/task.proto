@@ -16,6 +16,8 @@ service TasksService {
     rpc CreateTaskColumn(CreateTaskColumnRequest) returns (TaskColumnResponse);
     rpc UpdateTaskColumn(UpdateTaskColumnRequest) returns (TaskColumnResponse);
     rpc DeleteTaskColumn(DeleteTaskColumnRequest) returns (TaskColumnResponse);
+    rpc AssignTask(AssignTaskRequest) returns (TaskResponse);
+    rpc RemoveAssignee(RemoveAssigneeRequest) returns (google.protobuf.Empty);
 }
 
 message Datestamps {
@@ -177,4 +179,13 @@ enum TaskPriority {
     HIGH = 0;
     MEDIUM = 1;
     LOW = 2;
+}
+
+message AssignTaskRequest {
+    uint32 task_id = 1;
+    repeated string user_id = 2;
+}
+
+message RemoveAssigneeRequest {
+    uint32 task_assignee_id = 1;
 }

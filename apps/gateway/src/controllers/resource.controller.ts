@@ -161,7 +161,7 @@ export class ResourcesController implements OnModuleInit {
     @Param('resourceAllocationId') resourceAllocationId: string,
   ) {
     return await this.resourcesService.UpdateTaskResourceAllocation({
-      unit: undefined,
+      allocatedUnit: 0,
       resourceId: +resourceAllocationId,
       taskId: 0,
       operation: UpdateTaskResourceAllocationRequest_Operation.UNALLOCATE,

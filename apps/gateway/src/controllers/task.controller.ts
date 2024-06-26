@@ -9,6 +9,8 @@ import {
   Logger,
   OnModuleInit,
   Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -25,6 +27,7 @@ import { ResourcesService } from '../protos/resource';
 import { Observable, catchError, from, map, take } from 'rxjs';
 import { Timestamp } from '../protos/google/protobuf/timestamp';
 import { Duration } from '../protos/google/protobuf/duration';
+import { AssignTaskDto } from '../dto/tasks/assign-task.dto';
 
 @Controller({
   version: '1',
@@ -95,14 +98,6 @@ export class TasksController implements OnModuleInit {
           nanos: createTaskDto?.duration?.nanos || 0,
         }) || undefined
       : undefined;
-
-    Logger.log('Duration Data:');
-    Logger.log(duration);
-    Logger.log(JSON.stringify(duration));
-
-    Logger.log('formattedDuration data:');
-    Logger.log(formattedDuration);
-    Logger.log(JSON.stringify(formattedDuration));
 
     const formattedStartDate = createTaskDto?.startDate
       ? Timestamp.create({
@@ -208,6 +203,36 @@ export class TasksController implements OnModuleInit {
         }),
       ).subscribe((deleteTaskResult) => {
         resolve(deleteTaskResult);
+      });
+    });
+  }
+
+  @Patch(':id/assign')
+  public async assignTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() assignTaskDto: AssignTaskDto,
+  ) {
+    return new Promise((resolve) => {
+      from(
+        this.taskService.AssignTask({
+          taskId: id,
+          userId: assignTaskDto.userId,
+        }),
+      ).subscribe((assignTaskResult) => {
+        resolve(assignTaskResult);
+      });
+    });
+  }
+
+  @Patch(':id/remove-assignee')
+  public async removeAssignee(@Param('id', ParseIntPipe) id: number) {
+    return new Promise((resolve) => {
+      from(
+        this.taskService.RemoveAssignee({
+          taskAssigneeId: id,
+        }),
+      ).subscribe((removeAssigneeResult) => {
+        resolve(removeAssigneeResult);
       });
     });
   }

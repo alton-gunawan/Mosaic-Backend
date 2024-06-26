@@ -1,8 +1,15 @@
 /* eslint-disable */
 import * as _m0 from "protobufjs/minimal";
 import { Empty } from "./google/protobuf/empty";
+import { Timestamp } from "./google/protobuf/timestamp";
 
 export const protobufPackage = "packages.resource";
+
+export interface Datestamps {
+  createdAt: Date | undefined;
+  updatedAt: Date | undefined;
+  deletedAt: Date | undefined;
+}
 
 export interface Unit {
   id: number;
@@ -27,6 +34,7 @@ export interface Resource {
   roleId: number;
   resourceGroupId: number;
   resourceAllocation: ResourceAllocation[];
+  datestamps: Datestamps | undefined;
 }
 
 export interface ResourcesList {
@@ -80,12 +88,13 @@ export interface ResourceGroup {
   description: string;
   projectId: number;
   resource: Resource[];
+  datestamps: Datestamps | undefined;
 }
 
 export interface UpdateTaskResourceAllocationRequest {
   taskId: number;
   resourceId: number;
-  unit: number;
+  allocatedUnit: number;
   operation: UpdateTaskResourceAllocationRequest_Operation;
 }
 
@@ -155,6 +164,95 @@ export interface ResourceGroupResponse {
   data?: ResourceGroupsList | undefined;
   error?: ErrorResponse | undefined;
 }
+
+function createBaseDatestamps(): Datestamps {
+  return { createdAt: undefined, updatedAt: undefined, deletedAt: undefined };
+}
+
+export const Datestamps = {
+  encode(message: Datestamps, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(10).fork()).ldelim();
+    }
+    if (message.updatedAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(18).fork()).ldelim();
+    }
+    if (message.deletedAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.deletedAt), writer.uint32(26).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Datestamps {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDatestamps();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.deletedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Datestamps {
+    return {
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
+      deletedAt: isSet(object.deletedAt) ? fromJsonTimestamp(object.deletedAt) : undefined,
+    };
+  },
+
+  toJSON(message: Datestamps): unknown {
+    const obj: any = {};
+    if (message.createdAt !== undefined) {
+      obj.createdAt = message.createdAt.toISOString();
+    }
+    if (message.updatedAt !== undefined) {
+      obj.updatedAt = message.updatedAt.toISOString();
+    }
+    if (message.deletedAt !== undefined) {
+      obj.deletedAt = message.deletedAt.toISOString();
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Datestamps>, I>>(base?: I): Datestamps {
+    return Datestamps.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Datestamps>, I>>(object: I): Datestamps {
+    const message = createBaseDatestamps();
+    message.createdAt = object.createdAt ?? undefined;
+    message.updatedAt = object.updatedAt ?? undefined;
+    message.deletedAt = object.deletedAt ?? undefined;
+    return message;
+  },
+};
 
 function createBaseUnit(): Unit {
   return { id: 0, name: "" };
@@ -386,6 +484,7 @@ function createBaseResource(): Resource {
     roleId: 0,
     resourceGroupId: 0,
     resourceAllocation: [],
+    datestamps: undefined,
   };
 }
 
@@ -414,6 +513,9 @@ export const Resource = {
     }
     for (const v of message.resourceAllocation) {
       ResourceAllocation.encode(v!, writer.uint32(66).fork()).ldelim();
+    }
+    if (message.datestamps !== undefined) {
+      Datestamps.encode(message.datestamps, writer.uint32(74).fork()).ldelim();
     }
     return writer;
   },
@@ -481,6 +583,13 @@ export const Resource = {
 
           message.resourceAllocation.push(ResourceAllocation.decode(reader, reader.uint32()));
           continue;
+        case 9:
+          if (tag !== 74) {
+            break;
+          }
+
+          message.datestamps = Datestamps.decode(reader, reader.uint32());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -502,6 +611,7 @@ export const Resource = {
       resourceAllocation: globalThis.Array.isArray(object?.resourceAllocation)
         ? object.resourceAllocation.map((e: any) => ResourceAllocation.fromJSON(e))
         : [],
+      datestamps: isSet(object.datestamps) ? Datestamps.fromJSON(object.datestamps) : undefined,
     };
   },
 
@@ -531,6 +641,9 @@ export const Resource = {
     if (message.resourceAllocation?.length) {
       obj.resourceAllocation = message.resourceAllocation.map((e) => ResourceAllocation.toJSON(e));
     }
+    if (message.datestamps !== undefined) {
+      obj.datestamps = Datestamps.toJSON(message.datestamps);
+    }
     return obj;
   },
 
@@ -547,6 +660,9 @@ export const Resource = {
     message.roleId = object.roleId ?? 0;
     message.resourceGroupId = object.resourceGroupId ?? 0;
     message.resourceAllocation = object.resourceAllocation?.map((e) => ResourceAllocation.fromPartial(e)) || [];
+    message.datestamps = (object.datestamps !== undefined && object.datestamps !== null)
+      ? Datestamps.fromPartial(object.datestamps)
+      : undefined;
     return message;
   },
 };
@@ -1253,7 +1369,7 @@ export const DeleteResourceRequest = {
 };
 
 function createBaseResourceGroup(): ResourceGroup {
-  return { id: 0, name: "", description: "", projectId: 0, resource: [] };
+  return { id: 0, name: "", description: "", projectId: 0, resource: [], datestamps: undefined };
 }
 
 export const ResourceGroup = {
@@ -1272,6 +1388,9 @@ export const ResourceGroup = {
     }
     for (const v of message.resource) {
       Resource.encode(v!, writer.uint32(42).fork()).ldelim();
+    }
+    if (message.datestamps !== undefined) {
+      Datestamps.encode(message.datestamps, writer.uint32(50).fork()).ldelim();
     }
     return writer;
   },
@@ -1318,6 +1437,13 @@ export const ResourceGroup = {
 
           message.resource.push(Resource.decode(reader, reader.uint32()));
           continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.datestamps = Datestamps.decode(reader, reader.uint32());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1334,6 +1460,7 @@ export const ResourceGroup = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
       resource: globalThis.Array.isArray(object?.resource) ? object.resource.map((e: any) => Resource.fromJSON(e)) : [],
+      datestamps: isSet(object.datestamps) ? Datestamps.fromJSON(object.datestamps) : undefined,
     };
   },
 
@@ -1354,6 +1481,9 @@ export const ResourceGroup = {
     if (message.resource?.length) {
       obj.resource = message.resource.map((e) => Resource.toJSON(e));
     }
+    if (message.datestamps !== undefined) {
+      obj.datestamps = Datestamps.toJSON(message.datestamps);
+    }
     return obj;
   },
 
@@ -1367,12 +1497,15 @@ export const ResourceGroup = {
     message.description = object.description ?? "";
     message.projectId = object.projectId ?? 0;
     message.resource = object.resource?.map((e) => Resource.fromPartial(e)) || [];
+    message.datestamps = (object.datestamps !== undefined && object.datestamps !== null)
+      ? Datestamps.fromPartial(object.datestamps)
+      : undefined;
     return message;
   },
 };
 
 function createBaseUpdateTaskResourceAllocationRequest(): UpdateTaskResourceAllocationRequest {
-  return { taskId: 0, resourceId: 0, unit: 0, operation: 0 };
+  return { taskId: 0, resourceId: 0, allocatedUnit: 0, operation: 0 };
 }
 
 export const UpdateTaskResourceAllocationRequest = {
@@ -1383,8 +1516,8 @@ export const UpdateTaskResourceAllocationRequest = {
     if (message.resourceId !== 0) {
       writer.uint32(16).uint32(message.resourceId);
     }
-    if (message.unit !== 0) {
-      writer.uint32(24).uint32(message.unit);
+    if (message.allocatedUnit !== 0) {
+      writer.uint32(24).uint32(message.allocatedUnit);
     }
     if (message.operation !== 0) {
       writer.uint32(32).int32(message.operation);
@@ -1418,7 +1551,7 @@ export const UpdateTaskResourceAllocationRequest = {
             break;
           }
 
-          message.unit = reader.uint32();
+          message.allocatedUnit = reader.uint32();
           continue;
         case 4:
           if (tag !== 32) {
@@ -1440,7 +1573,7 @@ export const UpdateTaskResourceAllocationRequest = {
     return {
       taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
       resourceId: isSet(object.resourceId) ? globalThis.Number(object.resourceId) : 0,
-      unit: isSet(object.unit) ? globalThis.Number(object.unit) : 0,
+      allocatedUnit: isSet(object.allocatedUnit) ? globalThis.Number(object.allocatedUnit) : 0,
       operation: isSet(object.operation) ? updateTaskResourceAllocationRequest_OperationFromJSON(object.operation) : 0,
     };
   },
@@ -1453,8 +1586,8 @@ export const UpdateTaskResourceAllocationRequest = {
     if (message.resourceId !== 0) {
       obj.resourceId = Math.round(message.resourceId);
     }
-    if (message.unit !== 0) {
-      obj.unit = Math.round(message.unit);
+    if (message.allocatedUnit !== 0) {
+      obj.allocatedUnit = Math.round(message.allocatedUnit);
     }
     if (message.operation !== 0) {
       obj.operation = updateTaskResourceAllocationRequest_OperationToJSON(message.operation);
@@ -1473,7 +1606,7 @@ export const UpdateTaskResourceAllocationRequest = {
     const message = createBaseUpdateTaskResourceAllocationRequest();
     message.taskId = object.taskId ?? 0;
     message.resourceId = object.resourceId ?? 0;
-    message.unit = object.unit ?? 0;
+    message.allocatedUnit = object.allocatedUnit ?? 0;
     message.operation = object.operation ?? 0;
     return message;
   },
@@ -2024,6 +2157,28 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = Math.trunc(date.getTime() / 1_000);
+  const nanos = (date.getTime() % 1_000) * 1_000_000;
+  return { seconds, nanos };
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
+  if (o instanceof globalThis.Date) {
+    return o;
+  } else if (typeof o === "string") {
+    return new globalThis.Date(o);
+  } else {
+    return fromTimestamp(Timestamp.fromJSON(o));
+  }
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

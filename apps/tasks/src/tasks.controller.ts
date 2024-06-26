@@ -1,12 +1,14 @@
-import { Controller, HttpException, Logger } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
+  AssignTaskRequest,
   CreateTaskColumnRequest,
   CreateTaskRequest,
   DeleteTaskColumnRequest,
   DeleteTaskRequest,
   ListTaskColumnsRequest,
   ListTasksRequest,
+  RemoveAssigneeRequest,
   TaskColumn,
   TaskColumnResponse,
   TaskResponse,
@@ -29,7 +31,8 @@ import {
   durationToNumber,
   numberToDuration,
 } from './utils/convert-second-to-duration';
-import { TaskAssignees } from './entity/task-assignees.entity';
+import { AssignTaskCommand } from './application/command/impl/assign-task.command';
+import { RemoveAssigneeCommand } from './application/command/impl/remove-assignee.command';
 
 @Controller()
 export class TasksController {
@@ -65,6 +68,9 @@ export class TasksController {
               }) || undefined
             : undefined,
         })) || [];
+
+      Logger.log('formattedResponse:data()');
+      Logger.log(formattedResponse);
 
       return TaskResponse.create({
         data: {
@@ -309,6 +315,56 @@ export class TasksController {
         error: {
           statusCode: error?.status || 500,
           message: error?.message || 'Error creating task column',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('TasksService', 'AssignTask')
+  async assignTask(assignTaskDto: AssignTaskRequest) {
+    Logger.log('AssignTask:grpc()');
+    Logger.log(JSON.stringify(assignTaskDto));
+
+    try {
+      const result = await this.commandBus.execute(
+        new AssignTaskCommand(assignTaskDto.taskId, assignTaskDto.userId),
+      );
+
+      Logger.log('AssignTask:grpc:result()');
+      Logger.log(JSON.stringify(result));
+
+      return TaskResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
+      });
+    } catch (error) {
+      return TaskResponse.create({
+        error: {
+          statusCode: error?.status || 500,
+          message: error?.message || 'Error assigning task',
+        },
+      });
+    }
+  }
+
+  @GrpcMethod('TasksService', 'RemoveAssignee')
+  async removeAssignee(removeAssigneeDto: RemoveAssigneeRequest) {
+    try {
+      const result = await this.commandBus.execute(
+        new RemoveAssigneeCommand(removeAssigneeDto.taskAssigneeId),
+      );
+
+      return TaskResponse.create({
+        data: {
+          data: [result] || undefined,
+        },
+      });
+    } catch (error) {
+      return TaskResponse.create({
+        error: {
+          statusCode: error?.status || 500,
+          message: error?.message || 'Error assigning task',
         },
       });
     }
