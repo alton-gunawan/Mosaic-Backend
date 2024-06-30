@@ -157,6 +157,12 @@ export interface Subtask {
   status: boolean;
 }
 
+export interface TaskAssignees {
+  id: number;
+  userId: string;
+  taskId: number;
+}
+
 export interface Task {
   id: number;
   name: string;
@@ -175,7 +181,10 @@ export interface Task {
   issueId?: number | undefined;
   taskColumnId: number;
   projectId: number;
-  datestamps?: Datestamps | undefined;
+  taskAssignees: TaskAssignees[];
+  createdAt?: Date | undefined;
+  updatedAt?: Date | undefined;
+  deletedAt?: Date | undefined;
 }
 
 export interface TasksList {
@@ -1271,6 +1280,95 @@ export const Subtask = {
   },
 };
 
+function createBaseTaskAssignees(): TaskAssignees {
+  return { id: 0, userId: "", taskId: 0 };
+}
+
+export const TaskAssignees = {
+  encode(message: TaskAssignees, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).uint32(message.id);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.taskId !== 0) {
+      writer.uint32(24).uint32(message.taskId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TaskAssignees {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTaskAssignees();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.uint32();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.taskId = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TaskAssignees {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+      taskId: isSet(object.taskId) ? globalThis.Number(object.taskId) : 0,
+    };
+  },
+
+  toJSON(message: TaskAssignees): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.taskId !== 0) {
+      obj.taskId = Math.round(message.taskId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TaskAssignees>, I>>(base?: I): TaskAssignees {
+    return TaskAssignees.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TaskAssignees>, I>>(object: I): TaskAssignees {
+    const message = createBaseTaskAssignees();
+    message.id = object.id ?? 0;
+    message.userId = object.userId ?? "";
+    message.taskId = object.taskId ?? 0;
+    return message;
+  },
+};
+
 function createBaseTask(): Task {
   return {
     id: 0,
@@ -1290,7 +1388,10 @@ function createBaseTask(): Task {
     issueId: undefined,
     taskColumnId: 0,
     projectId: 0,
-    datestamps: undefined,
+    taskAssignees: [],
+    createdAt: undefined,
+    updatedAt: undefined,
+    deletedAt: undefined,
   };
 }
 
@@ -1347,8 +1448,17 @@ export const Task = {
     if (message.projectId !== 0) {
       writer.uint32(136).uint32(message.projectId);
     }
-    if (message.datestamps !== undefined) {
-      Datestamps.encode(message.datestamps, writer.uint32(146).fork()).ldelim();
+    for (const v of message.taskAssignees) {
+      TaskAssignees.encode(v!, writer.uint32(146).fork()).ldelim();
+    }
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(154).fork()).ldelim();
+    }
+    if (message.updatedAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(162).fork()).ldelim();
+    }
+    if (message.deletedAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.deletedAt), writer.uint32(170).fork()).ldelim();
     }
     return writer;
   },
@@ -1484,7 +1594,28 @@ export const Task = {
             break;
           }
 
-          message.datestamps = Datestamps.decode(reader, reader.uint32());
+          message.taskAssignees.push(TaskAssignees.decode(reader, reader.uint32()));
+          continue;
+        case 19:
+          if (tag !== 154) {
+            break;
+          }
+
+          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        case 20:
+          if (tag !== 162) {
+            break;
+          }
+
+          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        case 21:
+          if (tag !== 170) {
+            break;
+          }
+
+          message.deletedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1518,7 +1649,12 @@ export const Task = {
       issueId: isSet(object.issueId) ? globalThis.Number(object.issueId) : undefined,
       taskColumnId: isSet(object.taskColumnId) ? globalThis.Number(object.taskColumnId) : 0,
       projectId: isSet(object.projectId) ? globalThis.Number(object.projectId) : 0,
-      datestamps: isSet(object.datestamps) ? Datestamps.fromJSON(object.datestamps) : undefined,
+      taskAssignees: globalThis.Array.isArray(object?.taskAssignees)
+        ? object.taskAssignees.map((e: any) => TaskAssignees.fromJSON(e))
+        : [],
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
+      deletedAt: isSet(object.deletedAt) ? fromJsonTimestamp(object.deletedAt) : undefined,
     };
   },
 
@@ -1575,8 +1711,17 @@ export const Task = {
     if (message.projectId !== 0) {
       obj.projectId = Math.round(message.projectId);
     }
-    if (message.datestamps !== undefined) {
-      obj.datestamps = Datestamps.toJSON(message.datestamps);
+    if (message.taskAssignees?.length) {
+      obj.taskAssignees = message.taskAssignees.map((e) => TaskAssignees.toJSON(e));
+    }
+    if (message.createdAt !== undefined) {
+      obj.createdAt = message.createdAt.toISOString();
+    }
+    if (message.updatedAt !== undefined) {
+      obj.updatedAt = message.updatedAt.toISOString();
+    }
+    if (message.deletedAt !== undefined) {
+      obj.deletedAt = message.deletedAt.toISOString();
     }
     return obj;
   },
@@ -1605,9 +1750,10 @@ export const Task = {
     message.issueId = object.issueId ?? undefined;
     message.taskColumnId = object.taskColumnId ?? 0;
     message.projectId = object.projectId ?? 0;
-    message.datestamps = (object.datestamps !== undefined && object.datestamps !== null)
-      ? Datestamps.fromPartial(object.datestamps)
-      : undefined;
+    message.taskAssignees = object.taskAssignees?.map((e) => TaskAssignees.fromPartial(e)) || [];
+    message.createdAt = object.createdAt ?? undefined;
+    message.updatedAt = object.updatedAt ?? undefined;
+    message.deletedAt = object.deletedAt ?? undefined;
     return message;
   },
 };

@@ -22,13 +22,13 @@ export class TaskAssignees {
   userId: string | undefined;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  created_at: string | undefined;
+  createdAt: string | undefined;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updated_at: string | undefined;
+  updatedAt: string | undefined;
 
   @DeleteDateColumn({ name: 'deleted_at' })
-  deleted_at: string | undefined;
+  deletedAt: string | undefined;
 
   @ManyToOne(() => Task, (task) => task.taskAssignees, {
     cascade: true,

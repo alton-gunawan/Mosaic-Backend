@@ -18,7 +18,7 @@ export class ListTaskHandler
       where: {
         projectId: command.projectId,
       },
-      relations: ['task_assignees'],
+      relations: ['taskAssignees', 'taskAssignees.task'],
     });
   }
 }

@@ -45,6 +45,9 @@ export class TasksController {
 
   @GrpcMethod('TasksService', 'ListTasks')
   async findAll(findAllTaskDto?: ListTasksRequest) {
+    Logger.log('findAllTaskDto:params()');
+    Logger.log(findAllTaskDto);
+
     try {
       const { id, createdBy, projectId, taskColumnId } = findAllTaskDto;
 
@@ -52,9 +55,16 @@ export class TasksController {
         new ListTaskQuery(id, createdBy, projectId, taskColumnId),
       );
 
+      Logger.log('TasksService:ListTasks()');
+      Logger.log(result.find((value) => value.id === 86));
+
       const formattedResponse =
         result?.map((value: Task) => ({
           ...value,
+          taskAssignees: value?.taskAssignees?.map((assignee) => ({
+            ...assignee,
+            taskId: assignee.task,
+          })),
           startDate: value?.startDate
             ? Timestamp.create({
                 seconds: getSecondsAndNanos(new Date(value?.startDate)).seconds,

@@ -53,6 +53,8 @@ export class TaskGroupController implements OnModuleInit {
   public async listTaskGroup(
     @Query() findAllTaskGroupDto?: ListTaskColumnsRequest,
   ): Promise<any> {
+    Logger.log('GET ListTaskColumns');
+
     return new Promise((resolve) => {
       from(
         this.taskService.ListTaskColumns({
