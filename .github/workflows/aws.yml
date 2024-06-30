@@ -26,6 +26,6 @@ jobs:
         aws_secret_key: ${{ secrets.AWS_ACCESS_SECRET_KEY }}
         application_name: TaskifiedBackend
         environment_name: TaskifiedBackend-dev
-        version_label: {{ github.sha }}
+        version_label: ${{ github.sha }}
         region: us-east-1
         deployment_package: mosaic-build.zip
