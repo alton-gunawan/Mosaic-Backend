@@ -18,7 +18,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: us-east-1
     - name: Generate deployment zip
-      run: zip -r mosaic-build.zip .
+      run: zip -r mosaic.zip .
     - name: Deploy to Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
       with:
@@ -28,4 +28,4 @@ jobs:
         environment_name: TaskifiedBackendDevops-env
         version_label: ${{ github.sha }}
         region: us-east-1
-        deployment_package: mosaic-build.zip
+        deployment_package: mosaic.zip
